@@ -1,0 +1,2 @@
+[hooks]
+precommit = _hghooks/precommit

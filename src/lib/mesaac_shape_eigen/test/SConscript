@@ -1,0 +1,23 @@
+Import("*")
+
+env = env.Clone()
+env.Prepend(
+    CPPPATH="..",
+    LIBS=[mesaacLibs["mesaac_mol"], mesaShapeLib]
+)
+env.Append(
+    LIBS=["cppunit"]
+)
+
+hammDir = env.Dir("../../../../test_data/hammersley")
+
+tvb = env.AddUnitTestProg("test_vol_box")
+env.Depends(tvb, hammDir)
+
+taa = env.AddUnitTestProg("test_axis_aligner")
+env.Depends(taa, hammDir)
+# AxisAligner uses VolBox
+env.Depends(taa, tvb)
+
+th = env.AddUnitTestProg("test_hammersley")
+tfp = env.AddUnitTestProg("test_fingerprinter")

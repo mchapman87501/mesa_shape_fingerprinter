@@ -1,0 +1,4 @@
+Import("*")
+
+t = env.AddPythonTest("test_basics.py", EXE=shape_filter_by_radius_exe[0].abspath)
+env.Depends(t, [shape_filter_by_radius_exe, '../../../test_data/hammersley'] + Glob("data/in/*"))

@@ -1,0 +1,16 @@
+Import("*")
+import glob
+import logging
+
+apLib = mesaacLibs["alglib_net.apLib"]
+svdLib = mesaacLibs["alglib_net.svdLib"]
+env = env.Clone()
+env.Append(
+  CPPPATH=["#src/lib/svd", "#src/lib/svd/libs"],
+  LIBS=[mesaacLibs["mesaac_mol"], apLib, svdLib],
+)
+srcs = ["ShapeRadius.cpp"]
+for name in ["ShapeRadius", "shape_radius"]:
+    shape_radius_exe = env.Installable(name, srcs)
+
+SConscript(dirs=["test"], exports="env shape_radius_exe")

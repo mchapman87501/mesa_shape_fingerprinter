@@ -1,0 +1,19 @@
+Import("*")
+
+dependencies = [sffp_exe, "../../../test_data/hammersley",
+                "testsupport.py"] + Glob("data/in/*") + Glob("data/ref/*")
+for corename in Split("basics"):
+    name = "test_%s.py" % corename
+    t = env.AddPythonTest(name, EXE=sffp_exe[0].abspath)
+    env.Depends(t, dependencies)
+    
+# Copy the performance comparison script into the build tree.
+built_benchmark = env.File("sffp_benchmark.py")
+src_benchmark = built_benchmark.srcnode()
+installer = env.Command(built_benchmark, src_benchmark,
+                        [Delete(built_benchmark), Copy(built_benchmark, src_benchmark)])
+env.AlwaysBuild(installer)
+# Would I could see the shape_fingerprinter_exe target from here...
+env.Depends(installer, [sffp_exe])
+
+Alias("sffp_benchmark", installer)

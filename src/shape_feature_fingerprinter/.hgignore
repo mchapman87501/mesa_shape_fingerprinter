@@ -1,0 +1,16 @@
+syntax: glob
+*.pyc
+*.pyo
+*.*~
+*.o
+*.a
+*.so
+*.dylib
+.DS_Store
+.svn
+.bzr
+.hg
+.Python
+
+.sconsign.dblite
+.sconf_temp

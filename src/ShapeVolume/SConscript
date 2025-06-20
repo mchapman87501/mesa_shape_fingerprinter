@@ -1,0 +1,15 @@
+Import("*")
+
+
+apLib = mesaacLibs["alglib_net.apLib"]
+svdLib = mesaacLibs["alglib_net.svdLib"]
+env = env.Clone()
+env.Append(
+  CPPPATH=["#src/lib/svd", "#src/lib/svd/libs"],
+  LIBS=[mesaacLibs["mesaac_mol"], apLib, svdLib],
+)
+srcs = ["ShapeVolume.cpp"]
+for name in ["ShapeVolume", "shape_volume"]:
+    shape_volume_exe = env.Installable(name, srcs)
+    
+SConscript(dirs=["test"], exports="env shape_volume_exe")

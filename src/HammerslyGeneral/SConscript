@@ -1,0 +1,10 @@
+Import("*")
+
+name = "HammerslyGeneral"
+p = env.Program(name, ["%s.cpp" % name])
+Alias("binaries", p)
+
+installer = env.Install(env["binDir"], p)
+Alias("install", installer)
+
+Default(p)

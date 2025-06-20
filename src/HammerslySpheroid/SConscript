@@ -1,0 +1,5 @@
+Import("*")
+
+srcs = ["HammerslySpheroid.cpp"]
+env.Installable("HammersleySpheroid", srcs)
+env.Installable("hammersley_spheroid", srcs)

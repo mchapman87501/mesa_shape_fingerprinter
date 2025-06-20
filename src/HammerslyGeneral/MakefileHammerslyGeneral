@@ -1,0 +1,29 @@
+#
+
+INCS          =  .
+
+CCPP	      =  /usr/bin/g++
+
+CFLAGS = -O3 -D_FILE_OFFSET_BITS=64 -DHAVE_LARGEFILE_SUPPORT
+
+LIB           = /usr/lib
+
+RM            = rm -f
+
+PROGRAM	      = HammerslyGeneral 
+
+OBJS	      = HammerslyGeneral.o
+
+SRCS	      = HammerslyGeneral.cpp
+
+all:	$(PROGRAM)
+
+HammerslyGeneral.o:	$(SRCS)
+	$(CCPP) $(CFLAGS) -I$(INCS)  -c  $(SRCS) 
+
+
+$(PROGRAM):     $(OBJS) 
+	$(CCPP)  $(CFLAGS) $(OBJS)  -o $(PROGRAM) -I$(INCS) -lm
+
+
+clean:;		$(RM) $(OBJS) $(PROGRAM) core 

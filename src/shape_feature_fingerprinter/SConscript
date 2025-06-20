@@ -1,0 +1,60 @@
+Import("*")
+import glob
+import logging
+import os
+
+apLib = mesaacLibs['alglib_net.apLib']
+svdLib = mesaacLibs['alglib_net.svdLib']
+
+canBuild = env["HAVE_BOOST"]
+
+if not canBuild:
+    logging.warn("Cannot build in %s -- Boost is needed" % os.getcwd())
+else:
+    env = env.Clone(
+    )
+    env.Append(
+      CPPPATH=Split("#src/lib/svd #src/lib/svd/libs"),
+      # CXXFLAGS=Split("-Winline"),
+      LIBS=[
+          mesaacLibs["mesaac_shape"], mesaacLibs["mesaac_mol"],
+          apLib, svdLib,
+      ],
+    )
+    
+    libenv = env.Clone()
+    lib_name = "feature_finder_factory"
+    stub_lib_name = "feature_finder_factory_stub"
+    stub_lib_srcs = Split("stub_feature_finder_factory.cpp")
+    if not env["HAVE_OPENBABEL"]:
+        logging.info("Building stubbed version of %s library" % lib_name)
+        lib_srcs = stub_lib_srcs
+    else:
+        lib_srcs = Split("feature_finder.cpp feature_finder_factory.cpp")
+        libenv.Append(
+            CPPPATH=[env['OB_CPPPATH']],
+            LIBPATH=[env['OB_LIBPATH']],
+            LIBS=Split("openbabel")
+        )
+
+    # Feature finder shared library:
+    fff_lib = libenv.SharedLibrary(lib_name, lib_srcs)
+    lib_installer = libenv.Install(env["libDir"], fff_lib)
+    Alias("install_shape_feature_fingerprinter", lib_installer)
+    
+    # Stub library:
+    stub_fff_lib = libenv.SharedLibrary(stub_lib_name, stub_lib_srcs)
+    stub_lib_installer = libenv.Install(env["libDir"], stub_fff_lib)
+    Alias("install_shape_feature_fingerprinter", stub_lib_installer)
+
+    env.Append(
+        LIBPATH=[os.path.dirname(fff_lib[0].abspath)],
+        LIBS=[lib_name]
+    )
+    
+    srcs = Split("""shape_fingerprinter.cpp sdf_shape_fingerprinter.cpp
+                    mol_fingerprinter.cpp""")
+    for progname in ["shape_feature_fingerprinter"]:
+        sffp_exe = env.Installable(progname, srcs)
+        
+    SConscript(dirs="test", exports="env sffp_exe")

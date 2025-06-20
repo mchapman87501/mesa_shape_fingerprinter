@@ -1,0 +1,11 @@
+Import("*")
+
+dependencies = ([shape_fingerprinter_exe, "../../../test_data/hammersley",
+                 "testsupport.py"] + 
+                ["data/in/cox2_3d_first_few.sd",
+                 "data/ref/cox2_3d_first_few.fp.txt.gz"])
+for corename in Split("basics"):
+    name = "test_%s.py" % corename
+    t = env.AddPythonTest(name, EXE=shape_fingerprinter_exe[0].abspath)
+    env.Depends(t, dependencies)
+    

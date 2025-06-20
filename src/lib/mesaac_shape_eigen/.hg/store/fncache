@@ -1,0 +1,12 @@
+data/.hgignore.i
+data/SConscript.i
+data/_hghooks/precommit.i
+data/axis_aligner.cpp.i
+data/fingerprinter.cpp.i
+data/hammersley.cpp.i
+data/test/SConscript.i
+data/test/test_axis_aligner.cpp.i
+data/test/test_fingerprinter.cpp.i
+data/test/test_hammersley.cpp.i
+data/test/test_vol_box.cpp.i
+data/vol_box.cpp.i
