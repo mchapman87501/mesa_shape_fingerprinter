@@ -1,9 +1,7 @@
 cmake_minimum_required(VERSION 4.0)
 set(PROJECT shape_fingerprints)
 
-# Note: Fortran is needed by the Eigen 3 package.  Add it here before
-# uncommenting the Eigen 3 FetchContent calls below.
-project(${PROJECT} VERSION 1.0.0 LANGUAGES C CXX)
+project(${PROJECT} VERSION 1.0.0 LANGUAGES C CXX Fortran)
 
 # Facilitate *not* building tests when using via FetchContent_MakeAvailable.
 # See https://github.com/glfw/glfw/blob/master/CMakeLists.txt
@@ -24,22 +22,16 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(Boost)
 
-# mesaac_shape_eigen depends on Eigen 2, which was from
-# https://eigen.tuxfamily.org/dox/group__QuickRefPage.html
-# For building mesaac_shape_eigen, Eigen 2 appears to have been
-# installed system-wide.
+# mesaac_shape_eigen depends on Eigen.
+include(FetchContent)
+FetchContent_Declare(
+  eigen
+  GIT_REPOSITORY https://gitlab.com/libeigen/eigen.git
+  GIT_TAG 3.4.0
+  GIT_SHALLOW TRUE
+)
 
-# Once mesaac_shape_eigen has been updated, Eigen 3 can be incorporated
-# into the build by uncommenting the following:
-# # include(FetchContent)
-# # FetchContent_Declare(
-# #   eigen
-# #   GIT_REPOSITORY https://gitlab.com/libeigen/eigen.git
-# #   GIT_TAG 3.4.0  # Use your desired Eigen version tag
-# #   GIT_SHALLOW TRUE
-# # )
-
-# FetchContent_MakeAvailable(eigen)
+FetchContent_MakeAvailable(eigen)
 
 # shape_feature_fingerprinter depends on OpenBabel.
 # Alas, OpenBabel depends on CMake 3.5, which is not compatible with

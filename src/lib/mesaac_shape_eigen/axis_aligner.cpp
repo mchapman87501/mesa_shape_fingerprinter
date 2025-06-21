@@ -221,11 +221,11 @@ static void unmirror_axes(Transform &vt) {
     if (!axis_is_mirrored(vt)) {
       break;
     }
-    vt[i] *= -1;
+    vt(i) *= -1;
     if (axis_is_mirrored(vt)) {
       // Still mirrored?  Back off and try again w. the next
       // axis.
-      vt[i] *= -1;
+      vt(i) *= -1;
     }
   }
 }
@@ -247,7 +247,7 @@ void AxisAligner::find_axis_align_transform(const PointList &cloud,
       x(i, j) = curr_point[j];
     }
   }
-  transform = x.svd().matrixV().transpose();
+  transform = x.jacobiSvd().matrixV().transpose();
   unmirror_axes(transform);
 }
 } // namespace shape
