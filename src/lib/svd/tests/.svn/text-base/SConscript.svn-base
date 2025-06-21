@@ -1,0 +1,11 @@
+Import("*")
+
+env = env.Clone(
+    CPPPATH=".. ../libs".split(),
+    LIBPATH=".. ../libs".split(),
+    LIBS="ap svd".split(),
+)
+
+testProg = env.Program("tests", Glob("*.cpp"))
+test = env.AddUnitTest(testProg)
+env.Default(test)

@@ -1,0 +1,6 @@
+Import("*")
+
+apSrcs = Glob("*.cpp")
+apLib = env.Library("ap", apSrcs)
+
+Return("apLib")
