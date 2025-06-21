@@ -2,36 +2,33 @@
 // Copyright (c) 2005-2010 Mesa Analytics & Computing, Inc.  All rights reserved
 //
 
-#ifndef _HAMMERSLEY4C7BBEC1_H_
-#define _HAMMERSLEY4C7BBEC1_H_
+#pragma once
 
-#include "mesaac_shape/shared_types.h"
+#include "mesaac_shape/shared_types.hpp"
 
 namespace mesaac {
-    namespace shape {
+namespace shape {
 
-        class Hammersley {
-        public:
-            static void get_cubic(
-                float xmin, float xmax, float ymin, float ymax, 
-                float zmin, float zmax, unsigned int num_points,
-                PointList& result);
+class Hammersley {
+public:
+  static void get_cubic(float xmin, float xmax, float ymin, float ymax,
+                        float zmin, float zmax, unsigned int num_points,
+                        PointList &result);
 
-            Hammersley();
-            virtual ~Hammersley();
+  Hammersley();
+  virtual ~Hammersley();
 
-            void start(unsigned int num_points);
-            bool next_point(Point& p);
+  void start(unsigned int num_points);
+  bool next_point(Point &p);
 
-        protected:
-            unsigned int m_num_points;
-            unsigned int m_num_generated;
+protected:
+  unsigned int m_num_points;
+  unsigned int m_num_generated;
 
-        private:
-            Hammersley(const Hammersley& src);
-            Hammersley& operator=(const Hammersley& src);
-        };
+private:
+  Hammersley(const Hammersley &src);
+  Hammersley &operator=(const Hammersley &src);
+};
 
-    } // namespace shape
+} // namespace shape
 } // namespace mesaac
-#endif // _HAMMERSLEY4C7BBEC1_H_

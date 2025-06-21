@@ -2,12 +2,9 @@
 // Copyright (c) 2010 Mesa Analytics & Computing, Inc.  All rights reserved
 //
 
-#ifndef _FEATURE_FINDER_FACTORY4CD9CFE7_H_
-#define _FEATURE_FINDER_FACTORY4CD9CFE7_H_
+#pragma once
 
-#include "i_feature_finder.h"
+#include "i_feature_finder.hpp"
 #include <string>
 
 IFeatureFinder *create_feature_finder(std::string sdf);
-
-#endif // _FEATURE_FINDER_FACTORY4CD9CFE7_H_

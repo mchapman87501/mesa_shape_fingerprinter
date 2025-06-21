@@ -3,11 +3,10 @@
 // Copyright (c) 2005-2010 Mesa Analytics & Computing, Inc.  All rights reserved
 //
 
-#ifndef _FINGERPRINTER4C7C2CAD_H_
-#define _FINGERPRINTER4C7C2CAD_H_
+#pragma once
 
-#include "mesaac_mol/atom.h"
-#include "mesaac_shape/vol_box.h"
+#include "mesaac_mol/atom.hpp"
+#include "mesaac_shape/vol_box.hpp"
 #include "shape_defs.hpp"
 
 namespace mesaac {
@@ -33,4 +32,3 @@ private:
 
 } // namespace shape
 } // namespace mesaac
-#endif // _FINGERPRINTER4C7C2CAD_H_
