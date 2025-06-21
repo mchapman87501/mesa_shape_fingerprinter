@@ -1,0 +1,8 @@
+.DS_Store
+/build
+/coverage
+.direnv/
+__pycache__/
+.pytest_cache/
+.env
+.env*
