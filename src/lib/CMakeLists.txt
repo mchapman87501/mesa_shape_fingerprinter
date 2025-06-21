@@ -1,0 +1,2 @@
+add_subdirectory(mesaac_shape_eigen)
+add_subdirectory(mesaac_shape)

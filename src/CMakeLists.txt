@@ -1,0 +1,8 @@
+add_subdirectory(lib)
+add_subdirectory(hammersley_general)
+add_subdirectory(hammersley_spheroid)
+add_subdirectory(shape_feature_fingerprinter)
+add_subdirectory(shape_filter_by_radius)
+add_subdirectory(shape_fingerprinter)
+add_subdirectory(shape_radius)
+add_subdirectory(shape_volume)

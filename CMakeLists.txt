@@ -8,8 +8,10 @@ project(${PROJECT} VERSION 1.0.0)
 option(SHAPE_FINGERPRINTS_BUILD_TESTS "Build test targets" ${PROJECT_IS_TOP_LEVEL})
 
 
-add_executable(shape_fingerprints src/shape_fingerprints.cpp)
-target_compile_features(shape_fingerprints PUBLIC cxx_std_23)
+# add_executable(shape_fingerprints src/shape_fingerprints.cpp)
+# target_compile_features(shape_fingerprints PUBLIC cxx_std_23)
+
+add_subdirectory(src)
 
 if(SHAPE_FINGERPRINTS_BUILD_TESTS)
     # Source of CodeCoverage.cmake:
