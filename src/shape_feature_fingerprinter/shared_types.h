@@ -6,12 +6,12 @@
 
 #include <vector>
 
-#include "Globals.h"
+#include "shape_defs.hpp"
 
 namespace mesaac {
-    typedef std::vector<float> FloatVector;
-    typedef std::vector<FloatVector> PointList;
-    typedef std::vector<PointList> ConformerPointsList;    
-}
+typedef std::vector<float> FloatVector;
+typedef std::vector<FloatVector> PointList;
+typedef std::vector<PointList> ConformerPointsList;
+} // namespace mesaac
 
 #endif /* end of include guard: SHARED_TYPES_H_N816I3BW */

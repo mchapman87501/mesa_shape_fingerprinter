@@ -4,18 +4,17 @@
 #ifndef SHARED_TYPES_H_7FFXIUU6
 #define SHARED_TYPES_H_7FFXIUU6
 
+#include "shape_defs.hpp"
 #include <vector>
-#include "Globals.h"
 
 namespace mesaac {
-    namespace shape {
-        // Informal: Point holds x, y, z and optional radius
-        typedef std::vector<float> Point;
-        typedef std::vector< Point > PointList;
-        typedef BitVector Fingerprint;
-        typedef ArrayBitVectors ShapeFingerprint;
-    }
-}
-
+namespace shape {
+// Informal: Point holds x, y, z and optional radius
+typedef std::vector<float> Point;
+typedef std::vector<Point> PointList;
+typedef BitVector Fingerprint;
+typedef ArrayBitVectors ShapeFingerprint;
+} // namespace shape
+} // namespace mesaac
 
 #endif /* end of include guard: SHARED_TYPES_H_7FFXIUU6 */
