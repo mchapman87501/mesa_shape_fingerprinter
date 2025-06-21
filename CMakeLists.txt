@@ -41,6 +41,18 @@ FetchContent_MakeAvailable(Boost)
 
 # FetchContent_MakeAvailable(eigen)
 
+# shape_feature_fingerprinter depends on OpenBabel.
+# Alas, OpenBabel depends on CMake 3.5, which is not compatible with
+# CMake 4.0.  It may be necessary to use our own fork of OpenBabel,
+# one with a patched top-level CMakeLists.txt; or to require that
+# OpenBabel be installed separately before compiling.
+# FetchContent_Declare(
+#     OpenBabel
+#     GIT_REPOSITORY https://github.com/openbabel/openbabel.git
+#     GIT_TAG openbabel-3-1-1
+#     GIT_SHALLOW TRUE
+# )
+# FetchContent_MakeAvailable(OpenBabel)
 
 add_subdirectory(src)
 
