@@ -1,5 +1,4 @@
-#ifndef _VOL_BOX4C508FB6_H_
-#define _VOL_BOX4C508FB6_H_
+#pragma once
 
 #include "shape_defs.hpp" // For BitVector
 #include "shared_types.hpp"
@@ -73,4 +72,3 @@ protected:
 };
 } // namespace shape
 } // namespace mesaac
-#endif // _VOL_BOX4C508FB6_H_
