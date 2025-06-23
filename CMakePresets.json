@@ -19,5 +19,18 @@
       "configurePreset": "default",
       "targets": ["all"]
     }
+  ],
+  "testPresets": [
+    {
+      "name": "default",
+      "configurePreset": "default",
+      "output": { "outputOnFailure": true },
+      "execution": { "noTestsAction": "error", "stopOnFailure": true },
+      "filter": {
+        "include": {
+          "label": "mesaac_tests"
+        }
+      }
+    }
   ]
 }

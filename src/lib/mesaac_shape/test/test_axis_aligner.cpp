@@ -17,6 +17,10 @@
 using namespace std;
 
 namespace mesaac {
+
+// Use the test data directory specified by TEST_DATA_DIR preprocessor symbol.
+const string test_data_dir(TEST_DATA_DIR);
+
 using namespace shape;
 
 typedef PointList PL; // Abbreviations
@@ -119,7 +123,9 @@ public:
   }
 
   void read_test_points(string pathname, PointList &points) {
-    pathname = string("../../../../test_data/hammersley/") + pathname;
+    // TODO use std::filesystem::path, available since C++17.
+    const string data_dir(test_data_dir + "/hammersley/");
+    pathname = data_dir + pathname;
     points.clear();
     ifstream inf(pathname.c_str());
     if (!inf) {
