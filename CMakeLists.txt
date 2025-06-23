@@ -23,7 +23,6 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(Boost)
 
 # mesaac_shape_eigen depends on Eigen.
-include(FetchContent)
 FetchContent_Declare(
   eigen
   GIT_REPOSITORY https://gitlab.com/libeigen/eigen.git
@@ -45,6 +44,15 @@ FetchContent_MakeAvailable(eigen)
 #     GIT_SHALLOW TRUE
 # )
 # FetchContent_MakeAvailable(OpenBabel)
+
+FetchContent_Declare(
+  Catch2
+  GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+  GIT_TAG        v3.8.1 # or a later release
+)
+
+FetchContent_MakeAvailable(Catch2)
+
 
 add_subdirectory(src)
 
