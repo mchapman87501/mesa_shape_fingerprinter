@@ -754,7 +754,7 @@ int _benchmark_align_to_axes(const TestFixture &fixture,
 
 } // namespace
 
-TEST_CASE("Benchmark alignments", "[mesaac][benchmark]") {
+TEST_CASE("Benchmark alignments", "[mesaac][mesaac_benchmark]") {
   TestFixture fixture;
 
   BENCHMARK_ADVANCED("Point cloud alignment")(

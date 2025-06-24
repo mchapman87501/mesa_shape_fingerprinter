@@ -47,6 +47,20 @@
       "filter": {
         "include": {
           "label": "mesaac"
+        },
+        "exclude": {
+          "label": "mesaac_benchmark"
+        }
+      }
+    },
+    {
+      "name": "benchmark",
+      "configurePreset": "default",
+      "output": { "outputOnFailure": true },
+      "execution": { "noTestsAction": "error", "stopOnFailure": true },
+      "filter": {
+        "include": {
+          "label": "mesaac_benchmark"
         }
       }
     },
@@ -58,6 +72,9 @@
       "filter": {
         "include": {
           "label": "mesaac"
+        },
+        "exclude": {
+          "label": "benchmark"
         }
       }
     }
