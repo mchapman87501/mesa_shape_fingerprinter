@@ -8,8 +8,7 @@ function(add_mesaac_shape_test TEST_NAME)
     target_include_directories(${TEST_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/include)
     target_link_libraries(${TEST_NAME} PRIVATE mesaac_shape mesaac_mol Catch2::Catch2WithMain)
 
-    add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME})
-    set_tests_properties(${TEST_NAME} PROPERTIES LABELS mesaac_tests)
+    catch_discover_tests(${TEST_NAME} ADD_TAGS_AS_LABELS)
 endfunction()
 
 add_mesaac_shape_test(test_axis_aligner test_axis_aligner.cpp)

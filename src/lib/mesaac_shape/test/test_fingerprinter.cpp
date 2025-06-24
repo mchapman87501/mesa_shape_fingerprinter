@@ -84,7 +84,7 @@ struct TestFixture {
   }
 };
 
-TEST_CASE("Test fingerprinter") {
+TEST_CASE("Test fingerprinter", "[mesaac]") {
   TestFixture fixture;
 
   SECTION("Test Symmetric Atom Vector") {

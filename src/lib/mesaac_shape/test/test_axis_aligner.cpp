@@ -348,7 +348,7 @@ public:
   }
 };
 
-TEST_CASE("Alignment Tests") {
+TEST_CASE("Alignment Tests", "[mesaac]") {
   // This setup is performed separately for each section.
   TestFixture fixture;
   std::shared_ptr<WBAxisAligner> aligner(fixture.new_aligner());
@@ -738,7 +738,7 @@ TEST_CASE("Alignment Tests") {
 
 namespace {
 int _benchmark_align_to_axes(const TestFixture &fixture,
-                             std::shared_ptr<WBAxisAligner> &aligner) {
+                             std::shared_ptr<WBAxisAligner> aligner) {
   mol::Mol mol;
   PointList points, cloud;
   unsigned int num_heavies;
@@ -754,18 +754,23 @@ int _benchmark_align_to_axes(const TestFixture &fixture,
 
 } // namespace
 
-// How can these be treated as normal ctest tests?
-TEST_CASE("Benchmark alignments") {
+TEST_CASE("Benchmark alignments", "[mesaac][benchmark]") {
   TestFixture fixture;
 
-  BENCHMARK("Point cloud alignment") {
+  BENCHMARK_ADVANCED("Point cloud alignment")(
+      Catch::Benchmark::Chronometer meter) {
     std::shared_ptr<WBAxisAligner> aligner(fixture.new_aligner());
-    return _benchmark_align_to_axes(fixture, aligner);
+    meter.measure([fixture, aligner] {
+      return _benchmark_align_to_axes(fixture, aligner);
+    });
   };
 
-  BENCHMARK("Atom center alignment") {
+  BENCHMARK_ADVANCED("Atom center alignment")(
+      Catch::Benchmark::Chronometer meter) {
     std::shared_ptr<WBAxisAligner> ac_aligner(fixture.new_aligner_ac_only());
-    return _benchmark_align_to_axes(fixture, ac_aligner);
+    meter.measure([fixture, ac_aligner] {
+      return _benchmark_align_to_axes(fixture, ac_aligner);
+    });
   };
 }
 
