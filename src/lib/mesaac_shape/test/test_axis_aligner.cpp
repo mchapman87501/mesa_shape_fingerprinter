@@ -2,7 +2,10 @@
 // Copyright (c) 2010 Mesa Analytics & Computing, Inc.  All rights reserved
 //
 
+#include <catch2/benchmark/catch_benchmark.hpp>
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_floating_point.hpp>
+
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
@@ -175,7 +178,7 @@ public:
     return result;
   }
 
-  void add_atom(mol::Mol &m, string symbol, float x, float y, float z) {
+  void add_atom(mol::Mol &m, string symbol, float x, float y, float z) const {
     mol::Atom a;
 
     a.atomic_num(getAtomicNum(symbol));
@@ -185,7 +188,7 @@ public:
     m.add_atom(a);
   }
 
-  void create_sample_mol(mol::Mol &mol, unsigned int &num_heavies) {
+  void create_sample_mol(mol::Mol &mol, unsigned int &num_heavies) const {
     // Coordinates taken from first cox2_3d conformer.
     add_atom(mol, "C", 27.7051, 22.0403, 17.0243);
     add_atom(mol, "N", 26.4399, 22.0976, 16.4318);
@@ -352,7 +355,7 @@ TEST_CASE("Alignment Tests") {
   mol::AtomVector atoms;
   PointList points;
 
-  SECTION("Get atom coords from an empty set of atoms") {
+  SECTION("Get atom coords from an empty vector of atoms") {
     aligner->wb_get_atom_points(atoms, points, false);
     REQUIRE((size_t)0 == atoms.size());
     REQUIRE((size_t)0 == points.size());
@@ -361,7 +364,7 @@ TEST_CASE("Alignment Tests") {
     REQUIRE((size_t)0 == points.size());
   }
 
-  SECTION("Get atom coords from a set of heavy atoms") {
+  SECTION("Get atom coords from a vector of heavy atoms") {
     unsigned int num_heavies;
 
     fixture.create_sample_atoms(atoms, num_heavies);
@@ -373,430 +376,397 @@ TEST_CASE("Alignment Tests") {
     aligner->wb_get_atom_points(atoms, points, true);
     REQUIRE(fixture.coords_match(atoms, points, atoms.size()));
   }
-}
 
-/*
-void test_get_mean_center_empty() {
-  std::shared_ptr<WBAxisAligner> aligner(new_aligner());
-  PointList points;
-  Point center;
+  SECTION("Get the mean center of an empty list of points") {
+    Point center;
 
-  aligner->wb_get_mean_center(points, center);
-  CPPUNIT_ASSERT_EQUAL((size_t)3, center.size());
-  CPPUNIT_ASSERT_EQUAL(0.0f, center[0]);
-  CPPUNIT_ASSERT_EQUAL(0.0f, center[1]);
-  CPPUNIT_ASSERT_EQUAL(0.0f, center[2]);
-}
-
-void test_get_mean_center() {
-  std::shared_ptr<WBAxisAligner> aligner(new_aligner());
-  mol::AtomVector atoms;
-  PointList points;
-  unsigned int num_heavies;
-  Point center;
-
-  create_sample_atoms(atoms, num_heavies);
-  aligner->wb_get_atom_points(atoms, points, false);
-  aligner->wb_get_mean_center(points, center);
-  CPPUNIT_ASSERT_EQUAL((size_t)3, center.size());
-  // FRAGILE
-  CPPUNIT_ASSERT(almost_equal(24.1596, center[0], 0.0001));
-  CPPUNIT_ASSERT(almost_equal(22.0163, center[1], 0.0001));
-  CPPUNIT_ASSERT(almost_equal(15.9366, center[2], 0.0001));
-}
-
-void test_mean_center_points_empty() {
-  std::shared_ptr<WBAxisAligner> aligner(new_aligner());
-  PointList points;
-
-  CPPUNIT_ASSERT_EQUAL((size_t)0, points.size());
-  aligner->wb_mean_center_points(points);
-  // If we make it this far, we pass.
-  CPPUNIT_ASSERT_EQUAL((size_t)0, points.size());
-}
-
-void test_mean_center_points() {
-  std::shared_ptr<WBAxisAligner> aligner(new_aligner());
-  mol::AtomVector atoms;
-  PointList points;
-  unsigned int num_heavies;
-  Point center;
-
-  // TODO:  create a set of atoms w. known positions and
-  // easily verified extents.
-  create_sample_atoms(atoms, num_heavies);
-  aligner->wb_get_atom_points(atoms, points, false);
-  CPPUNIT_ASSERT_EQUAL((size_t)num_heavies, points.size());
-  aligner->wb_mean_center_points(points);
-  CPPUNIT_ASSERT_EQUAL((size_t)num_heavies, points.size());
-  CPPUNIT_ASSERT(is_mean_centered(points));
-
-  float xmid, ymid, zmid, width, height, depth;
-  get_pointlist_info(points, xmid, ymid, zmid, width, height, depth);
-  CPPUNIT_ASSERT(almost_equal(9.9782, width, 0.00001));
-  CPPUNIT_ASSERT(almost_equal(4.4967, height, 0.00001));
-  CPPUNIT_ASSERT(almost_equal(6.8714, depth, 0.00001));
-}
-
-void test_get_mean_centered_cloud_empty() {
-  std::shared_ptr<WBAxisAligner> aligner(new_aligner());
-  PointList points, cloud;
-  CPPUNIT_ASSERT_EQUAL((size_t)0, points.size());
-  aligner->wb_get_mean_centered_cloud(points, cloud);
-  // If we get here without crashing, we win.
-  CPPUNIT_ASSERT_EQUAL((size_t)0, cloud.size());
-}
-
-void test_get_mean_centered_cloud() {
-  std::shared_ptr<WBAxisAligner> aligner(new_aligner());
-  mol::AtomVector atoms;
-  PointList points, cloud;
-  unsigned int num_heavies;
-
-  create_sample_atoms(atoms, num_heavies);
-  aligner->wb_get_atom_points(atoms, points, false);
-  CPPUNIT_ASSERT(points.size() > 0);
-  CPPUNIT_ASSERT_EQUAL((size_t)num_heavies, points.size());
-  aligner->wb_mean_center_points(points);
-  CPPUNIT_ASSERT_EQUAL((size_t)num_heavies, points.size());
-  aligner->wb_get_mean_centered_cloud(points, cloud);
-  CPPUNIT_ASSERT(cloud.size() > 0);
-
-  float xmid, ymid, zmid, pwidth, pheight, pdepth;
-  get_pointlist_info(points, xmid, ymid, zmid, pwidth, pheight, pdepth);
-  CPPUNIT_ASSERT(is_mean_centered(points));
-  CPPUNIT_ASSERT(almost_equal(9.9782, pwidth, 0.00001));
-  CPPUNIT_ASSERT(almost_equal(4.4967, pheight, 0.00001));
-  CPPUNIT_ASSERT(almost_equal(6.8714, pdepth, 0.00001));
-
-  float cwidth, cheight, cdepth;
-  get_pointlist_info(cloud, xmid, ymid, zmid, cwidth, cheight, cdepth);
-  float dmax = 2.0 * find_max_radius(points);
-  // Bench-check:  max radius should be 1.8, for sulfur.
-  CPPUNIT_ASSERT_EQUAL(3.6f, dmax);
-
-  float dwidth = cwidth - pwidth, dheight = cheight - pheight,
-        ddepth = cdepth - pdepth;
-
-  CPPUNIT_ASSERT(dwidth > 0);
-  CPPUNIT_ASSERT(dwidth <= dmax);
-  CPPUNIT_ASSERT(dheight > 0);
-  CPPUNIT_ASSERT(dheight <= dmax);
-  CPPUNIT_ASSERT(ddepth > 0);
-  CPPUNIT_ASSERT(ddepth <= dmax);
-}
-
-void test_find_axis_align_transform() {
-  std::shared_ptr<WBAxisAligner> aligner(new_aligner());
-  mol::AtomVector atoms;
-  PointList points, cloud;
-  unsigned int num_heavies;
-
-  create_sample_atoms(atoms, num_heavies);
-  aligner->wb_get_atom_points(atoms, points, false);
-  aligner->wb_mean_center_points(points);
-  aligner->wb_get_mean_centered_cloud(points, cloud);
-
-  // Not sure how to test this.  Just confirm it's a 3x3 matrix
-  // with non-empty cells?
-  Transform transform;
-  CPPUNIT_ASSERT(!is_non_null_transform(transform));
-  aligner->wb_find_axis_align_transform(cloud, transform);
-  CPPUNIT_ASSERT(is_non_null_transform(transform));
-}
-
-void test_untranslate_points() {
-  std::shared_ptr<WBAxisAligner> aligner(new_aligner());
-  Point offset = make_point(1.0, 2.0, 3.0);
-
-  PointList points;
-
-  // Ensure proper handling of empty lists:
-  aligner->wb_untranslate_points(points, offset);
-  CPPUNIT_ASSERT_EQUAL((size_t)0, points.size());
-
-  unsigned int i;
-  const unsigned int i_max = 10;
-  for (i = 0; i != i_max; i++) {
-    points.push_back(make_point(i + 1.0, i + 2.0, i + 3.0));
+    aligner->wb_get_mean_center(points, center);
+    REQUIRE(center.size() == 3);
+    REQUIRE(center[0] == 0.0f);
+    REQUIRE(center[1] == 0.0f);
+    REQUIRE(center[2] == 0.0f);
   }
 
-  aligner->wb_untranslate_points(points, offset);
-  for (i = 0; i != i_max; i++) {
-    float f(i);
-    Point &p(points[i]);
-    CPPUNIT_ASSERT_EQUAL(f, p.at(0));
-    CPPUNIT_ASSERT_EQUAL(f, p.at(1));
-    CPPUNIT_ASSERT_EQUAL(f, p.at(2));
+  SECTION("Get the mean center of a set of heavy atoms") {
+    unsigned int num_heavies;
+    Point center;
+
+    fixture.create_sample_atoms(atoms, num_heavies);
+    aligner->wb_get_atom_points(atoms, points, false);
+    aligner->wb_get_mean_center(points, center);
+    REQUIRE(center.size() == 3);
+
+    // FRAGILE
+    REQUIRE_THAT(center[0], Catch::Matchers::WithinAbs(24.1596, 0.0001));
+    REQUIRE_THAT(center[1], Catch::Matchers::WithinAbs(22.0163, 0.0001));
+    REQUIRE_THAT(center[2], Catch::Matchers::WithinAbs(15.9366, 0.0001));
   }
-}
 
-void test_transform_points() {
-  std::shared_ptr<WBAxisAligner> aligner(new_aligner());
-  mol::AtomVector atoms;
-  PointList points, cloud;
-  unsigned int num_heavies;
-  Transform transform;
-
-  // Ensure no crash on empty cloud:
-  CPPUNIT_ASSERT_THROW(aligner->wb_find_axis_align_transform(cloud, transform),
-                       invalid_argument);
-
-  create_sample_atoms(atoms, num_heavies);
-  aligner->wb_get_atom_points(atoms, points, false);
-  aligner->wb_mean_center_points(points);
-  aligner->wb_get_mean_centered_cloud(points, cloud);
-
-  CPPUNIT_ASSERT(!is_non_null_transform(transform));
-  aligner->wb_find_axis_align_transform(cloud, transform);
-  CPPUNIT_ASSERT(is_non_null_transform(transform));
-
-  // Verify no crash on an empty point list.
-  points.clear();
-  aligner->wb_transform_points(points, transform);
-  CPPUNIT_ASSERT_EQUAL((size_t)0, points.size());
-
-  aligner->wb_get_atom_points(atoms, points, false);
-  CPPUNIT_ASSERT(!has_nonincreasing_extents(points));
-
-  aligner->wb_transform_points(points, transform);
-  CPPUNIT_ASSERT_EQUAL((size_t)num_heavies, points.size());
-
-  // Transform should merely rotate the points -- no mean-centering.
-  CPPUNIT_ASSERT(has_nonincreasing_extents(points));
-}
-
-void test_update_atom_coords() {
-  std::shared_ptr<WBAxisAligner> aligner(new_aligner());
-  mol::AtomVector atoms;
-  PointList points, cloud;
-  unsigned int num_heavies;
-
-  // Ensure correct copying of transformed point coords to
-  // corresponding atom coords.
-  create_sample_atoms(atoms, num_heavies);
-
-  // Point and atom lists of different size?  This should fail.
-  aligner->wb_get_atom_points(atoms, points, false);
-  CPPUNIT_ASSERT_THROW(aligner->wb_update_atom_coords(atoms, points),
-                       std::length_error);
-
-  // Moronic, but maybe adequate, test: superpose all atoms.
-  aligner->wb_get_atom_points(atoms, points, true);
-  Point offset(make_point(10.0, -50.0, 0.0));
-  PointList::iterator i;
-  for (i = points.begin(); i != points.end(); ++i) {
-    Point &p(*i);
-    p.at(0) = offset[0];
-    p.at(1) = offset[1];
-    p.at(2) = offset[2];
+  SECTION("Translate an empty list of points so that its mean center lies at "
+          "the origin") {
+    REQUIRE(points.empty());
+    aligner->wb_mean_center_points(points);
+    // If execution reaches this point without crashing, the test passes.
+    REQUIRE(points.empty());
   }
-  aligner->wb_update_atom_coords(atoms, points);
 
-  mol::AtomVector::const_iterator j;
-  for (j = atoms.begin(); j != atoms.end(); ++j) {
-    const mol::Atom &a(**j);
-    CPPUNIT_ASSERT_EQUAL(offset[0], a.x());
-    CPPUNIT_ASSERT_EQUAL(offset[1], a.y());
-    CPPUNIT_ASSERT_EQUAL(offset[2], a.z());
+  SECTION("Translate a vector of heavy atoms so its mean center lies at the "
+          "origin") {
+    unsigned int num_heavies;
+    Point center;
+
+    // TODO:  create a set of atoms w. known positions and
+    // easily verified extents.
+    fixture.create_sample_atoms(atoms, num_heavies);
+    aligner->wb_get_atom_points(atoms, points, false);
+    REQUIRE((size_t)num_heavies == points.size());
+    aligner->wb_mean_center_points(points);
+    REQUIRE((size_t)num_heavies == points.size());
+    REQUIRE(fixture.is_mean_centered(points));
+
+    float xmid, ymid, zmid, width, height, depth;
+    fixture.get_pointlist_info(points, xmid, ymid, zmid, width, height, depth);
+    REQUIRE_THAT(width, Catch::Matchers::WithinAbs(9.9782, 0.00001));
+    REQUIRE_THAT(height, Catch::Matchers::WithinAbs(4.4967, 0.00001));
+    REQUIRE_THAT(depth, Catch::Matchers::WithinAbs(6.8714, 0.00001));
   }
-}
 
-void test_align_to_axes() {
-  std::shared_ptr<WBAxisAligner> aligner(new_aligner());
-  mol::AtomVector atoms;
+  SECTION("Get mean-centered cloud -- empty") {
+    PointList cloud;
+    REQUIRE(points.empty());
+    aligner->wb_get_mean_centered_cloud(points, cloud);
+    // If we get here without crashing, we win.
+    REQUIRE(cloud.empty());
+  }
 
-  // No crash on empty:
-  aligner->align_to_axes(atoms);
-  CPPUNIT_ASSERT_EQUAL((size_t)0, atoms.size());
+  SECTION("Get mean-centered cloud -- non-empty") {
+    unsigned int num_heavies;
+    PointList cloud;
+    fixture.create_sample_atoms(atoms, num_heavies);
+    aligner->wb_get_atom_points(atoms, points, false);
+    REQUIRE(!points.empty());
+    REQUIRE(points.size() == num_heavies);
+    aligner->wb_mean_center_points(points);
+    REQUIRE(points.size() == num_heavies);
 
-  PointList points, cloud;
-  unsigned int num_heavies;
+    aligner->wb_get_mean_centered_cloud(points, cloud);
+    REQUIRE(!cloud.empty());
 
-  create_sample_atoms(atoms, num_heavies);
-  aligner->wb_get_atom_points(atoms, points, false);
-  CPPUNIT_ASSERT(!is_mean_centered(points));
-  CPPUNIT_ASSERT(!has_nonincreasing_extents(points));
+    float xmid, ymid, zmid, pwidth, pheight, pdepth;
+    fixture.get_pointlist_info(points, xmid, ymid, zmid, pwidth, pheight,
+                               pdepth);
+    REQUIRE(fixture.is_mean_centered(points));
+    REQUIRE_THAT(pwidth, Catch::Matchers::WithinAbs(9.9782, 0.00001));
+    REQUIRE_THAT(pheight, Catch::Matchers::WithinAbs(4.4967, 0.00001));
+    REQUIRE_THAT(pdepth, Catch::Matchers::WithinAbs(6.8714, 0.00001));
 
-  // TODO:  Check that the hydrogens are also transformed.
-  aligner->align_to_axes(atoms);
-  aligner->wb_get_atom_points(atoms, points, false);
-  CPPUNIT_ASSERT(is_mean_centered(points));
-  CPPUNIT_ASSERT(has_nonincreasing_extents(points));
-}
+    float cwidth, cheight, cdepth;
+    fixture.get_pointlist_info(cloud, xmid, ymid, zmid, cwidth, cheight,
+                               cdepth);
+    float dmax = 2.0 * fixture.find_max_radius(points);
 
-void test_align_to_axes_mol() {
-  std::shared_ptr<WBAxisAligner> aligner(new_aligner());
-  mol::Mol mol;
+    // Hardwired badness: max radius of all atoms in create_sample_atoms should
+    // be that of sulfur.
+    REQUIRE_THAT(dmax, Catch::Matchers::WithinAbs(
+                           mesaac::getSymbolRadius("S") * 2, 0.00001));
 
-  // No crash on empty:
-  aligner->align_to_axes(mol);
-  CPPUNIT_ASSERT_EQUAL((size_t)0, mol.atoms().size());
+    float dwidth = cwidth - pwidth, dheight = cheight - pheight,
+          ddepth = cdepth - pdepth;
 
-  PointList points, cloud;
-  unsigned int num_heavies;
+    REQUIRE(dwidth > 0);
+    REQUIRE(dwidth <= dmax);
+    REQUIRE(dheight > 0);
+    REQUIRE(dheight <= dmax);
+    REQUIRE(ddepth > 0);
+    REQUIRE(ddepth <= dmax);
+  }
 
-  create_sample_mol(mol, num_heavies);
-  aligner->wb_get_atom_points(mol.atoms(), points, false);
-  CPPUNIT_ASSERT(!is_mean_centered(points));
-  CPPUNIT_ASSERT(!has_nonincreasing_extents(points));
+  SECTION("Find axis-align transform") {
+    PointList cloud;
+    unsigned int num_heavies;
 
-  // TODO:  Check that the hydrogens are also transformed.
-  aligner->align_to_axes(mol);
-  aligner->wb_get_atom_points(mol.atoms(), points, false);
-  CPPUNIT_ASSERT(is_mean_centered(points));
-  CPPUNIT_ASSERT(has_nonincreasing_extents(points));
-}
+    fixture.create_sample_atoms(atoms, num_heavies);
+    aligner->wb_get_atom_points(atoms, points, false);
+    aligner->wb_mean_center_points(points);
+    aligner->wb_get_mean_centered_cloud(points, cloud);
 
-void benchmark_align_to_axes() {
-  std::shared_ptr<WBAxisAligner> aligner(new_aligner());
-  std::shared_ptr<WBAxisAligner> ac_aligner(new_aligner_ac_only());
-  cout << "Cloud:\t" << _benchmark_align_to_axes(aligner) << " alignments/clock"
-       << endl;
-  cout << "Centers:\t" << _benchmark_align_to_axes(ac_aligner)
-       << " alignments/clock" << endl;
-}
+    // Not sure how to test this.  Just confirm it's a 3x3 matrix
+    // with non-empty cells?
+    Transform transform;
+    REQUIRE(!fixture.is_non_null_transform(transform));
+    aligner->wb_find_axis_align_transform(cloud, transform);
+    REQUIRE(fixture.is_non_null_transform(transform));
+  }
 
-float _benchmark_align_to_axes(std::shared_ptr<WBAxisAligner> &aligner) {
-  clock_t t0 = clock();
-  const int NumTrials = 1000;
-  for (int i = 0; i < NumTrials; i++) {
-    mol::Mol mol;
+  SECTION("Untranslate points") {
+    Point offset = fixture.make_point(1.0, 2.0, 3.0);
+
+    PointList points;
+
+    // Ensure proper handling of empty lists:
+    aligner->wb_untranslate_points(points, offset);
+    REQUIRE(points.empty());
+
+    unsigned int i;
+    const unsigned int i_max = 10;
+    for (i = 0; i != i_max; i++) {
+      points.push_back(fixture.make_point(i + 1.0, i + 2.0, i + 3.0));
+    }
+
+    aligner->wb_untranslate_points(points, offset);
+    for (i = 0; i != i_max; i++) {
+      float f(i);
+      Point &p(points[i]);
+      REQUIRE_THAT(p.at(0), Catch::Matchers::WithinAbs(f, 0.00001));
+      REQUIRE_THAT(p.at(1), Catch::Matchers::WithinAbs(f, 0.00001));
+      REQUIRE_THAT(p.at(2), Catch::Matchers::WithinAbs(f, 0.00001));
+    }
+  }
+
+  SECTION("Transform points") {
+    PointList cloud;
+    unsigned int num_heavies;
+    Transform transform;
+
+    // Ensure no crash on empty cloud:
+    REQUIRE_THROWS_AS(aligner->wb_find_axis_align_transform(cloud, transform),
+                      invalid_argument);
+
+    fixture.create_sample_atoms(atoms, num_heavies);
+    aligner->wb_get_atom_points(atoms, points, false);
+    aligner->wb_mean_center_points(points);
+    aligner->wb_get_mean_centered_cloud(points, cloud);
+
+    REQUIRE(!fixture.is_non_null_transform(transform));
+    aligner->wb_find_axis_align_transform(cloud, transform);
+    REQUIRE(fixture.is_non_null_transform(transform));
+
+    // Verify no crash on an empty point list.
+    points.clear();
+    aligner->wb_transform_points(points, transform);
+    REQUIRE(points.empty());
+
+    aligner->wb_get_atom_points(atoms, points, false);
+    REQUIRE(!fixture.has_nonincreasing_extents(points));
+
+    aligner->wb_transform_points(points, transform);
+    REQUIRE(points.size() == num_heavies);
+
+    // Transform should merely rotate the points -- no mean-centering.
+    REQUIRE(fixture.has_nonincreasing_extents(points));
+  }
+
+  SECTION("Update atom coords") {
+    PointList cloud;
+    unsigned int num_heavies;
+
+    // Ensure correct copying of transformed point coords to
+    // corresponding atom coords.
+    fixture.create_sample_atoms(atoms, num_heavies);
+
+    // Point and atom lists of different size?  This should fail.
+    aligner->wb_get_atom_points(atoms, points, false);
+    REQUIRE_THROWS_AS(aligner->wb_update_atom_coords(atoms, points),
+                      std::length_error);
+
+    // Moronic, but maybe adequate, test: superpose all atoms.
+    aligner->wb_get_atom_points(atoms, points, true);
+    Point offset(fixture.make_point(10.0, -50.0, 0.0));
+    PointList::iterator i;
+    for (i = points.begin(); i != points.end(); ++i) {
+      Point &p(*i);
+      p.at(0) = offset[0];
+      p.at(1) = offset[1];
+      p.at(2) = offset[2];
+    }
+    aligner->wb_update_atom_coords(atoms, points);
+
+    mol::AtomVector::const_iterator j;
+    for (j = atoms.begin(); j != atoms.end(); ++j) {
+      const mol::Atom &a(**j);
+      REQUIRE_THAT(offset[0], Catch::Matchers::WithinAbs(a.x(), 0.00001));
+      REQUIRE_THAT(offset[1], Catch::Matchers::WithinAbs(a.y(), 0.00001));
+      REQUIRE_THAT(offset[2], Catch::Matchers::WithinAbs(a.z(), 0.00001));
+    }
+  }
+
+  SECTION("Align to axes") {
+    // No crash on empty:
+    aligner->align_to_axes(atoms);
+    REQUIRE(atoms.empty());
+
     PointList points, cloud;
     unsigned int num_heavies;
 
-    create_sample_mol(mol, num_heavies);
+    fixture.create_sample_atoms(atoms, num_heavies);
+    aligner->wb_get_atom_points(atoms, points, false);
+    REQUIRE(!fixture.is_mean_centered(points));
+    REQUIRE(!fixture.has_nonincreasing_extents(points));
+
+    // TODO:  Check that the hydrogens are also transformed.
+    aligner->align_to_axes(atoms);
+    aligner->wb_get_atom_points(atoms, points, false);
+    REQUIRE(fixture.is_mean_centered(points));
+    REQUIRE(fixture.has_nonincreasing_extents(points));
+  }
+
+  SECTION("Align mol to axes") {
+    mol::Mol mol;
+
+    // No crash on empty:
+    aligner->align_to_axes(mol);
+    REQUIRE(mol.atoms().empty());
+
+    PointList points, cloud;
+    unsigned int num_heavies;
+
+    fixture.create_sample_mol(mol, num_heavies);
     aligner->wb_get_atom_points(mol.atoms(), points, false);
+    REQUIRE(!fixture.is_mean_centered(points));
+    REQUIRE(!fixture.has_nonincreasing_extents(points));
 
     // TODO:  Check that the hydrogens are also transformed.
     aligner->align_to_axes(mol);
     aligner->wb_get_atom_points(mol.atoms(), points, false);
+    REQUIRE(fixture.is_mean_centered(points));
+    REQUIRE(fixture.has_nonincreasing_extents(points));
   }
-  clock_t tf = clock();
-  float dt = (tf - t0);
-  return NumTrials / dt;
+
+  SECTION("Align to axes - mol only") {
+    std::shared_ptr<WBAxisAligner> aligner(fixture.new_aligner_ac_only());
+    mol::Mol mol;
+
+    // No crash on empty:
+    aligner->align_to_axes(mol);
+    REQUIRE(mol.atoms().empty());
+
+    PointList points, cloud;
+    unsigned int num_heavies;
+
+    fixture.create_sample_mol(mol, num_heavies);
+    aligner->wb_get_atom_points(mol.atoms(), points, false);
+    REQUIRE(!fixture.is_mean_centered(points));
+    REQUIRE(!fixture.has_nonincreasing_extents(points));
+
+    // TODO:  Check that the hydrogens are also transformed.
+    // TODO:  Check that align_to_axes with atom-centers-only produces
+    // different results than without atom-centers-only.
+    aligner->align_to_axes(mol);
+    aligner->wb_get_atom_points(mol.atoms(), points, false);
+    REQUIRE(fixture.is_mean_centered(points));
+    REQUIRE(fixture.has_nonincreasing_extents(points));
+  }
+
+  SECTION("Align hydrogens") {
+    // This is pretty naive: lay out some atoms in a line.
+    // Confirm that the line, including its hydrogens, gets mapped onto
+    // the X axis.
+
+    mol::Mol mol;
+    float x, y, z, w, h, d;
+
+    fixture.add_atom(mol, "C", 0.0, 0.0, 0.0); // Stay inside the point cloud
+    fixture.add_atom(mol, "H", 0.0, 0.0, 1.0);
+    fixture.add_atom(mol, "C", 0.0, 0.0, 2.0);
+    fixture.add_atom(mol, "H", 0.0, 0.0, 3.0);
+    fixture.add_atom(mol, "C", 0.0, 0.0, 4.0);
+    fixture.add_atom(mol, "H", 0.0, 0.0, 5.0);
+    fixture.add_atom(mol, "C", 0.0, 0.0, 6.0);
+    fixture.add_atom(mol, "H", 0.0, 0.0, 7.0);
+
+    aligner->wb_get_atom_points(mol.atoms(), points, true);
+    fixture.get_pointlist_info(points, x, y, z, w, h, d);
+
+    REQUIRE_THAT(w, Catch::Matchers::WithinAbs(0.0f, 0.00001));
+    REQUIRE_THAT(h, Catch::Matchers::WithinAbs(0.0f, 0.00001));
+    REQUIRE_THAT(d, Catch::Matchers::WithinAbs(7.0f, 0.00001));
+
+    aligner->align_to_axes(mol);
+    aligner->wb_get_atom_points(mol.atoms(), points, true);
+
+    fixture.get_pointlist_info(points, x, y, z, w, h, d);
+
+    // The slope from point to point should be consistent.
+    const float dx_dy = w / h;
+    const float dx_dz = w / d;
+    const float dy_dz = h / d;
+    const mol::AtomVector &atoms(mol.atoms());
+    mol::AtomVector::const_iterator i;
+    mol::AtomVector::const_iterator iprev = atoms.end();
+    for (i = atoms.begin(); i != atoms.end(); ++i) {
+      if (iprev != atoms.end()) {
+        const mol::Atom &prev(**iprev);
+        const mol::Atom &curr(**i);
+        // Not the best test -- dunno the expected direction:
+        float dx = ::fabs(curr.x() - prev.x());
+        float dy = ::fabs(curr.y() - prev.y());
+        float dz = ::fabs(curr.z() - prev.z());
+        REQUIRE_THAT(dx_dy, Catch::Matchers::WithinRel(dx / dy, 0.00014f));
+        REQUIRE_THAT(dx_dz, Catch::Matchers::WithinRel(dx / dz, 0.00014f));
+        REQUIRE_THAT(dy_dz, Catch::Matchers::WithinRel(dy / dz, 0.00014f));
+      }
+      iprev = i;
+    }
+
+    // The axis alignment is not perfect.
+    REQUIRE_THAT(w, Catch::Matchers::WithinAbs(7.0f, 0.001f));
+    REQUIRE_THAT(h, Catch::Matchers::WithinAbs(0.0f, 0.0125f));
+    REQUIRE_THAT(d, Catch::Matchers::WithinAbs(0.0f, 0.05f));
+  }
+
+  SECTION("Overlapping spherules") {
+    // This is a simple test which demonstrates that,
+    // if two spherules overlap, their corresponding cloud points
+    // will not be double-counted.
+
+    const Point atom(fixture.make_center(0, 0, 0, 1.7));
+
+    PointList mol1, mol2;
+    mol1.push_back(atom);
+    // Duplicates, superposed!
+    mol2.push_back(atom);
+    mol2.push_back(atom);
+
+    PointList contained1, contained2;
+    aligner->wb_get_mean_centered_cloud(mol1, contained1);
+    aligner->wb_get_mean_centered_cloud(mol2, contained2);
+
+    REQUIRE(contained1 == contained2);
+    REQUIRE(!contained1.empty());
+  }
 }
-void test_align_to_axes_mol_atoms_only() {
-  std::shared_ptr<WBAxisAligner> aligner(new_aligner_ac_only());
+
+namespace {
+int _benchmark_align_to_axes(const TestFixture &fixture,
+                             std::shared_ptr<WBAxisAligner> &aligner) {
   mol::Mol mol;
-
-  // No crash on empty:
-  aligner->align_to_axes(mol);
-  CPPUNIT_ASSERT_EQUAL((size_t)0, mol.atoms().size());
-
   PointList points, cloud;
   unsigned int num_heavies;
 
-  create_sample_mol(mol, num_heavies);
+  fixture.create_sample_mol(mol, num_heavies);
   aligner->wb_get_atom_points(mol.atoms(), points, false);
-  CPPUNIT_ASSERT(!is_mean_centered(points));
-  CPPUNIT_ASSERT(!has_nonincreasing_extents(points));
 
   // TODO:  Check that the hydrogens are also transformed.
-  // TODO:  Check that align_to_axes with atom-centers-only produces
-  // different results than without atom-centers-only.
   aligner->align_to_axes(mol);
   aligner->wb_get_atom_points(mol.atoms(), points, false);
-  CPPUNIT_ASSERT(is_mean_centered(points));
-  CPPUNIT_ASSERT(has_nonincreasing_extents(points));
+  return 0;
 }
 
-// This is pretty naive: lay out some atoms in a line.
-// Confirm that the line, including its hydrogens, gets mapped onto
-// the X axis.
-void test_align_hydrogens() {
-  std::shared_ptr<WBAxisAligner> aligner(new_aligner());
-  mol::Mol mol;
-  PointList points;
-  float x, y, z, w, h, d;
+} // namespace
 
-  add_atom(mol, "C", 0.0, 0.0, 0.0); // Stay inside the point cloud
-  add_atom(mol, "H", 0.0, 0.0, 1.0);
-  add_atom(mol, "C", 0.0, 0.0, 2.0);
-  add_atom(mol, "H", 0.0, 0.0, 3.0);
-  add_atom(mol, "C", 0.0, 0.0, 4.0);
-  add_atom(mol, "H", 0.0, 0.0, 5.0);
-  add_atom(mol, "C", 0.0, 0.0, 6.0);
-  add_atom(mol, "H", 0.0, 0.0, 7.0);
+// How can these be treated as normal ctest tests?
+TEST_CASE("Benchmark alignments") {
+  TestFixture fixture;
 
-  aligner->wb_get_atom_points(mol.atoms(), points, true);
-  get_pointlist_info(points, x, y, z, w, h, d);
-  CPPUNIT_ASSERT_EQUAL(0.0f, w);
-  CPPUNIT_ASSERT_EQUAL(0.0f, h);
-  CPPUNIT_ASSERT_EQUAL(7.0f, d);
+  BENCHMARK("Point cloud alignment") {
+    std::shared_ptr<WBAxisAligner> aligner(fixture.new_aligner());
+    return _benchmark_align_to_axes(fixture, aligner);
+  };
 
-  aligner->align_to_axes(mol);
-  aligner->wb_get_atom_points(mol.atoms(), points, true);
-
-  get_pointlist_info(points, x, y, z, w, h, d);
-
-  // The slope from point to point should be consistent.
-  const float dx_dy = w / h;
-  const float dx_dz = w / d;
-  const float dy_dz = h / d;
-  const mol::AtomVector &atoms(mol.atoms());
-  mol::AtomVector::const_iterator i;
-  mol::AtomVector::const_iterator iprev = atoms.end();
-  for (i = atoms.begin(); i != atoms.end(); ++i) {
-    if (iprev != atoms.end()) {
-      const mol::Atom &prev(**iprev);
-      const mol::Atom &curr(**i);
-      // Not the best test -- dunno the expected direction:
-      float dx = ::fabs(curr.x() - prev.x());
-      float dy = ::fabs(curr.y() - prev.y());
-      float dz = ::fabs(curr.z() - prev.z());
-      CPPUNIT_ASSERT(almost_equal(dx_dy, dx / dy, 0.00014, true));
-      CPPUNIT_ASSERT(almost_equal(dx_dz, dx / dz, 0.00014, true));
-      CPPUNIT_ASSERT(almost_equal(dy_dz, dy / dz, 0.00014, true));
-    }
-    iprev = i;
-  }
-
-  // The axis alignment is not perfect.
-  CPPUNIT_ASSERT(almost_equal(7.0, w, 0.001));
-  CPPUNIT_ASSERT(almost_equal(0.0, h, 0.0125));
-  CPPUNIT_ASSERT(almost_equal(0.0, d, 0.05));
+  BENCHMARK("Atom center alignment") {
+    std::shared_ptr<WBAxisAligner> ac_aligner(fixture.new_aligner_ac_only());
+    return _benchmark_align_to_axes(fixture, ac_aligner);
+  };
 }
-
-void test_overlapping_spherules() {
-  // This is a simple test which demonstrates that,
-  // if two spherules overlap, their corresponding cloud points
-  // will not be double-counted.
-
-  const Point atom(make_center(0, 0, 0, 1.7));
-
-  PointList mol1, mol2;
-  mol1.push_back(atom);
-  // Duplicates, superposed!
-  mol2.push_back(atom);
-  mol2.push_back(atom);
-
-  std::shared_ptr<WBAxisAligner> aligner(new_aligner());
-  PointList contained1, contained2;
-  aligner->wb_get_mean_centered_cloud(mol1, contained1);
-  aligner->wb_get_mean_centered_cloud(mol2, contained2);
-
-  CPPUNIT_ASSERT(contained1 == contained2);
-  CPPUNIT_ASSERT(contained1.size() > 0);
-}
-};
-
-CPPUNIT_TEST_SUITE_REGISTRATION(TestCase);
-}
-; // namespace mesaac
-
-int main(int, char **) {
-  int result = 0;
-  CppUnit::TextUi::TestRunner runner;
-  CppUnit::TestFactoryRegistry &registry =
-      CppUnit::TestFactoryRegistry::getRegistry();
-  runner.addTest(registry.makeTest());
-
-  if (!runner.run()) {
-    result = 1;
-  }
-  return result;
-}
-*/
 
 } // namespace mesaac
