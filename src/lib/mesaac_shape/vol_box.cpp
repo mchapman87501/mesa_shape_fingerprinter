@@ -208,8 +208,8 @@ void VolBox::set_bits_for_one_sphere_unchecked(const Point &sphere,
   IndexList pic; // (indices of) points in cube
   get_points_in_cube(x, y, z, radius, pic);
   IndexList::iterator i;
-  IndexList::iterator iEnd(pic.end());
-  for (i = pic.begin(); i != iEnd; i++) {
+  IndexList::iterator i_end(pic.end());
+  for (i = pic.begin(); i != i_end; i++) {
     unsigned int point_index(*i);
 
     if (!bits.test(point_index + offset)) {
@@ -232,8 +232,8 @@ void VolBox::set_folded_bits_for_one_sphere_unchecked(
   IndexList pic; // (indices of) points in cube
   get_points_in_cube(x, y, z, radius, pic);
   IndexList::iterator i;
-  IndexList::iterator iEnd(pic.end());
-  for (i = pic.begin(); i != iEnd; i++) {
+  IndexList::iterator i_end(pic.end());
+  for (i = pic.begin(); i != i_end; i++) {
     unsigned int point_index(*i);
     unsigned int bit_index = (point_index % folded_size) + offset;
 

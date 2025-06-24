@@ -21,15 +21,14 @@ using namespace std;
 
 namespace mesaac {
 
-// Use the test data directory specified by TEST_DATA_DIR preprocessor symbol.
-const string test_data_dir(TEST_DATA_DIR);
-
 using namespace shape;
 
 typedef PointList PL; // Abbreviations
 typedef const PointList CPL;
 typedef mesaac::mol::AtomVector AV;
 
+// Use the test data directory specified by TEST_DATA_DIR preprocessor symbol.
+const string test_data_dir(TEST_DATA_DIR);
 class WBAxisAligner : public AxisAligner {
 public:
   WBAxisAligner(PL &sphere, float atom_scale, bool atom_centers_only)
