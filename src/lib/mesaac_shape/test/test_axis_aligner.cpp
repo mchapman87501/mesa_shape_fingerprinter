@@ -69,17 +69,6 @@ public:
 
 class TestFixture {
 public:
-  bool almost_equal(float expected, float actual, float eps = 1.0e-6,
-                    bool verbose = false) {
-    bool result = (::fabs(expected - actual) <= eps);
-    if (!result && verbose) {
-      cout << "almost_equal(" << expected << ", " << actual << ", " << eps
-           << ")" << endl
-           << "    Actual difference: " << ::fabs(expected - actual) << endl;
-    }
-    return result;
-  }
-
   void get_point_means(const PointList &points, float &x, float &y, float &z) {
     x = y = z = 0.0;
     if (points.size()) {
@@ -302,10 +291,8 @@ public:
   bool is_mean_centered(const PointList &points) {
     float xmid, ymid, zmid, w, h, d;
     get_pointlist_info(points, xmid, ymid, zmid, w, h, d);
-    bool result =
-        (almost_equal(0.0, xmid, 0.0001) && almost_equal(0.0, ymid, 0.0001) &&
-         almost_equal(0.0, zmid, 0.0001));
-    return result;
+    auto matcher = Catch::Matchers::WithinAbs(0.0, 0.0001);
+    return matcher.match(xmid) && matcher.match(ymid) && matcher.match(zmid);
   }
 
   bool has_nonincreasing_extents(const PointList &points) {
