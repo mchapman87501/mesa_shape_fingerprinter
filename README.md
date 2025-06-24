@@ -14,4 +14,41 @@ cmake --preset default
 
 # To compile in the configured build directory:
 cmake --build --preset default
+
+# To run unit tests:
+ctest --preset default
+```
+
+## Running Tests With Code Coverage
+
+To get a code coverage report for all tests, a similar set of cmake commands can be used.
+
+```shell
+cmake --preset coverage
+cmake --build --preset coverage
+ctest --preset coverage
+cmake --build --preset coverage --target process_coverage
+```
+
+The HTML-formatted coverage reports can be viewed with your default web browser. On macOS, for example:
+
+```shell
+open build/coverage/report/index.html
+```
+
+## Issues
+
+### Lots of 3rd Party Tests
+
+The 3rd-party packages that are made available through `FetchContent` define a lot of time-consuming unit tests. Eigen defines the bulk of these tests.
+
+For this project, 3rd-party tests are distracting. That's why `CMakePresets.json` explores a way of running only the project's own tests, as identified by CMake labels.
+
+### OpenBabal and FetchContent
+
+OpenBabel is not compatible with CMake >= 4.0, because of its requirement for an older version of CMake.
+Should a separate installation of OpenBabel be required?
+
+```
+
 ```

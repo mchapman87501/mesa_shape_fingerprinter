@@ -3,11 +3,9 @@ set(PROJECT shape_fingerprints)
 
 project(${PROJECT} VERSION 1.0.0 LANGUAGES C CXX Fortran)
 
-# Facilitate *not* building tests when using via FetchContent_MakeAvailable.
-# See https://github.com/glfw/glfw/blob/master/CMakeLists.txt
-# This presumes all tests are defined in the toplevel tests directory --
+# This default value presumes all tests are defined in the toplevel tests directory --
 # a presumption that is not true of this project.
-#option(SHAPE_FINGERPRINTS_BUILD_TESTS "Build test targets" ${PROJECT_IS_TOP_LEVEL})
+option(SHAPE_FINGERPRINTS_BUILD_TESTS "Build test targets" ${PROJECT_IS_TOP_LEVEL})
 
 
 # Get Boost from Github
@@ -58,24 +56,17 @@ FetchContent_MakeAvailable(Catch2)
 
 
 # See note, above, about the arrangement of tests within this project.
-# if(SHAPE_FINGERPRINTS_BUILD_TESTS)
-#     # Source of CodeCoverage.cmake:
-#     # https://github.com/bilke/cmake-modules/blob/master/CodeCoverage.cmake
-#     include(cmake_modules/CodeCoverage.cmake)
-#     find_package(Catch2 3 REQUIRED)
-#     enable_testing()
+if(SHAPE_FINGERPRINTS_BUILD_TESTS)
+    message(STATUS "DEBUG: Testing is enabled.")
+    include(cmake_modules/simple_code_coverage.cmake)
 
-#     include(CTest)
-#     include(Catch)
+    find_package(Catch2 3 REQUIRED)
+    enable_testing()
 
-#     add_subdirectory(tests)
-# endif()
+    include(CTest)
+    include(Catch)
 
-# include(cmake_modules/CodeCoverage.cmake)
-find_package(Catch2 3 REQUIRED)
-enable_testing()
-
-include(CTest)
-include(Catch)
+    add_subdirectory(tests)
+endif()
 
 add_subdirectory(src)
