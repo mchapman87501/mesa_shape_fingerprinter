@@ -4,6 +4,7 @@
         "**/templates/*": "django-txt",
         "**/requirements{/**,*}.{txt,in}": "pip-requirements",
         "*.html": "html",
-        "ios": "cpp"
+        "ios": "cpp",
+        "vector": "cpp"
     }
 }

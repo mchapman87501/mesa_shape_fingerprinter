@@ -13,6 +13,5 @@ endfunction()
 
 add_mesaac_shape_test(test_axis_aligner test_axis_aligner.cpp)
 add_mesaac_shape_test(test_fingerprinter test_fingerprinter.cpp)
-
-# add_executable(test_hammersley test_hammersley.cpp)
+add_mesaac_shape_test(test_hammersley test_hammersley.cpp)
 # add_executable(test_vol_box test_vol_box.cpp)
