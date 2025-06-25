@@ -48,14 +48,6 @@ struct TestFixture {
     read_test_points("hamm_spheroid_10k_11rad.txt", points);
   }
 
-  VolBox *new_volbox() {
-    PointList sphere;
-
-    read_default_sphere(sphere);
-    VolBox *result = new VolBox(sphere, 1.0);
-    return result;
-  }
-
   Point make_point(float x, float y, float z, float r) {
     Point result;
     result.push_back(x);
@@ -115,39 +107,39 @@ struct TestFixture {
     }
     return ::sqrtf(rsqr_max);
   }
-};
 
-namespace {
-static void get_brute_force_folded(BitVector &src, BitVector &dest,
-                                   unsigned int num_folds) {
-  const unsigned int src_size = src.size();
-  unsigned int folded_size = src_size / (1 << num_folds);
-  dest.resize(folded_size);
-  dest.reset();
-  unsigned int i;
-  for (i = 0; i != src_size; ++i) {
-    if (src.test(i)) {
-      dest.set(i % folded_size);
+  void get_brute_force_folded(BitVector &src, BitVector &dest,
+                              unsigned int num_folds) {
+    const unsigned int src_size = src.size();
+    unsigned int folded_size = src_size / (1 << num_folds);
+    dest.resize(folded_size);
+    dest.reset();
+    unsigned int i;
+    for (i = 0; i != src_size; ++i) {
+      if (src.test(i)) {
+        dest.set(i % folded_size);
+      }
     }
   }
-}
-} // namespace
+};
 
 TEST_CASE("VolBox Testing", "[mesaac]") {
   TestFixture fixture;
+  PointList sphere;
+  fixture.read_default_sphere(sphere);
+  VolBox vb(sphere, 1.0);
 
   SECTION("Test Copying") {
-    std::shared_ptr<VolBox> vb(fixture.new_volbox());
     Point p(fixture.make_point(0, 0, 0, 22.0));
 
     {
       BitVector all_bits(10240);
-      vb->set_bits_for_one_sphere(p, all_bits, 0);
+      vb.set_bits_for_one_sphere(p, all_bits, 0);
       REQUIRE(all_bits.count() == 10240);
     }
 
     {
-      VolBox vb2(*vb);
+      VolBox vb2(vb);
 
       BitVector all_bits(10240);
       vb2.set_bits_for_one_sphere(p, all_bits, 0);
@@ -157,23 +149,19 @@ TEST_CASE("VolBox Testing", "[mesaac]") {
 
   SECTION("Set bits for an empty sphere") {
     PointList empty;
-    VolBox vb(empty, 1.0);
+    VolBox vb_empty(empty, 1.0);
 
     for (float x = -10.0; x != 10.0; x += 1.0) {
       BitVector matches(0);
       Point p(fixture.make_point(x, x, x, 22.0));
       // What about proving that this does not clear any bits?
       // Ah, never mind.
-      vb.set_bits_for_one_sphere(p, matches, 0);
+      vb_empty.set_bits_for_one_sphere(p, matches, 0);
       REQUIRE(matches.empty());
     }
   }
 
   SECTION("Set bits for one non-empty sphere") {
-    PointList sphere;
-    fixture.read_default_sphere(sphere);
-    VolBox vb(sphere, 1.0);
-
     const float r = 5.0;
     float r_sphere = fixture.get_max_extent(sphere);
     unsigned int total = 0;
@@ -193,10 +181,6 @@ TEST_CASE("VolBox Testing", "[mesaac]") {
   }
 
   SECTION("Set bits for multiple spheres.") {
-    PointList sphere;
-    fixture.read_default_sphere(sphere);
-    VolBox vb(sphere, 1.0);
-
     PointList center_spheres;
     const float r = 5.0;
 
@@ -216,10 +200,6 @@ TEST_CASE("VolBox Testing", "[mesaac]") {
   SECTION("TODO Write tests for custom sphere scaling") {}
 
   SECTION("Get points within spheres") {
-    PointList sphere;
-    fixture.read_default_sphere(sphere);
-    VolBox vb(sphere, 1.0);
-
     PointList center_spheres;
     const float r = 5.0;
 
@@ -242,9 +222,6 @@ TEST_CASE("VolBox Testing", "[mesaac]") {
   }
 
   SECTION("Test VolBox containment for spheres of varying sizes.") {
-    PointList sphere;
-    fixture.read_default_sphere(sphere);
-    VolBox vb(sphere, 1.0);
     unsigned int total_points = sphere.size();
     const float R = fixture.get_max_extent(sphere);
 
@@ -269,9 +246,6 @@ TEST_CASE("VolBox Testing", "[mesaac]") {
   }
 
   SECTION("Test spherules at various locations within a VolBox") {
-    PointList sphere;
-    fixture.read_default_sphere(sphere);
-    VolBox vb(sphere, 1.0);
     unsigned int total_points = sphere.size();
     const float R = fixture.get_max_extent(sphere);
     const float r = 1.77; // Akin to carbon
@@ -300,7 +274,6 @@ TEST_CASE("VolBox Testing", "[mesaac]") {
         FAIL(msg.str());
       }
       REQUIRE(expected == contained);
-
       REQUIRE_THAT(exp_cnt,
                    Catch::Matchers::WithinRel(contained.size(), 0.075));
     }
@@ -338,10 +311,6 @@ TEST_CASE("VolBox Testing", "[mesaac]") {
     PointList mol1;
     mol1.push_back(atom);
 
-    PointList sphere;
-    fixture.read_default_sphere(sphere);
-    VolBox vb(sphere, 1.0);
-
     const unsigned int num_cloud_points(vb.size());
     const unsigned int offset(10);
     BitVector bits1, bits2;
@@ -361,10 +330,6 @@ TEST_CASE("VolBox Testing", "[mesaac]") {
   }
 
   SECTION("Test basic folded fingerprints") {
-    PointList sphere;
-    fixture.read_default_sphere(sphere);
-    VolBox vb(sphere, 1.0);
-
     PointList center_spheres;
     const float r = 5.0;
     for (float x = -15.0; x != 15.0; x += 1.0) {
@@ -388,7 +353,7 @@ TEST_CASE("VolBox Testing", "[mesaac]") {
       // cout << "Folds: " << num_folds << " = " << folded << endl;
 
       BitVector folded_brute;
-      get_brute_force_folded(full_fp, folded_brute, num_folds);
+      fixture.get_brute_force_folded(full_fp, folded_brute, num_folds);
       REQUIRE(folded == folded_brute);
     }
   }

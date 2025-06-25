@@ -12,9 +12,6 @@ using namespace std;
 
 namespace mesaac {
 namespace shape {
-typedef vector<IndexList> ZBucket;
-typedef vector<ZBucket> YZBucket;
-struct XYZBucket : vector<YZBucket> {};
 
 VolBox::VolBox(const PointList &points, const float sphere_scale) {
   m_units_per_side = 8;
@@ -55,14 +52,11 @@ VolBox::VolBox(const PointList &points, const float sphere_scale) {
   m_iymax = (m_iymax < 0) ? 0 : m_iymax;
   m_izmax = (m_izmax < 0) ? 0 : m_izmax;
 
-  // Build an XYZBucket of all points.
-  m_bucket = new XYZBucket();
-  assert(m_bucket != 0);
+  m_bucket.clear();
 
-  XYZBucket &xyz_bucket(*m_bucket);
   for (int ix = 0; ix <= m_ixmax; ix++) {
-    xyz_bucket.push_back(YZBucket());
-    YZBucket &yz_bucket(xyz_bucket[ix]);
+    m_bucket.push_back(YZBucket());
+    YZBucket &yz_bucket(m_bucket[ix]);
     for (int iy = 0; iy <= m_iymax; iy++) {
       yz_bucket.push_back(ZBucket());
       ZBucket &z_bucket(yz_bucket[iy]);
@@ -76,17 +70,7 @@ VolBox::VolBox(const PointList &points, const float sphere_scale) {
   add_points(points);
 }
 
-VolBox::~VolBox() {
-  if (m_bucket) {
-    delete m_bucket;
-    m_bucket = 0;
-  }
-}
-
-VolBox::VolBox(const VolBox &src) {
-  m_bucket = 0;
-  *this = src;
-}
+VolBox::VolBox(const VolBox &src) { *this = src; }
 
 VolBox &VolBox::operator=(const VolBox &src) {
   m_xmin = src.m_xmin;
@@ -105,22 +89,13 @@ VolBox &VolBox::operator=(const VolBox &src) {
   m_sphere_scale = src.m_sphere_scale;
   m_bucket_points = src.m_bucket_points;
 
-  if (m_bucket) {
-    delete m_bucket;
-  }
-  m_bucket = new XYZBucket();
-  // This is a bear...
-  assert(m_bucket != 0);
-
-  // Lucky thing: STL can do a deep copy correctly.
-  *m_bucket = *src.m_bucket;
-
+  m_bucket = src.m_bucket;
   return *this;
 }
 
 void VolBox::add_points(const PointList &points) {
   m_bucket_points.clear();
-  XYZBucket &xyz_bucket(*m_bucket);
+  XYZBucket &xyz_bucket(m_bucket);
   PointList::const_iterator i;
   for (i = points.begin(); i != points.end(); i++) {
     const Point &p(*i);
@@ -231,11 +206,10 @@ void VolBox::get_points_in_cube(float x, float y, float z, float radius,
   z0 = bounded(z0, m_izmax);
   zf = bounded(zf, m_izmax);
 
-  XYZBucket &xyz_bucket(*m_bucket);
   for (int x = x0; x <= xf; x++) {
     for (int y = y0; y <= yf; y++) {
       for (int z = z0; z <= zf; z++) {
-        const IndexList &pl(xyz_bucket.at(x).at(y).at(z));
+        const IndexList &pl(m_bucket.at(x).at(y).at(z));
         result.insert(result.end(), pl.begin(), pl.end());
       }
     }
