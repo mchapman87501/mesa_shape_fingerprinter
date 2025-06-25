@@ -17,13 +17,14 @@
 using namespace std;
 
 namespace mesaac {
+namespace {
 static map<int, double> atomic_radius;
 static map<string, double> radius_by_symbol;
 static map<string, unsigned char> num_by_symbol;
 // TODO:  Re-use num_by_symbol
 static map<int, string> symbol_by_num;
 
-static void initRadii() {
+bool init_radii() {
   if (atomic_radius.size() <= 0) {
     atomic_radius[1] = 1.09;
     atomic_radius[2] = 1.4;
@@ -471,15 +472,10 @@ static void initRadii() {
     symbol_by_num[109] = "Mt";
     symbol_by_num[110] = "Ds";
   }
+  return true;
 }
 
-double getRadius(int atomicNumber) {
-  initRadii();
-  double result = atomic_radius[atomicNumber];
-  return result;
-}
-
-static string strip(const string &src) {
+string strip(const string &src) {
   string::const_iterator i_start, i_end;
   i_start = src.begin();
   while ((i_start != src.end()) && isspace(*i_start)) {
@@ -494,25 +490,32 @@ static string strip(const string &src) {
   return result;
 }
 
-double getSymbolRadius(const string &atomicSymbol) {
-  initRadii();
-  string sym(strip(atomicSymbol));
+bool inited = init_radii();
+
+} // namespace
+
+double get_radius(int atomic_number) {
+  double result = atomic_radius[atomic_number];
+  return result;
+}
+
+double get_symbol_radius(const string &atomic_symbol) {
+  string sym(strip(atomic_symbol));
   double result = radius_by_symbol[sym];
   return result;
 }
 
-unsigned char getAtomicNum(const std::string &atomicSymbol) {
-  initRadii();
-  return num_by_symbol[strip(atomicSymbol)];
+unsigned char get_atomic_num(const std::string &atomic_symbol) {
+  // TODO handle missing entry, ala get_symbol.
+  return num_by_symbol[strip(atomic_symbol)];
 }
 
-string getSymbol(int atomicNumber) {
-  initRadii();
+string get_symbol(int atomic_number) {
   string result("");
-  map<int, string>::iterator entry = symbol_by_num.find(atomicNumber);
+  map<int, string>::iterator entry = symbol_by_num.find(atomic_number);
   if (entry == symbol_by_num.end()) {
     ostringstream msg;
-    msg << "Unknown atomic number " << atomicNumber;
+    msg << "Unknown atomic number " << atomic_number;
     result = msg.str();
   } else {
     result = entry->second;

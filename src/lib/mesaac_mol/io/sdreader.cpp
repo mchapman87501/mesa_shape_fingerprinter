@@ -90,7 +90,7 @@ bool SDReader::read_next_atom(Atom &a) {
       a.y(y);
       a.z(z);
       string symbol(line.substr(31, 3));
-      a.atomic_num(getAtomicNum(symbol));
+      a.atomic_num(get_atomic_num(symbol));
       // Store the rest of the line verbatim
       a.optional_cols(line.substr(34));
       result = true;

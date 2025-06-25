@@ -12,6 +12,8 @@ namespace mol {
 class Atom {
 public:
   Atom() : m_atomic_num(0), m_x(0), m_y(0), m_z(0) {}
+  Atom(unsigned int atomic_num, float x, float y, float z)
+      : m_atomic_num(atomic_num), m_x(x), m_y(y), m_z(z) {}
 
   // XXX FIX THIS:  Immutable properties should be set in constructor.
   // Setters like x(newvalue) are OK for mutable properties.

@@ -9,13 +9,13 @@
 namespace mesaac {
 // Get information about atom radii, given element ID.
 // Returns element atom radius, Angstroms
-double getRadius(int atomicNumber);
+double get_radius(int atomic_number);
 // Get atom radius given its atom symbol:
-double getSymbolRadius(const std::string &atomicSymbol);
+double get_symbol_radius(const std::string &atomic_symbol);
 
 // XXX FIX THIS Poor separation of concerns
 // Get atomic number given atom symbol
-unsigned char getAtomicNum(const std::string &atomicSymbol);
-std::string getSymbol(int atomicNumber);
+unsigned char get_atomic_num(const std::string &atomic_symbol);
+std::string get_symbol(int atomic_number);
 
 } // namespace mesaac

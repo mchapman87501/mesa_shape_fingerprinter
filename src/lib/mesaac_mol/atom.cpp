@@ -22,9 +22,9 @@ void Atom::optional_cols(const string &new_value) {
   m_optional_cols = new_value;
 }
 
-string Atom::symbol() const { return getSymbol(m_atomic_num); }
+string Atom::symbol() const { return get_symbol(m_atomic_num); }
 
-float Atom::radius() const { return getRadius(m_atomic_num); }
+float Atom::radius() const { return get_radius(m_atomic_num); }
 
 bool Atom::is_hydrogen() const {
   bool result = (1 == m_atomic_num);
