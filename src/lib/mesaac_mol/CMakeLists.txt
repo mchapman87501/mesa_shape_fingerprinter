@@ -1,7 +1,6 @@
 set(TARGET mesaac_mol)
 
 set(SRC 
-    bond.cpp
     atom.cpp
     io/sdwriter.cpp
     io/sdreader.cpp

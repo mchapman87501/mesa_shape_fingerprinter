@@ -30,11 +30,9 @@ public:
     BSE_CIS_TRANS_DOUBLE = 3
   } BondStereoEnum;
 
-  Bond();
-  Bond(const Bond &src);
-  virtual ~Bond();
-
-  Bond &operator=(const Bond &src);
+  Bond()
+      : m_a0(0), m_a1(0), m_type(BTE_SINGLE), m_stereo(BSE_NOT_STEREO),
+        m_optional_cols("") {}
 
   // TODO: use enums for valid values.
   void init(unsigned int a0, unsigned int a1, BondTypeEnum type,
@@ -66,8 +64,6 @@ protected:
   BondTypeEnum m_type;
   BondStereoEnum m_stereo;
   std::string m_optional_cols;
-
-private:
 };
 
 typedef std::vector<Bond *> BondVector;

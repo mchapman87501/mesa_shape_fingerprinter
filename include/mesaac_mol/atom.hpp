@@ -11,11 +11,7 @@ namespace mesaac {
 namespace mol {
 class Atom {
 public:
-  Atom();
-  Atom(const Atom &src);
-  virtual ~Atom();
-
-  Atom &operator=(const Atom &src);
+  Atom() : m_atomic_num(0), m_x(0), m_y(0), m_z(0) {}
 
   // XXX FIX THIS:  Immutable properties should be set in constructor.
   // Setters like x(newvalue) are OK for mutable properties.
@@ -42,8 +38,6 @@ protected:
   unsigned int m_atomic_num;
   float m_x, m_y, m_z;
   std::string m_optional_cols;
-
-private:
 };
 
 // XXX FIX THIS vector of raw pointers?

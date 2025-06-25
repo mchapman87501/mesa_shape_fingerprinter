@@ -9,33 +9,6 @@ using namespace std;
 
 namespace mesaac {
 namespace mol {
-// void update_extant(int delta) {
-//     static unsigned int cnt = 0;
-//     cnt += delta;
-//     cout << "Atoms: " << cnt << endl;
-// }
-
-Atom::Atom() : m_atomic_num(0), m_x(0), m_y(0), m_z(0) {
-  // update_extant(1);
-}
-
-Atom::Atom(const Atom &src) {
-  (*this) = src;
-  // update_extant(1);
-}
-
-Atom::~Atom() {
-  // update_extant(-1);
-}
-
-Atom &Atom::operator=(const Atom &src) {
-  m_atomic_num = src.m_atomic_num;
-  m_x = src.m_x;
-  m_y = src.m_y;
-  m_z = src.m_z;
-  m_optional_cols = src.m_optional_cols;
-  return *this;
-}
 
 void Atom::atomic_num(unsigned int new_value) { m_atomic_num = new_value; }
 
