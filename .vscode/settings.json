@@ -5,6 +5,15 @@
         "**/requirements{/**,*}.{txt,in}": "pip-requirements",
         "*.html": "html",
         "ios": "cpp",
-        "vector": "cpp"
+        "vector": "cpp",
+        "*.cmake": "cmake"
+    },
+    "[cmake]": {
+        "editor.wordBasedSuggestions": "off",
+        "editor.quickSuggestions": {
+            "other": "on",
+            "comments": "off",
+            "strings": "off"
+        }
     }
 }

@@ -8,6 +8,8 @@ project(${PROJECT} VERSION 1.0.0 LANGUAGES C CXX Fortran)
 option(SHAPE_FINGERPRINTS_BUILD_TESTS "Build test targets" ${PROJECT_IS_TOP_LEVEL})
 
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules")
+
 # Get Boost from Github
 set(BOOST_INCLUDE_LIBRARIES dynamic_bitset)
 set(BOOST_ENABLE_CMAKE ON)
@@ -56,11 +58,11 @@ FetchContent_MakeAvailable(Catch2)
 
 
 # See note, above, about the arrangement of tests within this project.
-include(cmake_modules/add_mesaac_test.cmake)
+include(add_mesaac_test)
 
 if(SHAPE_FINGERPRINTS_BUILD_TESTS)
     message(STATUS "DEBUG: Testing is enabled.")
-    include(cmake_modules/simple_code_coverage.cmake)
+    include(simple_code_coverage)
 
     find_package(Catch2 3 REQUIRED)
     enable_testing()

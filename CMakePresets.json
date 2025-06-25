@@ -16,13 +16,10 @@
     {
       "name": "coverage",
       "description": "Compile with unit tests, with code coverage",
-      "hidden": false,
-      "generator": "Ninja",
+      "inherits": "default",
       "binaryDir": "${sourceDir}/build/coverage",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Coverage",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "YES",
-        "SHAPE_FINGERPRINTS_BUILD_TESTS": "YES"
+        "CMAKE_BUILD_TYPE": "Coverage"
       }
     }
   ],
@@ -42,8 +39,13 @@
     {
       "name": "default",
       "configurePreset": "default",
-      "output": { "outputOnFailure": true },
-      "execution": { "noTestsAction": "error", "stopOnFailure": true },
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error",
+        "stopOnFailure": true
+      },
       "filter": {
         "include": {
           "label": "mesaac"
@@ -56,8 +58,13 @@
     {
       "name": "benchmark",
       "configurePreset": "default",
-      "output": { "outputOnFailure": true },
-      "execution": { "noTestsAction": "error", "stopOnFailure": true },
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error",
+        "stopOnFailure": true
+      },
       "filter": {
         "include": {
           "label": "mesaac_benchmark"
@@ -67,8 +74,13 @@
     {
       "name": "coverage",
       "configurePreset": "coverage",
-      "output": { "outputOnFailure": true },
-      "execution": { "noTestsAction": "error", "stopOnFailure": true },
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error",
+        "stopOnFailure": true
+      },
       "filter": {
         "include": {
           "label": "mesaac"
