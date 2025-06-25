@@ -67,7 +67,7 @@ struct TestFixture {
     for (int j = 0; j != (int)sfp.size(); ++j) {
       Fingerprint &fp(sfp[j]);
       REQUIRE((size_t)num_points == fp.size());
-      cout << fp << endl;
+      //   cout << fp << endl;
       if (j > 0) {
         Fingerprint &prev(sfp[j - 1]);
         if (shouldBeEqual) {
