@@ -19,25 +19,6 @@ AxisAligner::AxisAligner(const PointList &sphere, float atom_scale,
   // cerr << "Align to atom centers: " << m_atom_centers_only << endl;
 }
 
-// AxisAligner::AxisAligner(const PointList& sphere, float atom_scale):
-//     m_volbox(sphere, atom_scale), m_atom_scale(atom_scale),
-//     m_atom_centers_only(false)
-// {
-// }
-//
-AxisAligner::~AxisAligner() {}
-
-AxisAligner::AxisAligner(const AxisAligner &src) : m_volbox(src.m_volbox) {
-  *this = src;
-}
-
-AxisAligner &AxisAligner::operator=(const AxisAligner &src) {
-  m_volbox = src.m_volbox;
-  m_atom_scale = src.m_atom_scale;
-  m_atom_centers_only = src.m_atom_centers_only;
-  return *this;
-}
-
 void AxisAligner::align_to_axes(mol::Mol &m) {
   align_to_axes(m.mutable_atoms());
 }

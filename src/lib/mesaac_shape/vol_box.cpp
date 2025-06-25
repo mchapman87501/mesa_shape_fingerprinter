@@ -71,30 +71,6 @@ VolBox::VolBox(const PointList &points, const float sphere_scale) {
   add_points(points);
 }
 
-VolBox::VolBox(const VolBox &src) { *this = src; }
-
-VolBox &VolBox::operator=(const VolBox &src) {
-  m_xmin = src.m_xmin;
-  m_xmax = src.m_xmax;
-  m_ymin = src.m_ymin;
-  m_ymax = src.m_ymax;
-  m_zmin = src.m_zmin;
-  m_zmax = src.m_zmax;
-  m_units_per_side = src.m_units_per_side;
-  m_dx = src.m_dx;
-  m_dy = src.m_dy;
-  m_dz = src.m_dz;
-  m_ixmax = src.m_ixmax;
-  m_iymax = src.m_iymax;
-  m_izmax = src.m_izmax;
-  m_sphere_scale = src.m_sphere_scale;
-  m_bucket_points = src.m_bucket_points;
-
-  m_bucket = src.m_bucket;
-
-  return *this;
-}
-
 void VolBox::add_points(const PointList &points) {
   m_bucket_points.clear();
   XYZBucket &xyz_bucket(m_bucket);

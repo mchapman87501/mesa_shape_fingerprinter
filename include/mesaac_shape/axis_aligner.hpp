@@ -19,10 +19,8 @@ public:
   // AxisAligner(const PointList& sphere, float atom_scale);
   AxisAligner(const PointList &sphere, float atom_scale,
               bool atom_centers_only);
-  virtual ~AxisAligner();
 
-  AxisAligner(const AxisAligner &src);
-  AxisAligner &operator=(const AxisAligner &src);
+  AxisAligner() {}
 
   void align_to_axes(mesaac::mol::Mol &m);
   void align_to_axes(mesaac::mol::AtomVector &atoms);
