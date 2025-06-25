@@ -46,6 +46,7 @@ protected:
 private:
 };
 
+// XXX FIX THIS vector of raw pointers?
 typedef std::vector<Atom *> AtomVector;
 } // namespace mol
 } // namespace mesaac

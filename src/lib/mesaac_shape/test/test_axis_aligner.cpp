@@ -27,8 +27,6 @@ typedef PointList PL; // Abbreviations
 typedef const PointList CPL;
 typedef mesaac::mol::AtomVector AV;
 
-// Use the test data directory specified by TEST_DATA_DIR preprocessor symbol.
-const string test_data_dir(TEST_DATA_DIR);
 class WBAxisAligner : public AxisAligner {
 public:
   WBAxisAligner(PL &sphere, float atom_scale, bool atom_centers_only)
@@ -71,10 +69,8 @@ public:
   void get_point_means(const PointList &points, float &x, float &y, float &z) {
     x = y = z = 0.0;
     if (points.size()) {
-      PointList::const_iterator i;
       float xsum = 0, ysum = 0, zsum = 0;
-      for (i = points.begin(); i != points.end(); ++i) {
-        const Point &p(*i);
+      for (const auto p : points) {
         xsum += p[0];
         ysum += p[1];
         zsum += p[2];
@@ -90,21 +86,21 @@ public:
                          float &dz) {
     dx = dy = dz = 0.0;
     if (points.size()) {
-      PointList::const_iterator i;
+      bool first = true;
       float xmin = 0, ymin = 0, zmin = 0, xmax = 0, ymax = 0, zmax = 0;
-      for (i = points.begin(); i != points.end(); ++i) {
-        const Point &p(*i);
-        if (i == points.begin()) {
+      for (const Point &p : points) {
+        if (first) {
           xmin = xmax = p[0];
           ymin = ymax = p[1];
           zmin = zmax = p[2];
+          first = false;
         } else {
-          xmin = (xmin < p[0]) ? xmin : p[0];
-          xmax = (xmax > p[0]) ? xmax : p[0];
-          ymin = (ymin < p[1]) ? ymin : p[1];
-          ymax = (ymax > p[1]) ? ymax : p[1];
-          zmin = (zmin < p[2]) ? zmin : p[2];
-          zmax = (zmax > p[2]) ? zmax : p[2];
+          xmin = min(xmin, p[0]);
+          xmax = max(xmax, p[0]);
+          ymin = min(ymin, p[1]);
+          ymax = max(ymax, p[1]);
+          zmin = min(zmin, p[2]);
+          zmax = max(zmax, p[2]);
         }
       }
       dx = xmax - xmin;
@@ -113,12 +109,15 @@ public:
     }
   }
 
-  void read_test_points(string pathname, PointList &points) {
+  void read_test_points(const string pathname, PointList &points) {
     // TODO use std::filesystem::path, available since C++17.
+    // Use the test data directory specified by TEST_DATA_DIR preprocessor
+    // symbol.
+    const string test_data_dir(TEST_DATA_DIR);
     const string data_dir(test_data_dir + "/hammersley/");
-    pathname = data_dir + pathname;
+    const string full_path(data_dir + pathname);
     points.clear();
-    ifstream inf(pathname.c_str());
+    ifstream inf(full_path.c_str());
     if (!inf) {
       ostringstream msg;
       msg << "Could not open " << pathname << " for reading." << endl;
@@ -126,44 +125,26 @@ public:
     }
     float x, y, z;
     while (inf >> x >> y >> z) {
-      Point fv;
-      fv.push_back(x);
-      fv.push_back(y);
-      fv.push_back(z);
-      points.push_back(fv);
+      points.push_back({x, y, z});
     }
     inf.close();
   }
 
-  WBAxisAligner *new_aligner() {
+  std::unique_ptr<WBAxisAligner> new_aligner() {
     PointList sphere;
     float atom_scale = 1.0;
 
     // Assume we will be run in a location fixed relative to
     // the data files.
     read_test_points("hamm_spheroid_10k_11rad.txt", sphere);
-    return new WBAxisAligner(sphere, atom_scale, false);
+    return std::make_unique<WBAxisAligner>(sphere, atom_scale, false);
   }
 
-  WBAxisAligner *new_aligner_ac_only() {
+  std::unique_ptr<WBAxisAligner> new_aligner_ac_only() {
     PointList sphere;
     float atom_scale = 1.0;
     read_test_points("hamm_spheroid_10k_11rad.txt", sphere);
-    return new WBAxisAligner(sphere, atom_scale, true);
-  }
-
-  Point make_point(float x, float y, float z) {
-    Point result;
-    result.push_back(x);
-    result.push_back(y);
-    result.push_back(z);
-    return result;
-  }
-
-  Point make_center(float x, float y, float z, float r) {
-    Point result(make_point(x, y, z));
-    result.push_back(r);
-    return result;
+    return std::make_unique<WBAxisAligner>(sphere, atom_scale, true);
   }
 
   void add_atom(mol::Mol &m, string symbol, float x, float y, float z) const {
@@ -227,9 +208,8 @@ public:
     // Take care to deep-copy all of the atom pointers.
     atoms.clear();
     const mol::AtomVector &src(m.atoms());
-    mol::AtomVector::const_iterator i;
-    for (i = src.begin(); i != src.end(); ++i) {
-      atoms.push_back(new mol::Atom(**i));
+    for (const auto src_atom : src) {
+      atoms.push_back(new mol::Atom(*src_atom));
     }
   }
 
@@ -337,7 +317,7 @@ public:
 TEST_CASE("Alignment Tests", "[mesaac]") {
   // This setup is performed separately for each section.
   TestFixture fixture;
-  std::shared_ptr<WBAxisAligner> aligner(fixture.new_aligner());
+  std::unique_ptr<WBAxisAligner> aligner(fixture.new_aligner());
   mol::AtomVector atoms;
   PointList points;
 
@@ -485,7 +465,7 @@ TEST_CASE("Alignment Tests", "[mesaac]") {
   }
 
   SECTION("Untranslate points") {
-    Point offset = fixture.make_point(1.0, 2.0, 3.0);
+    Point offset{1.0, 2.0, 3.0};
 
     PointList points;
 
@@ -496,7 +476,7 @@ TEST_CASE("Alignment Tests", "[mesaac]") {
     unsigned int i;
     const unsigned int i_max = 10;
     for (i = 0; i != i_max; i++) {
-      points.push_back(fixture.make_point(i + 1.0, i + 2.0, i + 3.0));
+      points.push_back({i + 1.0f, i + 2.0f, i + 3.0f});
     }
 
     aligner->wb_untranslate_points(points, offset);
@@ -557,7 +537,7 @@ TEST_CASE("Alignment Tests", "[mesaac]") {
 
     // Moronic, but maybe adequate, test: superpose all atoms.
     aligner->wb_get_atom_points(atoms, points, true);
-    Point offset(fixture.make_point(10.0, -50.0, 0.0));
+    Point offset{10.0, -50.0, 0.0};
     PointList::iterator i;
     for (i = points.begin(); i != points.end(); ++i) {
       Point &p(*i);
@@ -619,7 +599,7 @@ TEST_CASE("Alignment Tests", "[mesaac]") {
   }
 
   SECTION("Align to axes - mol only") {
-    std::shared_ptr<WBAxisAligner> aligner(fixture.new_aligner_ac_only());
+    std::unique_ptr<WBAxisAligner> aligner(fixture.new_aligner_ac_only());
     mol::Mol mol;
 
     // No crash on empty:
@@ -705,7 +685,7 @@ TEST_CASE("Alignment Tests", "[mesaac]") {
     // if two spherules overlap, their corresponding cloud points
     // will not be double-counted.
 
-    const Point atom(fixture.make_center(0, 0, 0, 1.7));
+    const Point atom({0, 0, 0, 1.7});
 
     PointList mol1, mol2;
     mol1.push_back(atom);

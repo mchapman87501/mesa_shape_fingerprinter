@@ -18,11 +18,11 @@ using namespace std;
 namespace mesaac {
 using namespace shape;
 
-// Use the test data directory specified by TEST_DATA_DIR preprocessor symbol.
-const string test_data_dir(TEST_DATA_DIR);
-
 struct TestFixture {
   void read_test_points(string pathname, PointList &points) {
+    // Use the test data directory spec'd by TEST_DATA_DIR preprocessor symbol.
+    const string test_data_dir(TEST_DATA_DIR);
+
     // TODO use std::filesystem::path, available since C++17.
     const string data_dir(test_data_dir + "/hammersley/");
     pathname = data_dir + pathname;
@@ -35,26 +35,13 @@ struct TestFixture {
     }
     float x, y, z;
     while (inf >> x >> y >> z) {
-      Point fv;
-      fv.push_back(x);
-      fv.push_back(y);
-      fv.push_back(z);
-      points.push_back(fv);
+      points.push_back({x, y, z});
     }
     inf.close();
   }
 
   void read_default_sphere(PointList &points) {
     read_test_points("hamm_spheroid_10k_11rad.txt", points);
-  }
-
-  Point make_point(float x, float y, float z, float r) {
-    Point result;
-    result.push_back(x);
-    result.push_back(y);
-    result.push_back(z);
-    result.push_back(r);
-    return result;
   }
 
   void get_bits(PointList &cloud, float x, float y, float z, float r,
@@ -69,16 +56,17 @@ struct TestFixture {
     }
   }
 
-  void get_contained_points(PointList &cloud, PointList &centers,
+  void get_contained_points(const PointList &cloud, const PointList &centers,
                             PointList &contained) {
     contained.clear();
     for (unsigned int i = 0; i != cloud.size(); i++) {
-      Point &p_cloud(cloud[i]);
+      const Point &p_cloud(cloud[i]);
       for (unsigned int j = 0; j != centers.size(); j++) {
-        Point &p_center(centers[j]);
-        float dx = p_cloud[0] - p_center[0], dy = p_cloud[1] - p_center[1],
-              dz = p_cloud[2] - p_center[2], r = p_center[3], rsqr = r * r,
-              dssqr = (dx * dx + dy * dy + dz * dz);
+        const Point &p_center(centers[j]);
+        const float dx = p_cloud[0] - p_center[0],
+                    dy = p_cloud[1] - p_center[1],
+                    dz = p_cloud[2] - p_center[2], r = p_center[3],
+                    rsqr = r * r, dssqr = (dx * dx + dy * dy + dz * dz);
         if (dssqr <= rsqr) {
           contained.push_back(p_cloud);
           break;
@@ -130,7 +118,7 @@ TEST_CASE("VolBox Testing", "[mesaac]") {
   VolBox vb(sphere, 1.0);
 
   SECTION("Test Copying") {
-    Point p(fixture.make_point(0, 0, 0, 22.0));
+    Point p{0, 0, 0, 22.0};
 
     {
       BitVector all_bits(10240);
@@ -153,7 +141,7 @@ TEST_CASE("VolBox Testing", "[mesaac]") {
 
     for (float x = -10.0; x != 10.0; x += 1.0) {
       BitVector matches(0);
-      Point p(fixture.make_point(x, x, x, 22.0));
+      Point p{x, x, x, 22.0};
       // What about proving that this does not clear any bits?
       // Ah, never mind.
       vb_empty.set_bits_for_one_sphere(p, matches, 0);
@@ -167,7 +155,7 @@ TEST_CASE("VolBox Testing", "[mesaac]") {
     unsigned int total = 0;
     for (float x = -15.0; x != 15.0; x += 1.0) {
       BitVector vb_matches(sphere.size()), brute_force_matches(sphere.size());
-      Point p(fixture.make_point(x, x, x, r));
+      Point p{x, x, x, r};
       vb.set_bits_for_one_sphere(p, vb_matches, 0);
       fixture.get_bits(sphere, x, x, x, r, brute_force_matches);
       REQUIRE(brute_force_matches == vb_matches);
@@ -186,7 +174,7 @@ TEST_CASE("VolBox Testing", "[mesaac]") {
 
     BitVector brute_force(sphere.size());
     for (float x = -15.0; x != 15.0; x += 1.0) {
-      center_spheres.push_back(fixture.make_point(x, x, x, r));
+      center_spheres.push_back({x, x, x, r});
       fixture.get_bits(sphere, x, x, x, r, brute_force);
     }
 
@@ -205,7 +193,7 @@ TEST_CASE("VolBox Testing", "[mesaac]") {
 
     BitVector brute_force(sphere.size());
     for (float x = -15.0; x != 15.0; x += 1.0) {
-      center_spheres.push_back(fixture.make_point(x, x, x, r));
+      center_spheres.push_back({x, x, x, r});
       fixture.get_bits(sphere, x, x, x, r, brute_force);
     }
 
@@ -227,8 +215,7 @@ TEST_CASE("VolBox Testing", "[mesaac]") {
 
     float d_r = (R - 1.5) / 10.0;
     for (float r = 1.5; r <= R; r += d_r) {
-      PointList centers;
-      centers.push_back(fixture.make_point(0, 0, 0, r));
+      const PointList centers{{0, 0, 0, r}};
 
       PointList expected;
       fixture.get_contained_points(sphere, centers, expected);
@@ -256,8 +243,7 @@ TEST_CASE("VolBox Testing", "[mesaac]") {
     const float max_offset = 0.9 * (R - r);
     const float d_center = max_offset / 10.0;
     for (float center = -max_offset; center <= max_offset; center += d_center) {
-      PointList centers;
-      centers.push_back(fixture.make_point(center, 0, 0, r));
+      const PointList centers{{center, 0, 0, r}};
 
       PointList expected;
       fixture.get_contained_points(sphere, centers, expected);
@@ -283,7 +269,7 @@ TEST_CASE("VolBox Testing", "[mesaac]") {
       // if two spherules overlap, their corresponding cloud points
       // will not be double-counted.
 
-      const Point atom(fixture.make_point(0, 0, 0, 1.7));
+      const Point atom({0, 0, 0, 1.7});
 
       PointList mol1, mol2;
       mol1.push_back(atom);
@@ -306,10 +292,7 @@ TEST_CASE("VolBox Testing", "[mesaac]") {
   SECTION("Test setting VolBox bits with a fixed offset") {
     // TODO:  test get_points_within_spheres with a non-zero offset,
     // and with from_scratch = false.
-    const Point atom(fixture.make_point(0, 0, 0, 1.7));
-
-    PointList mol1;
-    mol1.push_back(atom);
+    const PointList mol1{{0, 0, 0, 1.7}};
 
     const unsigned int num_cloud_points(vb.size());
     const unsigned int offset(10);
@@ -333,7 +316,7 @@ TEST_CASE("VolBox Testing", "[mesaac]") {
     PointList center_spheres;
     const float r = 5.0;
     for (float x = -15.0; x != 15.0; x += 1.0) {
-      center_spheres.push_back(fixture.make_point(x, x, x, r));
+      center_spheres.push_back({x, x, x, r});
     }
 
     BitVector full_fp, unfolded;

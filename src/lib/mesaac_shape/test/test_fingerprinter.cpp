@@ -25,13 +25,12 @@ public:
 };
 
 struct TestFixture {
-  void getAVBounds(AtomVector &atoms, BoundingCube &b) {
+  void get_av_bounds(AtomVector &atoms, BoundingCube &b) {
     AtomVector::iterator i;
     bool first = true;
-    for (i = atoms.begin(); i != atoms.end(); ++i) {
-      Atom *a(*i);
-      float r(a->radius());
-      float x(a->x()), y(a->y()), z(a->z());
+    for (const auto atom : atoms) {
+      float r(atom->radius());
+      float x(atom->x()), y(atom->y()), z(atom->z());
 
       if (first) {
         b.xmin = x - r;
@@ -42,19 +41,19 @@ struct TestFixture {
         b.zmax = z + r;
         first = false;
       } else {
-        b.xmin = (b.xmin < x - r) ? b.xmin : x - r;
-        b.xmax = (b.xmax > x + r) ? b.xmax : x + r;
-        b.ymin = (b.ymin < y - r) ? b.ymin : y - r;
-        b.ymax = (b.ymax > y + r) ? b.ymax : y + r;
-        b.zmin = (b.zmin < z - r) ? b.zmin : z - r;
-        b.zmax = (b.zmax > z + r) ? b.zmax : z + r;
+        b.xmin = min(b.xmin, x - r);
+        b.xmax = max(b.xmax, x + r);
+        b.ymin = min(b.ymin, y - r);
+        b.ymax = max(b.ymax, y + r);
+        b.zmin = min(b.zmin, z - r);
+        b.zmax = max(b.zmax, z + r);
       }
     }
   } // namespace mesaac
 
-  void testForAtomVector(AtomVector &atoms, bool shouldBeEqual) {
+  void test_for_atom_vector(AtomVector &atoms, bool shouldBeEqual) {
     BoundingCube bc;
-    getAVBounds(atoms, bc);
+    get_av_bounds(atoms, bc);
     const unsigned int num_points(10240);
     PointList hamms;
     Hammersley::get_cubic(bc.xmin, bc.xmax, bc.ymin, bc.ymax, bc.zmin, bc.zmax,
@@ -99,7 +98,7 @@ TEST_CASE("Test fingerprinter", "[mesaac]") {
       a->atomic_num(12);
       atoms.push_back(a);
     }
-    fixture.testForAtomVector(atoms, true);
+    fixture.test_for_atom_vector(atoms, true);
   }
 
   SECTION("Test Asymmetric Atom Vector") {
@@ -117,7 +116,7 @@ TEST_CASE("Test fingerprinter", "[mesaac]") {
 
       y = -y;
     }
-    fixture.testForAtomVector(atoms, false);
+    fixture.test_for_atom_vector(atoms, false);
   }
 }
 
