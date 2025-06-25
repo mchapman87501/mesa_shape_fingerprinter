@@ -496,30 +496,45 @@ bool inited = init_radii();
 
 double get_radius(int atomic_number) {
   double result = atomic_radius[atomic_number];
-  return result;
+  const auto entry = atomic_radius.find(atomic_number);
+  if (entry == atomic_radius.end()) {
+    ostringstream msg;
+    msg << "Unknown atomic number " << atomic_number;
+    throw std::invalid_argument(msg.str());
+  }
+  return entry->second;
 }
 
 double get_symbol_radius(const string &atomic_symbol) {
   string sym(strip(atomic_symbol));
-  double result = radius_by_symbol[sym];
-  return result;
+  const auto entry = radius_by_symbol.find(sym);
+  if (entry == radius_by_symbol.end()) {
+    ostringstream msg;
+    msg << "Unknown atomic symbol '" << sym << "'";
+    throw std::invalid_argument(msg.str());
+  }
+  return entry->second;
 }
 
 unsigned char get_atomic_num(const std::string &atomic_symbol) {
-  // TODO handle missing entry, ala get_symbol.
-  return num_by_symbol[strip(atomic_symbol)];
+  string sym(strip(atomic_symbol));
+  const auto entry = num_by_symbol.find(sym);
+  if (entry == num_by_symbol.end()) {
+    ostringstream msg;
+    msg << "Unknown atomic symbol '" << sym << "'";
+    throw std::invalid_argument(msg.str());
+  }
+  return entry->second;
 }
 
 string get_symbol(int atomic_number) {
-  string result("");
   map<int, string>::iterator entry = symbol_by_num.find(atomic_number);
   if (entry == symbol_by_num.end()) {
     ostringstream msg;
     msg << "Unknown atomic number " << atomic_number;
-    result = msg.str();
-  } else {
-    result = entry->second;
+    throw std::invalid_argument(msg.str());
   }
-  return result;
+  return entry->second;
+  ;
 }
 } // namespace mesaac
