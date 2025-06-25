@@ -2,88 +2,58 @@
 // Copyright (c) 2010 Mesa Analytics & Computing, Inc.  All rights reserved
 //
 
-#include <cppunit/extensions/HelperMacros.h>
-#include <cppunit/extensions/TestFactoryRegistry.h>
-#include <cppunit/ui/text/TestRunner.h>
+#include <catch2/catch_test_macros.hpp>
 
-#include <string>
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <stdexcept>
-
-#include "mesaac_mol/atom.h"
 #include <string>
+
+#include "mesaac_mol/atom.hpp"
 
 using namespace std;
 
-namespace mesaac 
-{
-    class TestCase : public CppUnit::TestFixture
-    {
-        CPPUNIT_TEST_SUITE(TestCase);
-        CPPUNIT_TEST(testBasic);
-        
-        CPPUNIT_TEST_SUITE_END();
+namespace mesaac {
 
-    public:
-        void setUp() {
-            
-        }
+TEST_CASE("mesaac::mol::Atom", "[mesaac]") {
+  SECTION("Basic tests") {
+    mol::Atom a;
+    a.atomic_num(6);
+    REQUIRE(a.atomic_num() == 6);
 
-        void tearDown() {
-        }
+    REQUIRE(a.x() == 0.0f);
+    REQUIRE(a.y() == 0.0f);
+    REQUIRE(a.z() == 0.0f);
 
-        void testBasic() {
-            mol::Atom a;
-            a.atomic_num(6);
-            CPPUNIT_ASSERT_EQUAL(6U, a.atomic_num());
-            
-            CPPUNIT_ASSERT_EQUAL(0.0f, a.x());
-            CPPUNIT_ASSERT_EQUAL(0.0f, a.y());
-            CPPUNIT_ASSERT_EQUAL(0.0f, a.z());
-            
-            CPPUNIT_ASSERT_EQUAL(string(""), a.optional_cols());
-            CPPUNIT_ASSERT_EQUAL(string("C"), a.symbol());
-            CPPUNIT_ASSERT_EQUAL(1.7f, a.radius());
-            CPPUNIT_ASSERT(!a.is_hydrogen());
-            
-            a.atomic_num(1);
-            a.optional_cols("fooo");
-            CPPUNIT_ASSERT_EQUAL(string("H"), a.symbol());
-            CPPUNIT_ASSERT_EQUAL(1.09f, a.radius());
-            CPPUNIT_ASSERT(a.is_hydrogen());
-            CPPUNIT_ASSERT_EQUAL(string("fooo"), a.optional_cols());
-            
-            a.atomic_num(8);
-            CPPUNIT_ASSERT_EQUAL(string("O"), a.symbol());
-            CPPUNIT_ASSERT(!a.is_hydrogen());
-            CPPUNIT_ASSERT_EQUAL(string("fooo"), a.optional_cols());
-            
-            a.x(10.0);
-            a.y(11.0);
-            a.z(-200.5);
-            CPPUNIT_ASSERT_EQUAL(10.0f, a.x());
-            CPPUNIT_ASSERT_EQUAL(11.0f, a.y());
-            CPPUNIT_ASSERT_EQUAL(-200.5f, a.z());
-        }
-        
-    };
+    REQUIRE(a.optional_cols() == "");
+    REQUIRE(a.symbol() == "C");
+    REQUIRE(a.radius() == 1.7f);
+    REQUIRE(!a.is_hydrogen());
 
-    CPPUNIT_TEST_SUITE_REGISTRATION(TestCase);
-};
+    a.atomic_num(1);
+    a.optional_cols("fooo");
+    REQUIRE(a.symbol() == "H");
+    REQUIRE(a.radius() == 1.09f);
+    REQUIRE(a.is_hydrogen());
+    REQUIRE(a.optional_cols() == "fooo");
 
-int
-main(int, char **)
-{
-    int result = 0;
-    CppUnit::TextUi::TestRunner runner;
-    CppUnit::TestFactoryRegistry &registry = 
-        CppUnit::TestFactoryRegistry::getRegistry();
-    runner.addTest(registry.makeTest());
-    
-    if (!runner.run())
-    {
-        result = 1;
-    }
-    return result;
+    a.atomic_num(8);
+    REQUIRE(a.symbol() == "O");
+    REQUIRE(!a.is_hydrogen());
+    REQUIRE(a.optional_cols() == "fooo");
+
+    a.x(10.0);
+    a.y(11.0);
+    a.z(-200.5);
+    REQUIRE(a.x() == 10.0f);
+    REQUIRE(a.y() == 11.0f);
+    REQUIRE(a.z() == -200.5f);
+  }
+
+  SECTION("Invalid atomic number") {
+    mol::Atom a;
+    a.atomic_num(512);
+    REQUIRE_THROWS_AS(a.symbol(), invalid_argument);
+  }
 }
+} // namespace mesaac

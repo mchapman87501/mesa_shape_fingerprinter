@@ -56,6 +56,8 @@ FetchContent_MakeAvailable(Catch2)
 
 
 # See note, above, about the arrangement of tests within this project.
+include(cmake_modules/add_mesaac_test.cmake)
+
 if(SHAPE_FINGERPRINTS_BUILD_TESTS)
     message(STATUS "DEBUG: Testing is enabled.")
     include(cmake_modules/simple_code_coverage.cmake)
