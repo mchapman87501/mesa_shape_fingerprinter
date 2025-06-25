@@ -22,21 +22,19 @@ VolBox::VolBox(const PointList &points, const float sphere_scale) {
   // Find the bounding box of all points.
   m_xmin = m_xmax = m_ymin = m_ymax = m_zmin = m_zmax = 0;
   bool first = true;
-  PointList::const_iterator i;
-  for (i = points.begin(); i != points.end(); i++) {
-    const Point &p(*i);
+  for (const auto p : points) {
     if (first) {
       m_xmin = m_xmax = p[0];
       m_ymin = m_ymax = p[1];
       m_zmin = m_zmax = p[2];
       first = false;
     } else {
-      m_xmin = (m_xmin < p[0]) ? m_xmin : p[0];
-      m_xmax = (m_xmax > p[0]) ? m_xmax : p[0];
-      m_ymin = (m_ymin < p[1]) ? m_ymin : p[1];
-      m_ymax = (m_ymax > p[1]) ? m_ymax : p[1];
-      m_zmin = (m_zmin < p[2]) ? m_zmin : p[2];
-      m_zmax = (m_zmax > p[2]) ? m_zmax : p[2];
+      m_xmin = min(m_xmin, p[0]);
+      m_xmax = max(m_xmax, p[0]);
+      m_ymin = min(m_ymin, p[1]);
+      m_ymax = max(m_ymax, p[1]);
+      m_zmin = min(m_zmin, p[2]);
+      m_zmax = max(m_zmax, p[2]);
     }
   }
 
@@ -48,9 +46,9 @@ VolBox::VolBox(const PointList &points, const float sphere_scale) {
   m_iymax = (0 == m_dy) ? 0 : (int)((m_ymax - m_ymin) / m_dy) - 1;
   m_izmax = (0 == m_dz) ? 0 : (int)((m_zmax - m_zmin) / m_dz) - 1;
 
-  m_ixmax = (m_ixmax < 0) ? 0 : m_ixmax;
-  m_iymax = (m_iymax < 0) ? 0 : m_iymax;
-  m_izmax = (m_izmax < 0) ? 0 : m_izmax;
+  m_ixmax = max(m_ixmax, 0);
+  m_iymax = max(m_iymax, 0);
+  m_izmax = max(m_izmax, 0);
 
   // Build an XYZBucket of all points.
   m_bucket.clear();
@@ -79,9 +77,9 @@ void VolBox::add_points(const PointList &points) {
     const Point &p(*i);
     int ix = (int)((p[0] - m_xmin) / m_dx), iy = (int)((p[1] - m_ymin) / m_dy),
         iz = (int)((p[2] - m_zmin) / m_dz);
-    ix = (ix > m_ixmax) ? m_ixmax : (ix < 0) ? 0 : ix;
-    iy = (iy > m_iymax) ? m_iymax : (iy < 0) ? 0 : iy;
-    iz = (iz > m_izmax) ? m_izmax : (iz < 0) ? 0 : iz;
+    ix = max(0, min(ix, m_ixmax));
+    iy = max(0, min(iy, m_iymax));
+    iz = max(0, min(iz, m_izmax));
     // The actual points are in m_bucket_points.
     // xyz_bucket simply stores indices of these points.
     xyz_bucket.at(ix).at(iy).at(iz).push_back(m_bucket_points.size());
