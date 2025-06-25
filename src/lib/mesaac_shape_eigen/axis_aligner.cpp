@@ -34,9 +34,11 @@ AxisAligner &AxisAligner::operator=(const AxisAligner &src) {
   return *this;
 }
 
-void AxisAligner::align_to_axes(mol::Mol &m) { align_to_axes(m.atoms()); }
+void AxisAligner::align_to_axes(mol::Mol &m) {
+  align_to_axes(m.mutable_atoms());
+}
 
-void AxisAligner::align_to_axes(const mol::AtomVector &atoms) {
+void AxisAligner::align_to_axes(mol::AtomVector &atoms) {
   // Strategy:
   //   Get mean-centered heavy atom coordinates
   //   Get mean-centered cloud points
@@ -65,21 +67,10 @@ void AxisAligner::align_to_axes(const mol::AtomVector &atoms) {
 
 void AxisAligner::get_atom_points(const mol::AtomVector &atoms,
                                   PointList &centers, bool include_hydrogens) {
-  // TODO:  Separate implementations for include/exclude
-  // hydrogens, to eliminate the test on each loop.
   centers.clear();
-  mol::AtomVector::const_iterator i;
-  for (i = atoms.begin(); i != atoms.end(); ++i) {
-    const mol::Atom *a(*i);
-    if (a) {
-      if (include_hydrogens || !a->is_hydrogen()) {
-        Point p;
-        p.push_back(a->x());
-        p.push_back(a->y());
-        p.push_back(a->z());
-        p.push_back(a->radius());
-        centers.push_back(p);
-      }
+  for (const auto &atom : atoms) {
+    if (include_hydrogens || !atom.is_hydrogen()) {
+      centers.push_back({atom.x(), atom.y(), atom.z(), atom.radius()});
     }
   }
 }
@@ -157,7 +148,7 @@ void AxisAligner::get_mean_centered_cloud(const PointList &centers,
   }
 }
 
-void AxisAligner::update_atom_coords(const mol::AtomVector &atoms,
+void AxisAligner::update_atom_coords(mol::AtomVector &atoms,
                                      const PointList &atom_centers) {
   if (atoms.size() != atom_centers.size()) {
     ostringstream msg;
@@ -166,17 +157,14 @@ void AxisAligner::update_atom_coords(const mol::AtomVector &atoms,
     throw length_error(msg.str());
   }
 
-  if (atoms.size() > 0) {
-    int i;
-    for (i = atoms.size() - 1; i >= 0; i--) {
-      mol::Atom *a(atoms[i]);
-      if (a) {
-        const Point &c(atom_centers[i]);
-        a->x(c[0]);
-        a->y(c[1]);
-        a->z(c[2]);
-      }
-    }
+  mol::AtomVector::iterator atom_iter(atoms.begin());
+  PointList::const_iterator center_iter(atom_centers.begin());
+  for (; atom_iter != atoms.end(); ++atom_iter, ++center_iter) {
+    mol::Atom &atom(*atom_iter);
+    const Point &center(*center_iter);
+    atom.x(center[0]);
+    atom.y(center[1]);
+    atom.z(center[2]);
   }
 }
 

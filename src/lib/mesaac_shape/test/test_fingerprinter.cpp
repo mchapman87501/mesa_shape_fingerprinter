@@ -29,8 +29,8 @@ struct TestFixture {
     AtomVector::iterator i;
     bool first = true;
     for (const auto atom : atoms) {
-      float r(atom->radius());
-      float x(atom->x()), y(atom->y()), z(atom->z());
+      float r(atom.radius());
+      float x(atom.x()), y(atom.y()), z(atom.z());
 
       if (first) {
         b.xmin = x - r;
@@ -91,11 +91,11 @@ TEST_CASE("Test fingerprinter", "[mesaac]") {
     // Their flips should all produce identical fingerprints.
     AtomVector atoms;
     for (int i = -4.0; i <= 4.0; i += 1.7) {
-      Atom *a = new Atom();
-      a->x(i);
-      a->y(0.0);
-      a->z(0.0);
-      a->atomic_num(12);
+      Atom a;
+      a.x(i);
+      a.y(0.0);
+      a.z(0.0);
+      a.atomic_num(12);
       atoms.push_back(a);
     }
     fixture.test_for_atom_vector(atoms, true);
@@ -107,11 +107,11 @@ TEST_CASE("Test fingerprinter", "[mesaac]") {
     AtomVector atoms;
     float y = 0.5;
     for (int i = -4.0; i <= 4.0; i += 1.7) {
-      Atom *a = new Atom();
-      a->x(i);
-      a->y(y);
-      a->z(0.0);
-      a->atomic_num(12);
+      Atom a;
+      a.x(i);
+      a.y(y);
+      a.z(0.0);
+      a.atomic_num(12);
       atoms.push_back(a);
 
       y = -y;

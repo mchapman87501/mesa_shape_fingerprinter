@@ -21,6 +21,7 @@ string SDWriter::f_str(float f, const unsigned int field_width,
                        unsigned int decimals) {
   // Bah!  C++ stream operators make it very difficult to
   // achieve strict formatting such as %10.4f.
+  // It would be great to move on to C++23 and std::format.
   char buffer[field_width + 1];
   m_fmt.str("");
   m_fmt << "%" << field_width << "." << decimals << "f";
@@ -71,25 +72,15 @@ bool SDWriter::write(Mol &mol) {
          << endl
          << mol.comments() << endl
          << mol.counts_line() << endl;
-  AtomVector::const_iterator i;
-  for (i = mol.atoms().begin(); i != mol.atoms().end(); ++i) {
-    Atom *a(*i);
-    if (!a) {
-      cerr << "Null atom!" << endl;
-    } else {
-      m_outf << f_str(a->x()) << f_str(a->y()) << f_str(a->z()) << " "
-             << setw(3) << left << a->symbol() << a->optional_cols() << endl;
-    }
+  for (const auto &atom : mol.atoms()) {
+    m_outf << f_str(atom.x()) << f_str(atom.y()) << f_str(atom.z()) << " "
+           << setw(3) << left << atom.symbol() << atom.optional_cols() << endl;
   }
-  BondVector::const_iterator j;
-  for (j = mol.bonds().begin(); j != mol.bonds().end(); ++j) {
-    Bond *b(*j);
-    if (!b) {
-      cerr << "Null bond!" << endl;
-    } else {
-      m_outf << uint_str(b->a0()) << uint_str(b->a1()) << uint_str(b->type())
-             << uint_str(b->stereo()) << b->optional_cols() << endl;
-    }
+
+  for (const auto &bond : mol.bonds()) {
+    m_outf << uint_str(bond.a0()) << uint_str(bond.a1())
+           << uint_str(bond.type()) << uint_str(bond.stereo())
+           << bond.optional_cols() << endl;
   }
 
   m_outf << mol.properties_block();

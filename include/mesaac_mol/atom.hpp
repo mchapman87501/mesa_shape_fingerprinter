@@ -40,7 +40,6 @@ protected:
   std::string m_optional_cols;
 };
 
-// XXX FIX THIS vector of raw pointers?
-typedef std::vector<Atom *> AtomVector;
+typedef std::vector<Atom> AtomVector;
 } // namespace mol
 } // namespace mesaac

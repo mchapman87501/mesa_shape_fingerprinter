@@ -25,7 +25,7 @@ public:
   AxisAligner &operator=(const AxisAligner &src);
 
   void align_to_axes(mesaac::mol::Mol &m);
-  void align_to_axes(const mesaac::mol::AtomVector &atoms);
+  void align_to_axes(mesaac::mol::AtomVector &atoms);
   void get_atom_points(const mesaac::mol::AtomVector &atoms, PointList &centers,
                        bool include_hydrogens);
 
@@ -43,7 +43,7 @@ protected:
   void get_mean_center(const PointList &centers, Point &mean);
   void untranslate_points(PointList &all_centers, const Point &offset);
   void transform_points(PointList &all_centers, Transform &transform);
-  void update_atom_coords(const mesaac::mol::AtomVector &atoms,
+  void update_atom_coords(mesaac::mol::AtomVector &atoms,
                           const PointList &all_centers);
 };
 } // namespace shape

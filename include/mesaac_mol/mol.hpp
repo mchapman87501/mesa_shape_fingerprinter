@@ -17,12 +17,7 @@ typedef std::map<std::string, std::string> SDTagMap;
 
 class Mol {
 public:
-  Mol();
-  Mol(const Mol &src);
-
-  virtual ~Mol();
-
-  Mol &operator=(const Mol &src);
+  Mol() {}
 
   void clear();
 
@@ -59,6 +54,8 @@ public:
   unsigned int dimensionality();
 
   const AtomVector &atoms() { return m_atoms; }
+  AtomVector &mutable_atoms() { return m_atoms; }
+
   const BondVector &bonds() { return m_bonds; }
 
   std::string properties_block() { return m_properties_block; }

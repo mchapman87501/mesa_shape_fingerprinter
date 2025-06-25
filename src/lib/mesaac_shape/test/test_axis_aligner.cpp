@@ -209,7 +209,7 @@ public:
     atoms.clear();
     const mol::AtomVector &src(m.atoms());
     for (const auto src_atom : src) {
-      atoms.push_back(new mol::Atom(*src_atom));
+      atoms.push_back(src_atom);
     }
   }
 
@@ -221,9 +221,9 @@ public:
     //      << "  # to check: " << count << endl;
     if ((atoms.size() >= count) && (points.size() >= count)) {
       for (int i = count - 1; i >= 0; --i) {
-        const mol::Atom *a(atoms[i]);
+        const mol::Atom &a(atoms[i]);
         const Point &p(points[i]);
-        if (!(a && (a->x() == p[0]) && (a->y() == p[1]) && (a->z() == p[2]))) {
+        if ((a.x() != p[0]) || (a.y() != p[1]) || (a.z() != p[2])) {
           return false;
         }
       }
@@ -547,12 +547,10 @@ TEST_CASE("Alignment Tests", "[mesaac]") {
     }
     aligner->wb_update_atom_coords(atoms, points);
 
-    mol::AtomVector::const_iterator j;
-    for (j = atoms.begin(); j != atoms.end(); ++j) {
-      const mol::Atom &a(**j);
-      REQUIRE_THAT(offset[0], Catch::Matchers::WithinAbs(a.x(), 0.00001));
-      REQUIRE_THAT(offset[1], Catch::Matchers::WithinAbs(a.y(), 0.00001));
-      REQUIRE_THAT(offset[2], Catch::Matchers::WithinAbs(a.z(), 0.00001));
+    for (const auto &atom : atoms) {
+      REQUIRE_THAT(offset[0], Catch::Matchers::WithinAbs(atom.x(), 0.00001));
+      REQUIRE_THAT(offset[1], Catch::Matchers::WithinAbs(atom.y(), 0.00001));
+      REQUIRE_THAT(offset[2], Catch::Matchers::WithinAbs(atom.z(), 0.00001));
     }
   }
 
@@ -661,8 +659,8 @@ TEST_CASE("Alignment Tests", "[mesaac]") {
     mol::AtomVector::const_iterator iprev = atoms.end();
     for (i = atoms.begin(); i != atoms.end(); ++i) {
       if (iprev != atoms.end()) {
-        const mol::Atom &prev(**iprev);
-        const mol::Atom &curr(**i);
+        const mol::Atom &prev(*iprev);
+        const mol::Atom &curr(*i);
         // Not the best test -- dunno the expected direction:
         float dx = ::fabs(curr.x() - prev.x());
         float dy = ::fabs(curr.y() - prev.y());

@@ -26,15 +26,8 @@ Fingerprinter::~Fingerprinter() {}
 static inline void get_point_list(const AtomVector &atoms, PointList &result) {
   result.clear();
   result.reserve(atoms.size());
-  AtomVector::const_iterator i;
-  for (i = atoms.begin(); i != atoms.end(); ++i) {
-    const Atom *a(*i);
-    Point p;
-    p.push_back(a->x());
-    p.push_back(a->y());
-    p.push_back(a->z());
-    p.push_back(a->radius());
-    result.push_back(p);
+  for (const Atom &atom : atoms) {
+    result.push_back({atom.x(), atom.y(), atom.z(), atom.radius()});
   }
 }
 

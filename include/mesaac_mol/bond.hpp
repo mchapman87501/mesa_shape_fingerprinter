@@ -53,11 +53,11 @@ public:
     m_optional_cols = new_value;
   }
 
-  unsigned int a0() { return m_a0; }
-  unsigned int a1() { return m_a1; }
-  BondTypeEnum type() { return m_type; }
-  BondStereoEnum stereo() { return m_stereo; }
-  std::string optional_cols() { return m_optional_cols; }
+  unsigned int a0() const { return m_a0; }
+  unsigned int a1() const { return m_a1; }
+  BondTypeEnum type() const { return m_type; }
+  BondStereoEnum stereo() const { return m_stereo; }
+  std::string optional_cols() const { return m_optional_cols; }
 
 protected:
   unsigned int m_a0, m_a1;
@@ -66,6 +66,6 @@ protected:
   std::string m_optional_cols;
 };
 
-typedef std::vector<Bond *> BondVector;
+typedef std::vector<Bond> BondVector;
 } // namespace mol
 } // namespace mesaac
