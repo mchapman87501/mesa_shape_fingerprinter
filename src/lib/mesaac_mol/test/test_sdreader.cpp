@@ -16,7 +16,7 @@
 using namespace std;
 
 namespace mesaac {
-
+namespace mol {
 namespace {
 string strdiff_summary(const string &s1, const string &s2) {
   unsigned int i;
@@ -45,13 +45,13 @@ const string test_sdf_path(const string &rel_path) {
   return mesaac_mol_data_in_dir + rel_path;
 }
 
-class WhiteBoxMol : public mol::Mol {
+class WhiteBoxMol : public Mol {
 public:
   unsigned int num_bonds() { return m_bonds.size(); }
 
   string tagstr() {
     ostringstream resultf;
-    mol::SDTagMap::iterator i;
+    SDTagMap::iterator i;
     // Maps are supposed to keep their keys in sorted order.
     for (const auto &entry : m_tags) {
       resultf << "'" << entry.first << "' = '" << entry.second << "'" << endl;
@@ -67,7 +67,7 @@ TEST_CASE("mesaac::mol::SDReader", "[mesaac]") {
     string pathname(test_sdf_path("one_structure.sdf"));
 
     ifstream inf(pathname.c_str());
-    mol::SDReader reader(inf, pathname);
+    SDReader reader(inf, pathname);
     unsigned int num_found = 0;
     WhiteBoxMol m;
     // O for C++0x and its static initializers.
@@ -92,7 +92,7 @@ TEST_CASE("mesaac::mol::SDReader", "[mesaac]") {
       // Verify expected info for first atom:
       // 27.7051   22.0403   17.0243 C   0  0  0  0  0  0
 
-      const mol::Atom &atom(*m.atoms().begin());
+      const Atom &atom(*m.atoms().begin());
       REQUIRE(atom.x() == 27.7051f);
       REQUIRE(atom.y() == 22.0403f);
       REQUIRE(atom.z() == 17.0243f);
@@ -121,7 +121,7 @@ TEST_CASE("mesaac::mol::SDReader", "[mesaac]") {
     };
 
     ifstream inf(pathname.c_str());
-    mol::SDReader reader(inf, pathname);
+    SDReader reader(inf, pathname);
 
     unsigned int num_found = 0;
     unsigned int i_check = 0;
@@ -148,7 +148,7 @@ TEST_CASE("mesaac::mol::SDReader", "[mesaac]") {
     // Show we can read properties blocks.
     string pathname(test_sdf_path("property_blocks.sdf"));
     ifstream inf(pathname.c_str());
-    mol::SDReader reader(inf, pathname);
+    SDReader reader(inf, pathname);
 
     WhiteBoxMol m;
 
@@ -169,7 +169,7 @@ TEST_CASE("mesaac::mol::SDReader", "[mesaac]") {
   SECTION("Tags") {
     string pathname(test_sdf_path("property_blocks.sdf"));
     ifstream inf(pathname.c_str());
-    mol::SDReader reader(inf, pathname);
+    SDReader reader(inf, pathname);
 
     WhiteBoxMol m;
 
@@ -209,7 +209,7 @@ TEST_CASE("mesaac::mol::SDReader", "[mesaac]") {
     // It should fail to read the one molecule in the file.
     string pathname(test_sdf_path("truncated_count_line.sdf"));
     ifstream inf(pathname.c_str());
-    mol::SDReader reader(inf, pathname);
+    SDReader reader(inf, pathname);
     unsigned int num_mols_found = 0;
     WhiteBoxMol m;
     while (reader.read(m)) {
@@ -228,7 +228,7 @@ TEST_CASE("mesaac::mol::SDReader", "[mesaac]") {
     // It should also fail to read the one molecule in the SD file.
     string pathname(test_sdf_path("malformed_atom_count.sdf"));
     ifstream inf(pathname.c_str());
-    mol::SDReader reader(inf, pathname);
+    SDReader reader(inf, pathname);
     unsigned int num_mols_found = 0;
     WhiteBoxMol m;
     while (reader.read(m)) {
@@ -244,7 +244,7 @@ TEST_CASE("mesaac::mol::SDReader", "[mesaac]") {
     // count line has a malformed bond count.
     string pathname(test_sdf_path("malformed_bond_count.sdf"));
     ifstream inf(pathname.c_str());
-    mol::SDReader reader(inf, pathname);
+    SDReader reader(inf, pathname);
     WhiteBoxMol m;
     int num_mols_found = 0;
     while (reader.read(m)) {
@@ -261,7 +261,7 @@ TEST_CASE("mesaac::mol::SDReader", "[mesaac]") {
     // have been smooshed into spaces.
     string pathname(test_sdf_path("corrupt.sdf"));
     ifstream inf(pathname.c_str());
-    mol::SDReader reader(inf, pathname);
+    SDReader reader(inf, pathname);
     unsigned int num_found = 0;
     WhiteBoxMol m;
     while (reader.read(m)) {
@@ -272,4 +272,5 @@ TEST_CASE("mesaac::mol::SDReader", "[mesaac]") {
     REQUIRE(num_found == 0u);
   }
 }
+} // namespace mol
 } // namespace mesaac

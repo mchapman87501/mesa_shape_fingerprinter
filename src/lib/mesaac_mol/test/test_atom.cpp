@@ -14,10 +14,11 @@
 using namespace std;
 
 namespace mesaac {
+namespace mol {
 
-TEST_CASE("mesaac::mol::Atom", "[mesaac]") {
+TEST_CASE("mesaac::Atom", "[mesaac]") {
   SECTION("Basic tests") {
-    mol::Atom a;
+    Atom a;
     a.atomic_num(6);
     REQUIRE(a.atomic_num() == 6);
 
@@ -51,9 +52,10 @@ TEST_CASE("mesaac::mol::Atom", "[mesaac]") {
   }
 
   SECTION("Invalid atomic number") {
-    mol::Atom a;
+    Atom a;
     a.atomic_num(512);
     REQUIRE_THROWS_AS(a.symbol(), invalid_argument);
   }
 }
+} // namespace mol
 } // namespace mesaac

@@ -14,6 +14,7 @@
 using namespace std;
 
 namespace mesaac {
+namespace mol {
 namespace {
 string strdiff_summary(const string &s1, const string &s2) {
   unsigned int i;
@@ -36,7 +37,7 @@ string strdiff_summary(const string &s1, const string &s2) {
   return outf.str();
 }
 
-string fileContent(string &pathname) {
+string file_content(string &pathname) {
   ostringstream outs;
   const unsigned int length = 8192;
   char buffer[length];
@@ -64,8 +65,8 @@ TEST_CASE("mesaac::mol::SDWriter", "[mesaac]") {
     // Based on a layman's reading of MDL ctfile spec:
     // Dimensionality of a molecule should be 3 if it contains
     // any non-zero z coordinates, 2 otherwise.
-    mol::Mol m;
-    mol::Atom a;
+    Mol m;
+    Atom a;
     a.atomic_num(1);
     m.add_atom(a);
     REQUIRE(m.dimensionality() == 2u);
@@ -89,12 +90,12 @@ TEST_CASE("mesaac::mol::SDWriter", "[mesaac]") {
     // already sorted lexically by tag header.
     string pathname(test_sdf_path("sorted_tags.sdf"));
     ifstream inf(pathname.c_str());
-    mol::SDReader reader(inf, pathname);
+    SDReader reader(inf, pathname);
 
     ostringstream outs;
-    mol::SDWriter writer(outs);
+    SDWriter writer(outs);
 
-    mol::Mol m;
+    Mol m;
     while (reader.read(m)) {
       writer.write(m);
     }
@@ -145,12 +146,12 @@ TEST_CASE("mesaac::mol::SDWriter", "[mesaac]") {
     // Ensure the writer can output these records correctly.
     string pathname(test_sdf_path("malformed_empty_tag_value.sdf"));
     ifstream inf(pathname.c_str());
-    mol::SDReader reader(inf, pathname);
-    mol::Mol m;
+    SDReader reader(inf, pathname);
+    Mol m;
     int occurrences = 0;
     while (reader.read(m)) {
       ostringstream outs;
-      mol::SDWriter writer(outs);
+      SDWriter writer(outs);
       writer.write(m);
 
       string s(outs.str());
@@ -182,8 +183,8 @@ TEST_CASE("mesaac::mol::SDWriter", "[mesaac]") {
 
     string pathname(test_sdf_path("one_structure.sdf"));
     ifstream inf(pathname.c_str());
-    mol::SDReader reader(inf, pathname);
-    mol::Mol m;
+    SDReader reader(inf, pathname);
+    Mol m;
     REQUIRE(reader.read(m));
     inf.close();
 
@@ -204,7 +205,7 @@ TEST_CASE("mesaac::mol::SDWriter", "[mesaac]") {
     m.add_tag("test_sdwriter.multi_blank_termed", "foo    \n\n\n\n");
 
     ostringstream outs;
-    mol::SDWriter writer(outs);
+    SDWriter writer(outs);
     writer.write(m);
     unsigned int written_hcount = 0;
     string s(outs.str());
@@ -250,4 +251,5 @@ TEST_CASE("mesaac::mol::SDWriter", "[mesaac]") {
     cout << "TODO:  Test for lines containing only whitespace." << endl;
   }
 }
+} // namespace mol
 } // namespace mesaac

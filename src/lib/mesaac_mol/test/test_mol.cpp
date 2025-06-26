@@ -16,8 +16,9 @@ using namespace std;
 
 namespace mesaac {
 
+namespace mol {
 namespace {
-string header_block(mol::Mol &m) {
+string header_block(Mol &m) {
   ostringstream outs;
   outs << m.name() << "<br/>" << m.metadata() << "<br/>" << m.comments();
   return outs.str();
@@ -28,7 +29,7 @@ TEST_CASE("mesaac::mol::Mol", "[mesaac]") {
 
   SECTION("Basic tests") {
 
-    mol::Mol m1;
+    Mol m1;
     REQUIRE(header_block(m1) == "<br/><br/>");
     m1.name("A molecule");
     m1.metadata("ill-formed");
@@ -39,11 +40,11 @@ TEST_CASE("mesaac::mol::Mol", "[mesaac]") {
   } // namespace mesaac
 
   SECTION("Atoms and Bonds") {
-    mol::Mol mol;
+    Mol mol;
     const unsigned int C_NumAtoms = 10;
     unsigned int i;
     for (i = 0; i < C_NumAtoms; i++) {
-      mol::Atom a;
+      Atom a;
       a.atomic_num(i);
       a.x(i);
       mol.add_atom(a);
@@ -61,19 +62,19 @@ TEST_CASE("mesaac::mol::Mol", "[mesaac]") {
     }
     REQUIRE(visited == C_NumAtoms);
 
-    mol::Bond b_orig;
+    Bond b_orig;
     b_orig.a0(1); // Bond numbers are one-based.
     b_orig.a1(2);
-    b_orig.type(mol::Bond::BTE_AROMATIC);
-    b_orig.stereo(mol::Bond::BSE_CIS_TRANS_DOUBLE);
+    b_orig.type(Bond::BTE_AROMATIC);
+    b_orig.stereo(Bond::BSE_CIS_TRANS_DOUBLE);
     b_orig.optional_cols("xxxrrrccc");
     mol.add_bond(b_orig);
     visited = 0;
     for (const auto &bond : mol.bonds()) {
       REQUIRE(bond.a0() == 1U);
       REQUIRE(bond.a1() == 2U);
-      REQUIRE(bond.type() == mol::Bond::BTE_AROMATIC);
-      REQUIRE(bond.stereo() == mol::Bond::BSE_CIS_TRANS_DOUBLE);
+      REQUIRE(bond.type() == Bond::BTE_AROMATIC);
+      REQUIRE(bond.stereo() == Bond::BSE_CIS_TRANS_DOUBLE);
       REQUIRE(bond.optional_cols() == "xxxrrrccc");
       visited++;
     }
@@ -85,7 +86,7 @@ TEST_CASE("mesaac::mol::Mol", "[mesaac]") {
   }
 
   SECTION("Properties") {
-    mol::Mol mol;
+    Mol mol;
 
     REQUIRE(mol.properties_block() == "");
     string pb("M  1\nM  2\nM  END\n");
@@ -96,7 +97,7 @@ TEST_CASE("mesaac::mol::Mol", "[mesaac]") {
   }
 
   SECTION("Tags") {
-    mol::Mol mol;
+    Mol mol;
     REQUIRE(mol.tags().empty());
     mol.add_tag("t1", 1.0);
     mol.add_tag("t2", 2.0);
@@ -108,7 +109,7 @@ TEST_CASE("mesaac::mol::Mol", "[mesaac]") {
 
     // XXX FIX THIS:  you can't retrieve a tag using the
     // same syntax as you used to set it...
-    mol::SDTagMap::const_iterator it = mol.tags().find(">  <t3>");
+    SDTagMap::const_iterator it = mol.tags().find(">  <t3>");
     REQUIRE(it != mol.tags().end());
     REQUIRE(it->second == FirstValue);
 
@@ -122,4 +123,5 @@ TEST_CASE("mesaac::mol::Mol", "[mesaac]") {
     REQUIRE(v == 42.0);
   }
 } // TEST_CASE
+} // namespace mol
 } // namespace mesaac

@@ -23,43 +23,43 @@ using namespace std;
 
 namespace mesaac {
 namespace shape {
-typedef PointList PL; // Abbreviations
-typedef const PointList CPL;
-typedef mesaac::mol::AtomVector AV;
 
 class WBAxisAligner : public AxisAligner {
 public:
-  WBAxisAligner(PL &sphere, float atom_scale, bool atom_centers_only)
+  WBAxisAligner(PointList &sphere, float atom_scale, bool atom_centers_only)
       : AxisAligner(sphere, atom_scale, atom_centers_only) {}
 
-  void wb_get_atom_points(const AV &atoms, PL &centers,
+  void wb_get_atom_points(const mol::AtomVector &atoms, PointList &centers,
                           bool include_hydrogens) {
     get_atom_points(atoms, centers, include_hydrogens);
   }
 
-  void wb_mean_center_points(PL &centers) { mean_center_points(centers); }
+  void wb_mean_center_points(PointList &centers) {
+    mean_center_points(centers);
+  }
 
-  void wb_get_mean_center(const PL &centers, Point &mean) {
+  void wb_get_mean_center(const PointList &centers, Point &mean) {
     get_mean_center(centers, mean);
   }
 
-  void wb_get_mean_centered_cloud(const PL &centers, PL &cloud) {
+  void wb_get_mean_centered_cloud(const PointList &centers, PointList &cloud) {
     get_mean_centered_cloud(centers, cloud);
   }
 
-  void wb_find_axis_align_transform(const PL &cloud, Transform &t) {
+  void wb_find_axis_align_transform(const PointList &cloud, Transform &t) {
     find_axis_align_transform(cloud, t);
   }
 
-  void wb_untranslate_points(PL &all_centers, const Point &offset) {
+  void wb_untranslate_points(PointList &all_centers, const Point &offset) {
     untranslate_points(all_centers, offset);
   }
 
-  void wb_transform_points(PL &all_centers, Transform &t) {
+  void wb_transform_points(PointList &all_centers, Transform &t) {
     transform_points(all_centers, t);
   }
 
-  void wb_update_atom_coords(AV &atoms, const PL &all_centers) {
+  void wb_update_atom_coords(mol::AtomVector &atoms,
+                             const PointList &all_centers) {
     update_atom_coords(atoms, all_centers);
   }
 };

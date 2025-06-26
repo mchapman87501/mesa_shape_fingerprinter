@@ -13,7 +13,6 @@
 #include "mesaac_shape/hammersley.hpp"
 
 using namespace std;
-using namespace mesaac::mol;
 
 namespace mesaac {
 namespace shape {
@@ -25,8 +24,7 @@ public:
 };
 
 struct TestFixture {
-  void get_av_bounds(AtomVector &atoms, BoundingCube &b) {
-    AtomVector::iterator i;
+  void get_av_bounds(mol::AtomVector &atoms, BoundingCube &b) {
     bool first = true;
     for (const auto atom : atoms) {
       float r(atom.radius());
@@ -51,7 +49,7 @@ struct TestFixture {
     }
   } // namespace mesaac
 
-  void test_for_atom_vector(AtomVector &atoms, bool shouldBeEqual) {
+  void test_for_atom_vector(mol::AtomVector &atoms, bool shouldBeEqual) {
     BoundingCube bc;
     get_av_bounds(atoms, bc);
     const unsigned int num_points(10240);
@@ -89,9 +87,9 @@ TEST_CASE("mesaac::shape::Fingerprinter", "[mesaac]") {
   SECTION("Test Symmetric Atom Vector") {
     // These atoms are regularly spaced in a straight line along x.
     // Their flips should all produce identical fingerprints.
-    AtomVector atoms;
+    mol::AtomVector atoms;
     for (int i = -4.0; i <= 4.0; i += 1.7) {
-      Atom a;
+      mol::Atom a;
       a.x(i);
       a.y(0.0);
       a.z(0.0);
@@ -104,10 +102,10 @@ TEST_CASE("mesaac::shape::Fingerprinter", "[mesaac]") {
   SECTION("Test Asymmetric Atom Vector") {
     // These atoms are regularly spaced in a straight line along x.
     // They 'wobble' in y.  Their flips should produce different fps.
-    AtomVector atoms;
+    mol::AtomVector atoms;
     float y = 0.5;
     for (int i = -4.0; i <= 4.0; i += 1.7) {
-      Atom a;
+      mol::Atom a;
       a.x(i);
       a.y(y);
       a.z(0.0);
