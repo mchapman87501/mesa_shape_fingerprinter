@@ -18,6 +18,7 @@ using namespace std;
 namespace mesaac {
 namespace shape {
 
+namespace {
 struct TestFixture {
   void read_test_points(string pathname, PointList &points) {
     // Use the test data directory spec'd by TEST_DATA_DIR preprocessor symbol.
@@ -110,6 +111,8 @@ struct TestFixture {
     }
   }
 };
+
+} // namespace
 
 TEST_CASE("mesaac::shape::VolBox", "[mesaac]") {
   TestFixture fixture;

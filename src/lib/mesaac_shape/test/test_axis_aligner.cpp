@@ -24,6 +24,7 @@ using namespace std;
 namespace mesaac {
 namespace shape {
 
+namespace {
 class WBAxisAligner : public AxisAligner {
 public:
   WBAxisAligner(PointList &sphere, float atom_scale, bool atom_centers_only)
@@ -309,6 +310,7 @@ public:
     return result;
   }
 };
+} // namespace
 
 TEST_CASE("mesaac::shape::AxisAligner", "[mesaac]") {
   // This setup is performed separately for each section.
