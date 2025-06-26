@@ -4,11 +4,6 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-#include <fstream>
-#include <iostream>
-#include <stdexcept>
-#include <string>
-
 #include "mesaac_shape/fingerprinter.hpp"
 #include "mesaac_shape/hammersley.hpp"
 

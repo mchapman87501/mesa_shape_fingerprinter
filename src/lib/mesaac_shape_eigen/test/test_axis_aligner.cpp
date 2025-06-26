@@ -6,12 +6,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 
-#include <cstdlib>
 #include <fstream>
-#include <iostream>
-#include <sstream>
-#include <stdexcept>
-#include <string>
 
 #include "mesaac_mol/element_info.hpp"
 #include "mesaac_shape_eigen/axis_aligner.hpp"

@@ -4,12 +4,6 @@
 
 #include <catch2/catch_test_macros.hpp>
 
-#include <fstream>
-#include <iostream>
-#include <sstream>
-#include <stdexcept>
-#include <string>
-
 #include "mesaac_mol/mol.hpp"
 
 using namespace std;

@@ -5,12 +5,7 @@
 #include <catch2/catch_test_macros.hpp>
 
 #include <fstream>
-#include <iostream>
-#include <stdexcept>
-#include <string>
 
-// Confirm that the top-level include really pulls in all mesa_mol
-// headers:
 #include "mesaac_mol.hpp"
 
 using namespace std;
