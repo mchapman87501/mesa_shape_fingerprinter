@@ -2,9 +2,9 @@
 // Copyright (c) 2010 Mesa Analytics & Computing, Inc.  All rights reserved
 //
 
-#include <cppunit/extensions/HelperMacros.h>
-#include <cppunit/extensions/TestFactoryRegistry.h>
-#include <cppunit/ui/text/TestRunner.h>
+#include <catch2/benchmark/catch_benchmark.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_floating_point.hpp>
 
 #include <cmath>
 #include <fstream>
@@ -12,91 +12,37 @@
 #include <stdexcept>
 #include <string>
 
-#include "mesaac_shape/vol_box.h"
+#include "mesaac_shape_eigen/vol_box.hpp"
 
 using namespace std;
 
 namespace mesaac {
-using namespace shape_eigen;
-
-class TestCase : public CppUnit::TestFixture {
-  CPPUNIT_TEST_SUITE(TestCase);
-  CPPUNIT_TEST(test_copying);
-  CPPUNIT_TEST(test_set_bits_for_one_sphere_empty);
-  CPPUNIT_TEST(test_set_bits_for_one_sphere);
-  CPPUNIT_TEST(test_set_bits_for_spheres);
-  CPPUNIT_TEST(test_custom_scale);
-  CPPUNIT_TEST(test_get_points_within_spheres);
-  CPPUNIT_TEST(test_growing_spherule);
-  CPPUNIT_TEST(test_moving_spherule);
-  CPPUNIT_TEST(test_overlapping_spherules);
-  CPPUNIT_TEST(test_nonzero_offset);
-
-  CPPUNIT_TEST_SUITE_END();
-
-protected:
-  bool almost_equal(float expected, float actual, float max_fract = 1.0e-6,
-                    bool verbose = false) {
-    float err = ::fabs(expected - actual);
-    float fract_err = err / ::fabs(expected);
-    bool result = true;
-    if (expected == 0) {
-      result = (err <= max_fract);
-    } else {
-      result = (fract_err <= max_fract);
-    }
-    if (verbose || !result) {
-      cout << "almost_equal(" << expected << ", " << actual
-           << ", fract=" << max_fract << ")"
-           << endl
-           // << "        Actual err: " << err << endl
-           << "    Fractional err: " << fract_err << endl;
-      if (!result) {
-        cout << "    FAILED!" << endl;
-      }
-    }
-    return result;
-  }
-
+namespace shape_eigen {
+namespace {
+struct TestFixture {
   void read_test_points(string pathname, PointList &points) {
-    pathname = string("../../../../test_data/hammersley/") + pathname;
+    // Use the test data directory spec'd by TEST_DATA_DIR preprocessor symbol.
+    const string test_data_dir(TEST_DATA_DIR);
+
+    // TODO use std::filesystem::path, available since C++17.
+    const string data_dir(test_data_dir + "/hammersley/");
+    pathname = data_dir + pathname;
     points.clear();
     ifstream inf(pathname.c_str());
     if (!inf) {
       ostringstream msg;
       msg << "Could not open " << pathname << " for reading." << endl;
-      CPPUNIT_FAIL(msg.str());
+      throw std::runtime_error(msg.str());
     }
     float x, y, z;
     while (inf >> x >> y >> z) {
-      Point fv;
-      fv.push_back(x);
-      fv.push_back(y);
-      fv.push_back(z);
-      points.push_back(fv);
+      points.push_back({x, y, z});
     }
     inf.close();
   }
 
   void read_default_sphere(PointList &points) {
     read_test_points("hamm_spheroid_10k_11rad.txt", points);
-  }
-
-  VolBox *new_volbox() {
-    PointList sphere;
-
-    read_default_sphere(sphere);
-    VolBox *result = new VolBox(sphere, 1.0);
-    return result;
-  }
-
-  Point make_point(float x, float y, float z, float r) {
-    Point result;
-    result.push_back(x);
-    result.push_back(y);
-    result.push_back(z);
-    result.push_back(r);
-    return result;
   }
 
   void get_bits(PointList &cloud, float x, float y, float z, float r,
@@ -149,67 +95,74 @@ protected:
     }
     return ::sqrtf(rsqr_max);
   }
+};
 
-public:
-  void test_copying() {
-    auto_ptr<VolBox> vb(new_volbox());
-    Point p(make_point(0, 0, 0, 22.0));
+} // namespace
+
+TEST_CASE("mesaac::shape_eigen::VolBox", "[mesaac]") {
+  TestFixture fixture;
+  PointList sphere;
+  fixture.read_default_sphere(sphere);
+  VolBox vb(sphere, 1.0);
+
+  SECTION("Test copying") {
+    Point p{0, 0, 0, 22.0};
 
     {
       BitVector all_bits(10240);
-      vb->set_bits_for_one_sphere(p, all_bits, 0);
-      CPPUNIT_ASSERT_EQUAL((size_t)10240, all_bits.count());
+      vb.set_bits_for_one_sphere(p, all_bits, 0);
+      REQUIRE(all_bits.count() == 10240);
     }
 
     {
-      VolBox vb2(*vb);
+      VolBox vb2(vb);
 
       BitVector all_bits(10240);
       vb2.set_bits_for_one_sphere(p, all_bits, 0);
-      CPPUNIT_ASSERT_EQUAL((size_t)10240, all_bits.count());
+      REQUIRE(all_bits.count() == 10240);
     }
   }
 
-  void test_set_bits_for_one_sphere_empty() {
+  SECTION("Set bits for an empty sphere") {
     PointList empty;
     VolBox vb(empty, 1.0);
 
     for (float x = -10.0; x != 10.0; x += 1.0) {
       BitVector matches(0);
-      Point p(make_point(x, x, x, 22.0));
+      Point p{x, x, x, 22.0};
       // What about proving that this does not clear any bits?
       // Ah, never mind.
       vb.set_bits_for_one_sphere(p, matches, 0);
-      CPPUNIT_ASSERT_EQUAL((size_t)0, matches.count());
+      REQUIRE(matches.count() == 0);
     }
   }
 
-  void test_set_bits_for_one_sphere() {
+  SECTION("Set bits for one non-empty sphere") {
     PointList sphere;
-    read_default_sphere(sphere);
+    fixture.read_default_sphere(sphere);
     VolBox vb(sphere, 1.0);
 
     const float r = 5.0;
-    float r_sphere = get_max_extent(sphere);
+    float r_sphere = fixture.get_max_extent(sphere);
     unsigned int total = 0;
     for (float x = -15.0; x != 15.0; x += 1.0) {
       BitVector vb_matches(sphere.size()), brute_force_matches(sphere.size());
-      Point p(make_point(x, x, x, r));
+      Point p{x, x, x, r};
       vb.set_bits_for_one_sphere(p, vb_matches, 0);
-      get_bits(sphere, x, x, x, r, brute_force_matches);
-      CPPUNIT_ASSERT_EQUAL(brute_force_matches, vb_matches);
+      fixture.get_bits(sphere, x, x, x, r, brute_force_matches);
+      REQUIRE(vb_matches == brute_force_matches);
       if (::fabs(x) > r_sphere) {
-        CPPUNIT_ASSERT(vb_matches.count() == 0);
+        REQUIRE(vb_matches.count() == 0);
       }
       total += vb_matches.count();
     }
     // Try to ensure that the tests matched at least some points.
-    CPPUNIT_ASSERT(total > 0);
+    REQUIRE(total > 0);
   }
 
-  void test_set_bits_for_spheres() {
+  SECTION("Set bits for multiple spheres.") {
     PointList sphere;
-    read_default_sphere(sphere);
+    fixture.read_default_sphere(sphere);
     VolBox vb(sphere, 1.0);
 
     PointList center_spheres;
@@ -217,24 +170,22 @@ public:
 
     BitVector brute_force(sphere.size());
     for (float x = -15.0; x != 15.0; x += 1.0) {
-      center_spheres.push_back(make_point(x, x, x, r));
-      get_bits(sphere, x, x, x, r, brute_force);
+      center_spheres.push_back({x, x, x, r});
+      fixture.get_bits(sphere, x, x, x, r, brute_force);
     }
 
     BitVector vb_matches;
     vb.set_bits_for_spheres(center_spheres, vb_matches, true, 0);
-    CPPUNIT_ASSERT_EQUAL(brute_force, vb_matches);
-    CPPUNIT_ASSERT(vb_matches.count() > 0);
-    CPPUNIT_ASSERT(vb_matches.count() <= sphere.size());
+    REQUIRE(vb_matches == brute_force);
+    REQUIRE(vb_matches.count() > 0);
+    REQUIRE(vb_matches.count() <= sphere.size());
   }
 
-  void test_custom_scale() {
-    cout << "TODO:  Write tests for custom sphere scaling" << endl;
-  }
+  SECTION("TODO Write tests for custom sphere scaling") {}
 
-  void test_get_points_within_spheres() {
+  SECTION("Get points within spheres") {
     PointList sphere;
-    read_default_sphere(sphere);
+    fixture.read_default_sphere(sphere);
     VolBox vb(sphere, 1.0);
 
     PointList center_spheres;
@@ -242,54 +193,55 @@ public:
 
     BitVector brute_force(sphere.size());
     for (float x = -15.0; x != 15.0; x += 1.0) {
-      center_spheres.push_back(make_point(x, x, x, r));
-      get_bits(sphere, x, x, x, r, brute_force);
+      center_spheres.push_back({x, x, x, r});
+      fixture.get_bits(sphere, x, x, x, r, brute_force);
     }
 
     PointList bf_contained_points;
-    get_contained_points(sphere, center_spheres, bf_contained_points);
+    fixture.get_contained_points(sphere, center_spheres, bf_contained_points);
 
     PointList contained_points;
     vb.get_points_within_spheres(center_spheres, contained_points, 0);
-    CPPUNIT_ASSERT(contained_points.size() > 0);
-    CPPUNIT_ASSERT(contained_points.size() == brute_force.count());
+    REQUIRE(contained_points.size() > 0);
+    REQUIRE(contained_points.size() == brute_force.count());
 
     // Not sure about the correctness of this test...
-    CPPUNIT_ASSERT(contained_points == bf_contained_points);
+    REQUIRE(contained_points == bf_contained_points);
   }
 
-  void test_growing_spherule() {
+  SECTION("Test VolBox containment for spheres of varying sizes.") {
     PointList sphere;
-    read_default_sphere(sphere);
+    fixture.read_default_sphere(sphere);
     VolBox vb(sphere, 1.0);
     unsigned int total_points = sphere.size();
-    const float R = get_max_extent(sphere);
+    const float R = fixture.get_max_extent(sphere);
 
     float d_r = (R - 1.5) / 10.0;
     for (float r = 1.5; r <= R; r += d_r) {
       PointList centers;
-      centers.push_back(make_point(0, 0, 0, r));
+      centers.push_back({0, 0, 0, r});
 
       PointList expected;
-      get_contained_points(sphere, centers, expected);
+      fixture.get_contained_points(sphere, centers, expected);
 
       PointList contained;
       vb.get_points_within_spheres(centers, contained, 0);
 
-      CPPUNIT_ASSERT(get_max_extent(contained) <= r);
-      CPPUNIT_ASSERT(expected == contained);
+      REQUIRE(fixture.get_max_extent(contained) <= r);
+      REQUIRE(expected == contained);
 
       float expected_count = total_points * (r * r * r) / (R * R * R);
-      CPPUNIT_ASSERT(almost_equal(expected_count, contained.size(), 0.05));
+      REQUIRE_THAT(expected_count,
+                   Catch::Matchers::WithinRel(contained.size(), 0.05));
     }
   }
 
-  void test_moving_spherule() {
+  SECTION("Test spherules at various locations within a VolBox") {
     PointList sphere;
-    read_default_sphere(sphere);
+    fixture.read_default_sphere(sphere);
     VolBox vb(sphere, 1.0);
     unsigned int total_points = sphere.size();
-    const float R = get_max_extent(sphere);
+    const float R = fixture.get_max_extent(sphere);
     const float r = 1.77; // Akin to carbon
     // How many cloud points to expect, based on density:
     const int exp_cnt = (int)(0.5 + total_points * (r * r * r) / (R * R * R));
@@ -299,34 +251,35 @@ public:
     const float d_center = max_offset / 10.0;
     for (float center = -max_offset; center <= max_offset; center += d_center) {
       PointList centers;
-      centers.push_back(make_point(center, 0, 0, r));
+      centers.push_back({center, 0, 0, r});
 
       PointList expected;
-      get_contained_points(sphere, centers, expected);
+      fixture.get_contained_points(sphere, centers, expected);
 
       PointList contained;
       vb.get_points_within_spheres(centers, contained, 0);
 
       float exp_max_extent = r + ::fabs(center);
-      float act_max_extent = get_max_extent(contained);
+      float act_max_extent = fixture.get_max_extent(contained);
       if (act_max_extent > exp_max_extent) {
         ostringstream msg;
         msg << "  Expected max extent: " << exp_max_extent << endl
             << "          Actual max: " << act_max_extent << endl;
-        CPPUNIT_FAIL(msg.str());
+        FAIL(msg.str());
       }
-      CPPUNIT_ASSERT(expected == contained);
+      REQUIRE(expected == contained);
 
-      CPPUNIT_ASSERT(almost_equal(exp_cnt, contained.size(), 0.075));
+      REQUIRE_THAT(exp_cnt,
+                   Catch::Matchers::WithinRel(contained.size(), 0.075));
     }
   }
 
-  void test_overlapping_spherules() {
+  SECTION("No double counting of overlapping spherules") {
     // This is a simple test which demonstrates that,
     // if two spherules overlap, their corresponding cloud points
     // will not be double-counted.
 
-    const Point atom(make_point(0, 0, 0, 1.7));
+    const Point atom{0, 0, 0, 1.7};
 
     PointList mol1, mol2;
     mol1.push_back(atom);
@@ -335,26 +288,26 @@ public:
     mol2.push_back(atom);
 
     PointList sphere;
-    read_default_sphere(sphere);
+    fixture.read_default_sphere(sphere);
     VolBox vb(sphere, 1.0);
 
     PointList contained1, contained2;
     vb.get_points_within_spheres(mol1, contained1, 0);
     vb.get_points_within_spheres(mol2, contained2, 0);
-    CPPUNIT_ASSERT(contained1 == contained2);
-    CPPUNIT_ASSERT(contained1.size() > 0);
+    REQUIRE(contained1 == contained2);
+    REQUIRE(contained1.size() > 0);
   }
 
-  void test_nonzero_offset() {
+  SECTION("Test setting VolBox bits with a fixed offset") {
     // TODO:  test get_points_within_spheres with a non-zero offset,
     // and with from_scratch = false.
-    const Point atom(make_point(0, 0, 0, 1.7));
+    const Point atom{0, 0, 0, 1.7};
 
     PointList mol1;
     mol1.push_back(atom);
 
     PointList sphere;
-    read_default_sphere(sphere);
+    fixture.read_default_sphere(sphere);
     VolBox vb(sphere, 1.0);
 
     const unsigned int num_cloud_points(vb.size());
@@ -366,28 +319,14 @@ public:
     vb.set_bits_for_spheres(mol1, bits1, false, 0);
     vb.set_bits_for_spheres(mol1, bits2, false, offset);
 
-    CPPUNIT_ASSERT(0 < num_cloud_points);
+    REQUIRE(num_cloud_points > 0);
 
     unsigned int i;
     for (i = 0; i != num_cloud_points; i++) {
-      CPPUNIT_ASSERT_EQUAL(bits1.test(i), bits2.test(i + offset));
+      REQUIRE(bits2.test(i + offset) == bits1.test(i));
     }
-    CPPUNIT_ASSERT_EQUAL(bits1.count(), bits2.count());
+    REQUIRE(bits2.count() == bits1.count());
   }
-};
-
-CPPUNIT_TEST_SUITE_REGISTRATION(TestCase);
-}; // namespace mesaac
-
-int main(int, char **) {
-  int result = 0;
-  CppUnit::TextUi::TestRunner runner;
-  CppUnit::TestFactoryRegistry &registry =
-      CppUnit::TestFactoryRegistry::getRegistry();
-  runner.addTest(registry.makeTest());
-
-  if (!runner.run()) {
-    result = 1;
-  }
-  return result;
 }
+} // namespace shape_eigen
+} // namespace mesaac
