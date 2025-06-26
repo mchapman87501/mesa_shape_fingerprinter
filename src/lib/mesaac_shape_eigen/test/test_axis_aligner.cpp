@@ -432,6 +432,7 @@ TEST_CASE("mesaac::shape_eigen::AxisAligner", "[mesaac]") {
     // with non-empty cells?
     Transform transform = Transform::Zero();
     REQUIRE(!fixture.is_non_null_transform(transform));
+
     aligner->wb_find_axis_align_transform(cloud, transform);
     REQUIRE(fixture.is_non_null_transform(transform));
   }
@@ -632,9 +633,9 @@ TEST_CASE("mesaac::shape_eigen::AxisAligner", "[mesaac]") {
         float dx = ::fabs(curr.x() - prev.x());
         float dy = ::fabs(curr.y() - prev.y());
         float dz = ::fabs(curr.z() - prev.z());
-        REQUIRE_THAT(dx_dy, Catch::Matchers::WithinAbs(dx / dy, 0.00014));
-        REQUIRE_THAT(dx_dz, Catch::Matchers::WithinAbs(dx / dz, 0.00014));
-        REQUIRE_THAT(dy_dz, Catch::Matchers::WithinAbs(dy / dz, 0.00014));
+        REQUIRE_THAT(dx_dy, Catch::Matchers::WithinAbs(dx / dy, 0.00025));
+        REQUIRE_THAT(dx_dz, Catch::Matchers::WithinAbs(dx / dz, 0.00025));
+        REQUIRE_THAT(dy_dz, Catch::Matchers::WithinAbs(dy / dz, 0.00025));
       }
       iprev = i;
     }

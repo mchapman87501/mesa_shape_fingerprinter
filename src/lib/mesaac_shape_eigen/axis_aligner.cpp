@@ -215,7 +215,9 @@ void AxisAligner::find_axis_align_transform(const PointList &cloud,
       x(i, j) = curr_point[j];
     }
   }
-  transform = x.jacobiSvd().matrixV().transpose();
+  transform = x.jacobiSvd(Eigen::DecompositionOptions::ComputeFullV)
+                  .matrixV()
+                  .transpose();
   unmirror_axes(transform);
 }
 } // namespace shape_eigen
