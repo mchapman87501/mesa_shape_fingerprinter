@@ -50,7 +50,6 @@ VolBox::VolBox(const PointList &points, const float sphere_scale) {
   m_iymax = max(m_iymax, 0);
   m_izmax = max(m_izmax, 0);
 
-  // Build an XYZBucket of all points.
   m_bucket.clear();
 
   for (int ix = 0; ix <= m_ixmax; ix++) {
@@ -72,9 +71,7 @@ VolBox::VolBox(const PointList &points, const float sphere_scale) {
 void VolBox::add_points(const PointList &points) {
   m_bucket_points.clear();
   XYZBucket &xyz_bucket(m_bucket);
-  PointList::const_iterator i;
-  for (i = points.begin(); i != points.end(); i++) {
-    const Point &p(*i);
+  for (const auto &p : points) {
     int ix = (int)((p[0] - m_xmin) / m_dx), iy = (int)((p[1] - m_ymin) / m_dy),
         iz = (int)((p[2] - m_zmin) / m_dz);
     ix = max(0, min(ix, m_ixmax));
@@ -106,8 +103,8 @@ void VolBox::get_points_within_spheres(const PointList &spheres,
   BitVector which_points;
   set_bits_for_spheres(spheres, which_points, true, offset);
   contained_points.reserve(which_points.count());
-  unsigned int iMax(which_points.size());
-  for (unsigned int i = 0; i != iMax; i++) {
+  unsigned int i_max(which_points.size());
+  for (unsigned int i = 0; i != i_max; i++) {
     if (which_points.test(i)) {
       contained_points.push_back(m_bucket_points.at(i));
     }

@@ -22,6 +22,7 @@ using XYZBucket = std::vector<YZBucket>;
 class VolBox {
 public:
   using VolBoxPtr = std::shared_ptr<VolBox>;
+
   VolBox() {}
   VolBox(const PointList &points, const float sphere_scale);
 
