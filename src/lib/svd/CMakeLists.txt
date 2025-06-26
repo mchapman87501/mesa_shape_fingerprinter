@@ -15,3 +15,4 @@ target_include_directories(${TARGET} PUBLIC libs)
 
 add_subdirectory(libs)
 
+add_subdirectory(tests)
