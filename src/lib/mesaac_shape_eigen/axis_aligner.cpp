@@ -69,9 +69,7 @@ void AxisAligner::get_mean_center(const PointList &points, Point &mean) {
     mean.push_back(0);
   } else {
     float xsum = 0, ysum = 0, zsum = 0;
-    PointList::const_iterator i;
-    for (i = points.begin(); i != points.end(); ++i) {
-      const Point &p(*i);
+    for (const auto &p : points) {
       xsum += p[0];
       ysum += p[1];
       zsum += p[2];
@@ -83,9 +81,7 @@ void AxisAligner::get_mean_center(const PointList &points, Point &mean) {
 }
 
 void AxisAligner::untranslate_points(PointList &points, const Point &offset) {
-  PointList::iterator i;
-  for (i = points.begin(); i != points.end(); ++i) {
-    Point &p(*i);
+  for (auto &p : points) {
     p[0] -= offset[0];
     p[1] -= offset[1];
     p[2] -= offset[2];
@@ -112,14 +108,8 @@ void AxisAligner::get_mean_centered_cloud(const PointList &centers,
                                           PointList &cloud) {
   cloud.clear();
   if (m_atom_centers_only) {
-    PointList::const_iterator i;
-    for (i = centers.begin(); i != centers.end(); i++) {
-      const Point &c(*i);
-      Point p_cloud;
-      p_cloud.push_back(c[0]);
-      p_cloud.push_back(c[1]);
-      p_cloud.push_back(c[2]);
-      cloud.push_back(p_cloud);
+    for (const auto &center : centers) {
+      cloud.push_back(Point{center[0], center[1], center[2]});
     }
     // Atom centers should already be mean-centered
   } else {
@@ -150,10 +140,7 @@ void AxisAligner::update_atom_coords(mol::AtomVector &atoms,
 
 void AxisAligner::transform_points(PointList &points, Transform &vt) {
   typedef Eigen::Vector3f EPoint;
-  PointList::iterator i;
-  PointList::iterator end(points.end());
-  for (i = points.begin(); i != end; ++i) {
-    Point &p(*i);
+  for (auto &p : points) {
     EPoint untransformed;
     untransformed << p[0], p[1], p[2];
     const EPoint transformed = vt * untransformed;

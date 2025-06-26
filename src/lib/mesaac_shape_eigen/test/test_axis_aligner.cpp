@@ -116,11 +116,7 @@ struct TestFixture {
     }
     float x, y, z;
     while (inf >> x >> y >> z) {
-      Point fv;
-      fv.push_back(x);
-      fv.push_back(y);
-      fv.push_back(z);
-      points.push_back(fv);
+      points.push_back({x, y, z});
     }
     inf.close();
   }
@@ -241,12 +237,12 @@ struct TestFixture {
         xsum += x;
         ysum += y;
         zsum += z;
-        xmin = (xmin < x) ? xmin : x;
-        xmax = (xmax > x) ? xmax : x;
-        ymin = (ymin < y) ? ymin : y;
-        ymax = (ymax > y) ? ymax : y;
-        zmin = (zmin < z) ? zmin : z;
-        zmax = (zmax > z) ? zmax : z;
+        xmin = min(xmin, x);
+        xmax = max(xmax, x);
+        ymin = min(ymin, y);
+        ymax = max(ymax, y);
+        zmin = min(zmin, z);
+        zmax = max(zmax, z);
       }
 
       xmid = xsum / points.size();
@@ -274,11 +270,8 @@ struct TestFixture {
 
   float find_max_radius(const PointList &points) {
     float result = 0.0;
-    PointList::const_iterator i;
-    for (i = points.begin(); i != points.end(); ++i) {
-      // Each of these points *should* have a radius.
-      const Point &p(*i);
-      result = (result > p.at(3)) ? result : p.at(3);
+    for (const auto &point : points) {
+      result = max(result, point.at(3));
     }
     return result;
   }
