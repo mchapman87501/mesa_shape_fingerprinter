@@ -39,6 +39,12 @@ string strdiff_summary(const string &s1, const string &s2) {
   return outf.str();
 }
 
+const string test_sdf_path(const string &rel_path) {
+  const string test_data_dir(TEST_DATA_DIR);
+  const string mesaac_mol_data_in_dir(test_data_dir + "/lib/mesaac_mol/in/");
+  return mesaac_mol_data_in_dir + rel_path;
+}
+
 class WhiteBoxMol : public mol::Mol {
 public:
   unsigned int num_bonds() { return m_bonds.size(); }
@@ -55,14 +61,10 @@ public:
 };
 } // namespace
 
-TEST_CASE("mesaac::mol::sdreader", "[mesaac]") {
-  // Test data for this test is in the same directory as this source
-  // file.
-  const string test_data_dir(TEST_DATA_DIR);
-  const string mesaac_mol_data_in_dir(test_data_dir + "/lib/mesaac_mol/in/");
+TEST_CASE("mesaac::mol::SDReader", "[mesaac]") {
 
   SECTION("One structure") {
-    string pathname(mesaac_mol_data_in_dir + "one_structure.sdf");
+    string pathname(test_sdf_path("one_structure.sdf"));
 
     ifstream inf(pathname.c_str());
     mol::SDReader reader(inf, pathname);
@@ -104,7 +106,7 @@ TEST_CASE("mesaac::mol::sdreader", "[mesaac]") {
   }
 
   SECTION("Multiple structures") {
-    string pathname(mesaac_mol_data_in_dir + "cox2_3d.sd");
+    string pathname(test_sdf_path("cox2_3d.sd"));
     // Spot-check some atom and bond counts.
     unsigned int mol_check_indices[] = {0, 10, 456, 466};
     const unsigned int num_to_check =
@@ -144,7 +146,7 @@ TEST_CASE("mesaac::mol::sdreader", "[mesaac]") {
 
   SECTION("Properties block") {
     // Show we can read properties blocks.
-    string pathname(mesaac_mol_data_in_dir + "property_blocks.sdf");
+    string pathname(test_sdf_path("property_blocks.sdf"));
     ifstream inf(pathname.c_str());
     mol::SDReader reader(inf, pathname);
 
@@ -165,7 +167,7 @@ TEST_CASE("mesaac::mol::sdreader", "[mesaac]") {
   }
 
   SECTION("Tags") {
-    string pathname(mesaac_mol_data_in_dir + "property_blocks.sdf");
+    string pathname(test_sdf_path("property_blocks.sdf"));
     ifstream inf(pathname.c_str());
     mol::SDReader reader(inf, pathname);
 
@@ -203,7 +205,7 @@ TEST_CASE("mesaac::mol::sdreader", "[mesaac]") {
   SECTION("Garbage input :)") {
     // Try reading from a corrupt SD file, one in which newlines
     // have been smooshed into spaces.
-    string pathname(mesaac_mol_data_in_dir + "corrupt.sdf");
+    string pathname(test_sdf_path("corrupt.sdf"));
     ifstream inf(pathname.c_str());
     mol::SDReader reader(inf, pathname);
     unsigned int num_found = 0;
