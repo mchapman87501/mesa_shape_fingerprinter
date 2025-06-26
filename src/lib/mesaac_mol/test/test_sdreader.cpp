@@ -202,7 +202,61 @@ TEST_CASE("mesaac::mol::SDReader", "[mesaac]") {
     REQUIRE(prev == exp_last);
   }
 
-  SECTION("Garbage input :)") {
+  SECTION("Truncated counts line") {
+    // Try reading from a corrupt SD file, one in which the
+    // count line is shorter than it should be.
+    // This should fail to read any atoms or bonds.
+    // It should fail to read the one molecule in the file.
+    string pathname(test_sdf_path("truncated_count_line.sdf"));
+    ifstream inf(pathname.c_str());
+    mol::SDReader reader(inf, pathname);
+    unsigned int num_mols_found = 0;
+    WhiteBoxMol m;
+    while (reader.read(m)) {
+      REQUIRE(m.num_atoms() > 0);
+      REQUIRE(m.num_bonds() > 0);
+      num_mols_found++;
+    }
+    inf.close();
+    REQUIRE(num_mols_found == 0u);
+  }
+
+  SECTION("Malformed atom counts") {
+    // Try reading from a corrupt SD file, one in which the
+    // count line has a malformed atom count.
+    // This should fail to read any atoms at all.
+    // It should also fail to read the one molecule in the SD file.
+    string pathname(test_sdf_path("malformed_atom_count.sdf"));
+    ifstream inf(pathname.c_str());
+    mol::SDReader reader(inf, pathname);
+    unsigned int num_mols_found = 0;
+    WhiteBoxMol m;
+    while (reader.read(m)) {
+      REQUIRE(m.num_atoms() > 0);
+      num_mols_found++;
+    }
+    inf.close();
+    REQUIRE(num_mols_found == 0u);
+  }
+
+  SECTION("Malformed bond counts") {
+    // Try reading from a corrupt SD file, one in which the
+    // count line has a malformed bond count.
+    string pathname(test_sdf_path("malformed_bond_count.sdf"));
+    ifstream inf(pathname.c_str());
+    mol::SDReader reader(inf, pathname);
+    WhiteBoxMol m;
+    int num_mols_found = 0;
+    while (reader.read(m)) {
+      REQUIRE(m.num_atoms() > 0);
+      REQUIRE(m.num_bonds() == 0);
+      num_mols_found += 1;
+    }
+    inf.close();
+    REQUIRE(num_mols_found == 1);
+  }
+
+  SECTION("Garbage input") {
     // Try reading from a corrupt SD file, one in which newlines
     // have been smooshed into spaces.
     string pathname(test_sdf_path("corrupt.sdf"));

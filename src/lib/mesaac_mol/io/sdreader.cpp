@@ -15,7 +15,6 @@ namespace mol {
 SDReader::SDReader(istream &inf, string pathname)
     : m_pathname(pathname), m_inf(inf), m_linenum(0) {
   m_nums.imbue(locale("C"));
-  cout << "DEBUG: Create SDReader with pathname '" << pathname << "'" << endl;
 }
 
 bool SDReader::getline(string &line) {
@@ -267,9 +266,14 @@ bool SDReader::read(Mol &next) {
         get_counts(num_atoms, num_bonds, counts_line);
         next.counts_line(counts_line);
 
-        // If unable to read this molecule, skip to the next one.
-        result = (read_atoms(next, num_atoms) && read_bonds(next, num_bonds) &&
-                  read_properties_block(next) && read_tags(next));
+        // A molecule could be just an atom, I suppose, but it can't
+        // be just bonds.
+        if (num_atoms > 0) {
+          // If unable to read this molecule, skip to the next one.
+          result =
+              (read_atoms(next, num_atoms) && read_bonds(next, num_bonds) &&
+               read_properties_block(next) && read_tags(next));
+        }
         if (!result) {
           cerr << "Could not read molecule starting at line " << start_line
                << "; skipping ahead." << endl;
