@@ -14,10 +14,9 @@
 #include "mesaac_shape/hammersley.hpp"
 
 using namespace std;
-using namespace mesaac::shape;
 
 namespace mesaac {
-
+namespace shape {
 struct TestFixture {
   void check_max_extents(const PointList &points, float xmin, float xmax,
                          float ymin, float ymax, float zmin, float zmax) {
@@ -120,4 +119,5 @@ TEST_CASE("mesaac::shape::Hammersley", "[mesaac]") {
   }
 }
 
+} // namespace shape
 } // namespace mesaac

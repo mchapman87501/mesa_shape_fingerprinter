@@ -13,10 +13,10 @@
 #include "mesaac_shape/hammersley.hpp"
 
 using namespace std;
-using namespace mesaac::shape;
 using namespace mesaac::mol;
 
 namespace mesaac {
+namespace shape {
 class BoundingCube {
 public:
   float xmin, ymin, zmin, xmax, ymax, zmax;
@@ -120,4 +120,5 @@ TEST_CASE("mesaac::shape::Fingerprinter", "[mesaac]") {
   }
 }
 
+} // namespace shape
 } // namespace mesaac

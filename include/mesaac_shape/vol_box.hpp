@@ -1,7 +1,7 @@
 #pragma once
 
+#include "mesaac_shape/shared_types.hpp"
 #include "shape_defs.hpp" // For BitVector
-#include "shared_types.hpp"
 #include <memory>
 #include <vector>
 

@@ -22,9 +22,7 @@
 using namespace std;
 
 namespace mesaac {
-
-using namespace shape;
-
+namespace shape {
 typedef PointList PL; // Abbreviations
 typedef const PointList CPL;
 typedef mesaac::mol::AtomVector AV;
@@ -736,4 +734,5 @@ TEST_CASE("Benchmark alignments", "[mesaac][mesaac_benchmark]") {
   };
 }
 
+} // namespace shape
 } // namespace mesaac

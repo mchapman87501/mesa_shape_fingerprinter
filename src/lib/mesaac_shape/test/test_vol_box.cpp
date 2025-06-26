@@ -16,7 +16,7 @@
 using namespace std;
 
 namespace mesaac {
-using namespace shape;
+namespace shape {
 
 struct TestFixture {
   void read_test_points(string pathname, PointList &points) {
@@ -341,4 +341,5 @@ TEST_CASE("mesaac::shape::VolBox", "[mesaac]") {
     }
   }
 }
+} // namespace shape
 } // namespace mesaac
