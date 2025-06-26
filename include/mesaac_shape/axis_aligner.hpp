@@ -16,11 +16,8 @@ typedef ap::real_2d_array Transform;
 
 class AxisAligner {
 public:
-  // AxisAligner(const PointList& sphere, float atom_scale);
   AxisAligner(const PointList &sphere, float atom_scale,
               bool atom_centers_only);
-
-  AxisAligner() {}
 
   void align_to_axes(mesaac::mol::Mol &m);
   void align_to_axes(mesaac::mol::AtomVector &atoms);
