@@ -111,7 +111,7 @@ struct TestFixture {
   }
 };
 
-TEST_CASE("VolBox Testing", "[mesaac]") {
+TEST_CASE("mesaac::shape::VolBox", "[mesaac]") {
   TestFixture fixture;
   PointList sphere;
   fixture.read_default_sphere(sphere);

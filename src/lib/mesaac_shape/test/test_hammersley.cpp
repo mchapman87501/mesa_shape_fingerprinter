@@ -69,7 +69,7 @@ struct TestFixture {
   }
 };
 
-TEST_CASE("Hammersley Tests", "[mesaac]") {
+TEST_CASE("mesaac::shape::Hammersley", "[mesaac]") {
   TestFixture fixture;
 
   SECTION("Basic usage test") {

@@ -310,7 +310,7 @@ public:
   }
 };
 
-TEST_CASE("Alignment Tests", "[mesaac]") {
+TEST_CASE("mesaac::shape::AxisAligner", "[mesaac]") {
   // This setup is performed separately for each section.
   TestFixture fixture;
   std::unique_ptr<WBAxisAligner> aligner(fixture.new_aligner());
