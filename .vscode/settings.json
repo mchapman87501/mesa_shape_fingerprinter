@@ -6,7 +6,8 @@
         "*.html": "html",
         "ios": "cpp",
         "vector": "cpp",
-        "*.cmake": "cmake"
+        "*.cmake": "cmake",
+        "string": "cpp"
     },
     "[cmake]": {
         "editor.wordBasedSuggestions": "off",

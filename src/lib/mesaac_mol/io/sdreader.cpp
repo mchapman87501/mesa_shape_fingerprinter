@@ -15,9 +15,8 @@ namespace mol {
 SDReader::SDReader(istream &inf, string pathname)
     : m_pathname(pathname), m_inf(inf), m_linenum(0) {
   m_nums.imbue(locale("C"));
+  cout << "DEBUG: Create SDReader with pathname '" << pathname << "'" << endl;
 }
-
-SDReader::~SDReader() {}
 
 bool SDReader::getline(string &line) {
   std::getline(m_inf, line);

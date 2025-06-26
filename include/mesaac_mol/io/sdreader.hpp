@@ -15,7 +15,6 @@ namespace mol {
 class SDReader {
 public:
   SDReader(std::istream &inf, std::string pathname = "(input stream)");
-  virtual ~SDReader();
 
   bool skip();
   bool read(Mol &mol);
