@@ -46,9 +46,4 @@ For this project, 3rd-party tests are distracting. That's why `CMakePresets.json
 
 ### OpenBabal and FetchContent
 
-OpenBabel is not compatible with CMake >= 4.0, because of its requirement for an older version of CMake.
-Should a separate installation of OpenBabel be required?
-
-```
-
-```
+[OpenBabel](https://github.com/openbabel/openbabel) is not compatible with CMake >= 4.0, because of its requirement for an older version of CMake. It looks as though efforts are underway to address this problem: See [issue #2784](https://github.com/openbabel/openbabel/pull/2784).
