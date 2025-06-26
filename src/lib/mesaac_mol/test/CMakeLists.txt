@@ -1,6 +1,5 @@
-
-add_mesaac_test(test_atom test_atom.cpp)
-add_mesaac_test(test_bond test_bond.cpp)
-add_mesaac_test(test_mol test_mol.cpp)
-add_mesaac_test(test_sdreader test_sdreader.cpp)
-add_mesaac_test(test_sdwriter test_sdwriter.cpp)
+add_mesaac_test(TEST_NAME test_atom SOURCES test_atom.cpp LIBS mesaac_mol)
+add_mesaac_test(TEST_NAME test_bond SOURCES test_bond.cpp LIBS mesaac_mol)
+add_mesaac_test(TEST_NAME test_mol SOURCES test_mol.cpp LIBS mesaac_mol)
+add_mesaac_test(TEST_NAME test_sdreader SOURCES test_sdreader.cpp LIBS mesaac_mol)
+add_mesaac_test(TEST_NAME test_sdwriter SOURCES test_sdwriter.cpp LIBS mesaac_mol)

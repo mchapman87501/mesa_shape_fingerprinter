@@ -1,4 +1,4 @@
-add_mesaac_test(test_axis_aligner test_axis_aligner.cpp)
-add_mesaac_test(test_fingerprinter test_fingerprinter.cpp)
-add_mesaac_test(test_hammersley test_hammersley.cpp)
-add_mesaac_test(test_vol_box test_vol_box.cpp)
+add_mesaac_test(TEST_NAME test_axis_aligner SOURCES test_axis_aligner.cpp LIBS mesaac_shape mesaac_mol)
+add_mesaac_test(TEST_NAME test_fingerprinter SOURCES test_fingerprinter.cpp LIBS mesaac_shape mesaac_mol)
+add_mesaac_test(TEST_NAME test_hammersley SOURCES test_hammersley.cpp LIBS mesaac_shape mesaac_mol)
+add_mesaac_test(TEST_NAME test_vol_box SOURCES test_vol_box.cpp LIBS mesaac_shape mesaac_mol)
