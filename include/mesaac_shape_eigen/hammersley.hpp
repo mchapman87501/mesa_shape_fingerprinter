@@ -4,10 +4,10 @@
 
 #pragma once
 
-#include "mesaac_shape/shared_types.hpp"
+#include "mesaac_shape_eigen/shared_types.hpp"
 
 namespace mesaac {
-namespace shape {
+namespace shape_eigen {
 
 class Hammersley {
 public:
@@ -30,5 +30,5 @@ private:
   Hammersley &operator=(const Hammersley &src);
 };
 
-} // namespace shape
+} // namespace shape_eigen
 } // namespace mesaac

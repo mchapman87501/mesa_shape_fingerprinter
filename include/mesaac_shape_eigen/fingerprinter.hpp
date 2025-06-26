@@ -6,11 +6,11 @@
 #pragma once
 
 #include "mesaac_mol/atom.hpp"
-#include "mesaac_shape/vol_box.hpp"
+#include "mesaac_shape_eigen/vol_box.hpp"
 #include "shape_defs.hpp"
 
 namespace mesaac {
-namespace shape {
+namespace shape_eigen {
 
 class Fingerprinter {
 public:
@@ -30,5 +30,5 @@ private:
   Fingerprinter &operator=(const Fingerprinter &src);
 };
 
-} // namespace shape
+} // namespace shape_eigen
 } // namespace mesaac

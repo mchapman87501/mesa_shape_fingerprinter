@@ -697,8 +697,8 @@ TEST_CASE("mesaac::shape::AxisAligner", "[mesaac]") {
 }
 
 namespace {
-int _benchmark_align_to_axes(const TestFixture &fixture,
-                             std::shared_ptr<WBAxisAligner> aligner) {
+int benchmark_align_to_axes(const TestFixture &fixture,
+                            std::shared_ptr<WBAxisAligner> aligner) {
   mol::Mol mol;
   PointList points, cloud;
   unsigned int num_heavies;
@@ -714,14 +714,15 @@ int _benchmark_align_to_axes(const TestFixture &fixture,
 
 } // namespace
 
-TEST_CASE("Benchmark alignments", "[mesaac][mesaac_benchmark]") {
+TEST_CASE("Benchmark mesaac::shape::AxisAligner",
+          "[mesaac][mesaac_benchmark]") {
   TestFixture fixture;
 
   BENCHMARK_ADVANCED("Point cloud alignment")(
       Catch::Benchmark::Chronometer meter) {
     std::shared_ptr<WBAxisAligner> aligner(fixture.new_aligner());
     meter.measure([fixture, aligner] {
-      return _benchmark_align_to_axes(fixture, aligner);
+      return benchmark_align_to_axes(fixture, aligner);
     });
   };
 
@@ -729,7 +730,7 @@ TEST_CASE("Benchmark alignments", "[mesaac][mesaac_benchmark]") {
       Catch::Benchmark::Chronometer meter) {
     std::shared_ptr<WBAxisAligner> ac_aligner(fixture.new_aligner_ac_only());
     meter.measure([fixture, ac_aligner] {
-      return _benchmark_align_to_axes(fixture, ac_aligner);
+      return benchmark_align_to_axes(fixture, ac_aligner);
     });
   };
 }

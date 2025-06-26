@@ -13,27 +13,7 @@
 using namespace std;
 
 namespace mesaac {
-namespace shape {
-AxisAligner::AxisAligner(const PointList &sphere, float atom_scale,
-                         bool atom_centers_only)
-    : m_volbox(sphere, atom_scale), m_atom_scale(atom_scale),
-      m_atom_centers_only(atom_centers_only) {
-  // cerr << "Align to atom centers: " << m_atom_centers_only << endl;
-}
-
-AxisAligner::~AxisAligner() {}
-
-AxisAligner::AxisAligner(const AxisAligner &src) : m_volbox(src.m_volbox) {
-  *this = src;
-}
-
-AxisAligner &AxisAligner::operator=(const AxisAligner &src) {
-  m_volbox = src.m_volbox;
-  m_atom_scale = src.m_atom_scale;
-  m_atom_centers_only = src.m_atom_centers_only;
-  return *this;
-}
-
+namespace shape_eigen {
 void AxisAligner::align_to_axes(mol::Mol &m) {
   align_to_axes(m.mutable_atoms());
 }
@@ -238,5 +218,5 @@ void AxisAligner::find_axis_align_transform(const PointList &cloud,
   transform = x.jacobiSvd().matrixV().transpose();
   unmirror_axes(transform);
 }
-} // namespace shape
+} // namespace shape_eigen
 } // namespace mesaac

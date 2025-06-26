@@ -2,12 +2,12 @@
 // Copyright (c) 2005-2010 Mesa Analytics & Computing, Inc.  All rights reserved
 //
 
-#include "mesaac_shape/hammersley.hpp"
+#include "mesaac_shape_eigen/hammersley.hpp"
 
 using namespace std;
 
 namespace mesaac {
-namespace shape {
+namespace shape_eigen {
 
 typedef vector<int> DigitsVector;
 
@@ -103,5 +103,5 @@ bool Hammersley::next_point(Point &pnt) {
   }
   return true;
 }
-} // namespace shape
+} // namespace shape_eigen
 } // namespace mesaac

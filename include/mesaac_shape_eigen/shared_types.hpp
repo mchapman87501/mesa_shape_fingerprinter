@@ -8,13 +8,13 @@
 #include <vector>
 
 namespace mesaac {
-namespace shape {
+namespace shape_eigen {
 // Informal: Point holds x, y, z and optional radius
 typedef std::vector<float> Point;
 typedef std::vector<Point> PointList;
 typedef BitVector Fingerprint;
 typedef ArrayBitVectors ShapeFingerprint;
-} // namespace shape
+} // namespace shape_eigen
 } // namespace mesaac
 
 #endif /* end of include guard: SHARED_TYPES_H_7FFXIUU6 */

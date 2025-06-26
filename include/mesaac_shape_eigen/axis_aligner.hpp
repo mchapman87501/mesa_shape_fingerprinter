@@ -5,24 +5,20 @@
 #pragma once
 
 #include "mesaac_mol.hpp"
-#include "mesaac_shape/shared_types.hpp"
-#include "mesaac_shape/vol_box.hpp"
+#include "mesaac_shape_eigen/shared_types.hpp"
+#include "mesaac_shape_eigen/vol_box.hpp"
 
 #include <Eigen/Core>
 
 namespace mesaac {
-namespace shape {
+namespace shape_eigen {
 typedef Eigen::Matrix3f Transform;
 
 class AxisAligner {
 public:
-  // AxisAligner(const PointList& sphere, float atom_scale);
-  AxisAligner(const PointList &sphere, float atom_scale,
-              bool atom_centers_only);
-  virtual ~AxisAligner();
-
-  AxisAligner(const AxisAligner &src);
-  AxisAligner &operator=(const AxisAligner &src);
+  AxisAligner(const PointList &sphere, float atom_scale, bool atom_centers_only)
+      : m_volbox(sphere, atom_scale), m_atom_scale(atom_scale),
+        m_atom_centers_only(atom_centers_only) {}
 
   void align_to_axes(mesaac::mol::Mol &m);
   void align_to_axes(mesaac::mol::AtomVector &atoms);
@@ -46,5 +42,5 @@ protected:
   void update_atom_coords(mesaac::mol::AtomVector &atoms,
                           const PointList &all_centers);
 };
-} // namespace shape
+} // namespace shape_eigen
 } // namespace mesaac

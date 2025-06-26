@@ -15,7 +15,7 @@
 #include "mesaac_shape/hammersley.h"
 
 using namespace std;
-using namespace mesaac::shape;
+using namespace mesaac::shape_eigen;
 using namespace mesaac::mol;
 
 namespace mesaac {

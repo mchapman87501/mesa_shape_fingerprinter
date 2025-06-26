@@ -2,7 +2,7 @@
 // Copyright (c) 2005-2010 Mesa Analytics & Computing, Inc.  All rights reserved
 //
 
-#include "mesaac_shape/vol_box.hpp"
+#include "mesaac_shape_eigen/vol_box.hpp"
 
 #include <iostream>
 #include <sstream>
@@ -11,7 +11,7 @@
 using namespace std;
 
 namespace mesaac {
-namespace shape {
+namespace shape_eigen {
 
 VolBox::VolBox(const PointList &points, const float sphere_scale) {
   m_units_per_side = 8;
@@ -74,9 +74,9 @@ void VolBox::add_points(const PointList &points) {
   for (const auto &p : points) {
     int ix = (int)((p[0] - m_xmin) / m_dx), iy = (int)((p[1] - m_ymin) / m_dy),
         iz = (int)((p[2] - m_zmin) / m_dz);
-    ix = (ix > m_ixmax) ? m_ixmax : (ix < 0) ? 0 : ix;
-    iy = (iy > m_iymax) ? m_iymax : (iy < 0) ? 0 : iy;
-    iz = (iz > m_izmax) ? m_izmax : (iz < 0) ? 0 : iz;
+    ix = max(0, min(ix, m_ixmax));
+    iy = max(0, min(iy, m_iymax));
+    iz = max(0, min(iz, m_izmax));
     // The actual points are in m_bucket_points.
     // xyz_bucket simply stores indices of these points.
     xyz_bucket.at(ix).at(iy).at(iz).push_back(m_bucket_points.size());
@@ -103,8 +103,8 @@ void VolBox::get_points_within_spheres(const PointList &spheres,
   BitVector which_points;
   set_bits_for_spheres(spheres, which_points, true, offset);
   contained_points.reserve(which_points.count());
-  unsigned int iMax(which_points.size());
-  for (unsigned int i = 0; i != iMax; i++) {
+  unsigned int i_max(which_points.size());
+  for (unsigned int i = 0; i != i_max; i++) {
     if (which_points.test(i)) {
       contained_points.push_back(m_bucket_points.at(i));
     }
@@ -142,8 +142,8 @@ void VolBox::set_bits_for_one_sphere_unchecked(const Point &sphere,
   IndexList pic; // (indices of) points in cube
   get_points_in_cube(x, y, z, radius, pic);
   IndexList::iterator i;
-  IndexList::iterator iEnd(pic.end());
-  for (i = pic.begin(); i != iEnd; i++) {
+  IndexList::iterator i_end(pic.end());
+  for (i = pic.begin(); i != i_end; i++) {
     unsigned int point_index(*i);
 
     if (!bits.test(point_index + offset)) {
@@ -188,5 +188,5 @@ void VolBox::get_points_in_cube(float x, float y, float z, float radius,
     }
   }
 }
-} // namespace shape
+} // namespace shape_eigen
 } // namespace mesaac

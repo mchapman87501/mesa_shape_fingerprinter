@@ -3,13 +3,13 @@
 // Copyright (c) 2005-2010 Mesa Analytics & Computing, Inc.  All rights reserved
 //
 
-#include "mesaac_shape/fingerprinter.hpp"
+#include "mesaac_shape_eigen/fingerprinter.hpp"
 
 using namespace std;
 using namespace mesaac::mol;
 
 namespace mesaac {
-namespace shape {
+namespace shape_eigen {
 // Implementation is derived from ShapeFingerprint's mol_fingerprinter.
 
 const static float C_FlipMatrix[4][3] = {{1.0, 1.0, 1.0}, // Unflipped
@@ -65,5 +65,5 @@ void Fingerprinter::compute_for_flip(const PointList &points,
   m_volbox.set_bits_for_spheres(flipped, result, true, 0);
 }
 
-} // namespace shape
+} // namespace shape_eigen
 } // namespace mesaac

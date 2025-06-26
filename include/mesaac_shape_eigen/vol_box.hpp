@@ -1,33 +1,30 @@
 #pragma once
 
+#include "mesaac_shape_eigen/shared_types.hpp"
 #include "shape_defs.hpp" // For BitVector
-#include "shared_types.h"
 #include <memory>
 #include <vector>
 
 namespace mesaac {
-namespace shape {
+namespace shape_eigen {
 // Vector of indices, i.e. indices of points which lie within a volume.
-typedef std::vector<unsigned int> IndexList;
+using IndexList = std::vector<unsigned int>;
 struct IndexedPoint {
   unsigned int index;
   float x, y, z;
 };
-typedef std::vector<IndexedPoint> IndexedPointList;
+using IndexedPointList = std::vector<IndexedPoint>;
 
-class XYZBucket;
-
-// When sharing VolBox instances it might be good to use shared
-// (ref-counted) pointers:
-class VolBox;
-typedef std::shared_ptr<VolBox> VolBoxPtr;
+using ZBucket = std::vector<IndexList>;
+using YZBucket = std::vector<ZBucket>;
+using XYZBucket = std::vector<YZBucket>;
 
 class VolBox {
 public:
+  using VolBoxPtr = std::shared_ptr<VolBox>;
+
+  VolBox() {}
   VolBox(const PointList &points, const float sphere_scale);
-  virtual ~VolBox();
-  VolBox(const VolBox &src);
-  VolBox &operator=(const VolBox &src);
 
   // Get the number of points within this VolBox.
   unsigned int size();
@@ -52,7 +49,7 @@ protected:
   float m_units_per_side;
   float m_dx, m_dy, m_dz;
   int m_ixmax, m_iymax, m_izmax;
-  XYZBucket *m_bucket;
+  XYZBucket m_bucket;
   PointList m_bucket_points;
 
   void add_points(const PointList &points);
@@ -61,5 +58,5 @@ protected:
   void get_points_in_cube(float x, float y, float z, float radius,
                           IndexList &result) const;
 };
-} // namespace shape
+} // namespace shape_eigen
 } // namespace mesaac
