@@ -44,6 +44,6 @@ The 3rd-party packages that are made available through `FetchContent` define a l
 
 For this project, 3rd-party tests are distracting. That's why `CMakePresets.json` explores a way of running only the project's own tests, as identified by CMake labels.
 
-### OpenBabal and FetchContent
+### OpenBabel and FetchContent
 
 [OpenBabel](https://github.com/openbabel/openbabel) is not compatible with CMake >= 4.0, because of its requirement for an older version of CMake. It looks as though efforts are underway to address this problem: See [issue #2784](https://github.com/openbabel/openbabel/pull/2784).
