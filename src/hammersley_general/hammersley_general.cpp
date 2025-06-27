@@ -22,15 +22,76 @@
 #include <cstdio>
 #include <cstdlib>
 #include <filesystem>
-#include <fstream>
 #include <iostream>
 #include <string>
 #include <vector>
 
 using namespace std;
+
 const vector<unsigned int> primes{3,  5,  7,  11, 13,  17,  19,  23, 29, 31,
                                   37, 41, 43, 47, 53,  59,  61,  67, 71, 73,
                                   79, 83, 89, 97, 101, 103, 107, 109};
+
+bool str_to_unsigned_int(const string &sval, unsigned int &result,
+                         const string &result_name) {
+  // How to detect when sval is not even a valid integer, e.g., "foo"?
+  int signed_val = atoi(sval.c_str());
+  if (signed_val < 0) {
+    cerr << "Value for " << result_name << " (" << sval
+         << ") is not a valid unsigned integer." << endl;
+    return false;
+  }
+  result = signed_val;
+  return true;
+}
+
+void show_usage(const string &prog_name) {
+  cerr << "Usage: " << prog_name << " (-h|--help) dimension sample_size" << endl
+       << "    dimension - the dimensionality of generated points," << endl
+       << "                typically some positive int less than 40." << endl
+       << "    sample_size - the number of points to output." << endl
+       << endl
+       << "Options:" << endl
+       << "    -h|--help - show this help message and exit" << endl;
+}
+
+void parse_cmdline(int argc, char **argv, unsigned int &dimension,
+                   unsigned int &sample_size) {
+  const string prog_name = filesystem::path(argv[0]).filename().string();
+
+  if (argc >= 2 && (string(argv[1]) == "-h" || string(argv[1]) == "--help")) {
+    show_usage(prog_name);
+    exit(0);
+  }
+
+  if (argc != 3) {
+    show_usage(prog_name);
+    exit(1);
+  }
+
+  if (!str_to_unsigned_int(argv[1], dimension, "dimension")) {
+    exit(1);
+  }
+  if (dimension < 1) {
+    cerr << "dimension (" << dimension << ") must be greater than zero."
+         << endl;
+    exit(1);
+  }
+
+  if (dimension > primes.size() + 1) {
+    cerr << "dimension (" << dimension << ") must be less than or equal to "
+         << primes.size() + 1 << "." << endl;
+    exit(1);
+  }
+
+  if (!str_to_unsigned_int(argv[2], sample_size, "sample_size")) {
+    exit(1);
+  }
+  if (sample_size < 0) {
+    cerr << "sample_size (" << sample_size << ") must be non-negative" << endl;
+    exit(1);
+  }
+}
 
 vector<unsigned int> base_function(unsigned int prime, unsigned int number) {
   vector<unsigned int> base_vector;
@@ -103,12 +164,8 @@ void generate_points(const unsigned int dimension,
 
 int main(int argc, char **argv) {
 
-  unsigned int i, j, twocount;
-  vector<unsigned int> base_vector;
   unsigned int dimension;
   unsigned int sample_size;
-  double sum;
-  vector<float> a_dimension;
   vector<vector<float>> all_dimensions;
 
   // represent the integers i = 1,...,K as binary
@@ -116,33 +173,17 @@ int main(int argc, char **argv) {
   // e.g., random number x_i = 1111 = 1/16 + 1/8 + 1/4 + 1/2 = 0.9375
   // take the floor of (N * x_i) = random index into the array of length N
   // Store indices in a k length vector of ints.
-  if (argc != 3) {
-    const string prog_name = filesystem::path(argv[0]).filename().string();
-    cerr << "Usage: " << prog_name << " dimension sample_size" << endl
-         << "       dimension - the dimensionality of generated points," << endl
-         << "                   typically some positive int less than 40."
-         << endl
-         << "       sample_size - the number of points to output." << endl;
-    exit(0);
-  }
 
-  dimension = atoi(argv[1]);
-  if (dimension > primes.size() + 1) {
-    cerr << "Too many dimensions.  Current limit is " << primes.size() + 1
-         << "." << endl
-         << "Try again." << endl;
-    exit(1);
-  }
-
-  sample_size = atoi(argv[2]);
-
+  parse_cmdline(argc, argv, dimension, sample_size);
   generate_points(dimension, sample_size, all_dimensions);
 
   // Output points
-  for (i = 0; i < sample_size; i++) {
-    for (j = 0; j < dimension - 1; j++) {
-      cout << all_dimensions[j][i] << " ";
+  for (unsigned int i = 0; i < sample_size; i++) {
+    string sep("");
+    for (unsigned int j = 0; j < dimension; j++) {
+      cout << sep << all_dimensions[j][i];
+      sep = " ";
     }
-    cout << all_dimensions[j][i] << endl;
+    cout << endl;
   }
 }
