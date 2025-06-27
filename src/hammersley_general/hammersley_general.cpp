@@ -28,9 +28,9 @@
 #include <vector>
 
 using namespace std;
-unsigned int p[28] = {3,  5,  7,  11, 13,  17,  19,  23, 29, 31,
-                      37, 41, 43, 47, 53,  59,  61,  67, 71, 73,
-                      79, 83, 89, 97, 101, 103, 107, 109};
+const vector<unsigned int> primes{3,  5,  7,  11, 13,  17,  19,  23, 29, 31,
+                                  37, 41, 43, 47, 53,  59,  61,  67, 71, 73,
+                                  79, 83, 89, 97, 101, 103, 107, 109};
 
 vector<unsigned int> base_function(unsigned int prime, unsigned int number) {
   vector<unsigned int> base_vector;
@@ -44,12 +44,66 @@ vector<unsigned int> base_function(unsigned int prime, unsigned int number) {
 };
 
 void generate_points(const unsigned int dimension,
-                     const unsigned int sample_size) {}
+                     const unsigned int sample_size,
+                     vector<vector<float>> &result) {
+  vector<float> a_dimension;
+
+  // Store first dimension, the sequence i/N (sample_size)
+  for (unsigned int i = 1; i <= sample_size; i++) {
+    a_dimension.push_back((float)i / float(sample_size));
+  }
+  result.push_back(a_dimension);
+  a_dimension.clear();
+
+  // van der Corput second dimension with 2 as the first prime.  Faster than
+  // the remaining prime dimensions
+
+  for (unsigned int i = 1; i <= sample_size; i++) {
+    unsigned int j = 0;
+    double sum = 0.0;
+    unsigned int twocount = 1;
+    bitset<32> i_int(i);
+    while (twocount <= i) {
+      if (i_int[j]) {
+        sum += 1.0 / (float)(twocount * 2);
+      }
+      j++;
+      twocount *= 2;
+    }
+    a_dimension.push_back(sum);
+  }
+
+  result.push_back(a_dimension);
+  a_dimension.clear();
+
+  // Remaining dimensions are successive primes 3, 5, 7, ...
+  unsigned int count;
+  unsigned int k = 0;
+  while (k < dimension) {
+    unsigned int prime = primes[k];
+    for (unsigned int i = 1; i <= sample_size; i++) {
+      unsigned int j = 0;
+      double sum = 0.0;
+      count = 1;
+      vector<unsigned int> base_vector = base_function(prime, i);
+      while (count <= i) {
+        if (base_vector[j]) {
+          sum += base_vector[j] / (float)(count * prime);
+        }
+        j++;
+        count *= prime;
+      }
+      a_dimension.push_back(sum);
+    }
+    result.push_back(a_dimension);
+    a_dimension.clear();
+    k++;
+  }
+}
 
 int main(int argc, char **argv) {
 
   unsigned int i, j, twocount;
-  vector<unsigned int> primes(p, p + 28);
   vector<unsigned int> base_vector;
   unsigned int dimension;
   unsigned int sample_size;
@@ -82,57 +136,7 @@ int main(int argc, char **argv) {
 
   sample_size = atoi(argv[2]);
 
-  // Store first dimension, the sequence i/N (sample_size)
-  for (i = 1; i <= sample_size; i++) {
-    a_dimension.push_back((float)i / float(sample_size));
-  }
-  all_dimensions.push_back(a_dimension);
-  a_dimension.clear();
-
-  // van der Corput second dimension with 2 as the first prime.  Faster than
-  // the remaining prime dimensions
-
-  for (i = 1; i <= sample_size; i++) {
-    j = 0;
-    sum = 0.0;
-    twocount = 1;
-    bitset<32> i_int(i);
-    while (twocount <= i) {
-      if (i_int[j]) {
-        sum += 1.0 / (float)(twocount * 2);
-      }
-      j++;
-      twocount *= 2;
-    }
-    a_dimension.push_back(sum);
-  }
-
-  all_dimensions.push_back(a_dimension);
-  a_dimension.clear();
-
-  // Remaining dimensions are successive primes 3, 5, 7, ...
-  unsigned int count;
-  unsigned int k = 0;
-  while (k < dimension) {
-    unsigned int prime = primes[k];
-    for (i = 1; i <= sample_size; i++) {
-      j = 0;
-      sum = 0.0;
-      count = 1;
-      base_vector = base_function(prime, i);
-      while (count <= i) {
-        if (base_vector[j]) {
-          sum += base_vector[j] / (float)(count * prime);
-        }
-        j++;
-        count *= prime;
-      }
-      a_dimension.push_back(sum);
-    }
-    all_dimensions.push_back(a_dimension);
-    a_dimension.clear();
-    k++;
-  }
+  generate_points(dimension, sample_size, all_dimensions);
 
   // Output points
   for (i = 0; i < sample_size; i++) {
