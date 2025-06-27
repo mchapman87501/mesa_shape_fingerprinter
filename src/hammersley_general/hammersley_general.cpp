@@ -87,10 +87,6 @@ void parse_cmdline(int argc, char **argv, unsigned int &dimension,
   if (!str_to_unsigned_int(argv[2], sample_size, "sample_size")) {
     exit(1);
   }
-  if (sample_size < 0) {
-    cerr << "sample_size (" << sample_size << ") must be non-negative" << endl;
-    exit(1);
-  }
 }
 
 vector<unsigned int> base_function(unsigned int prime, unsigned int number) {

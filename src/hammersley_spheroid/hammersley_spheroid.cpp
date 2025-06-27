@@ -27,9 +27,9 @@
 #include <vector>
 
 using namespace std;
-unsigned int p[28] = {3,  5,  7,  11, 13,  17,  19,  23, 29, 31,
-                      37, 41, 43, 47, 53,  59,  61,  67, 71, 73,
-                      79, 83, 89, 97, 101, 103, 107, 109};
+const vector<unsigned int> primes{3,  5,  7,  11, 13,  17,  19,  23, 29, 31,
+                                  37, 41, 43, 47, 53,  59,  61,  67, 71, 73,
+                                  79, 83, 89, 97, 101, 103, 107, 109};
 
 void show_usage(const string &exename, string msg = "") {
   const string prog_name = filesystem::path(exename).filename().string();
@@ -50,6 +50,36 @@ void show_usage(const string &exename, string msg = "") {
   exit(1);
 }
 
+bool str_to_unsigned_int(const string &sval, unsigned int &result,
+                         const string &result_name) {
+  // How to detect when sval is not even a valid integer, e.g., "foo"?
+  int signed_val = atoi(sval.c_str());
+  if (signed_val < 0) {
+    cerr << "Value for " << result_name << " (" << sval
+         << ") is not a valid unsigned integer." << endl;
+    return false;
+  }
+  result = signed_val;
+  return true;
+}
+
+void parse_cmdline(const int argc, char **argv, unsigned int &sample_size,
+                   float &a, float &b, float &c, float &scale) {
+  if (argc != 6) {
+    show_usage(argv[0], "Wrong number of arguments");
+  }
+
+  if (!str_to_unsigned_int(argv[1], sample_size, "sample_size")) {
+    exit(1);
+  }
+
+  // Presumably all of these values are meant to be >= 0.0.
+  a = atof(argv[2]);
+  b = atof(argv[3]);
+  c = atof(argv[4]);
+  scale = atof(argv[5]);
+}
+
 vector<unsigned int> base_function(unsigned int prime, unsigned int number) {
   vector<unsigned int> base_vector;
   unsigned int quotient = number;
@@ -61,58 +91,31 @@ vector<unsigned int> base_function(unsigned int prime, unsigned int number) {
   return base_vector;
 };
 
-int main(int argc, char **argv) {
-
-  unsigned int i, j, twocount;
-  vector<unsigned int> primes(p, p + 28);
-  vector<unsigned int> baseVector;
-  unsigned int SampleSize;
-  double sum;
-  vector<float> a_Dimension;
-  vector<vector<float>> AllDimensions;
-  float a = 1.0;
-  float b = 1.0;
-  float c = 1.0;
-
-  float scale = 10;
+void generate_points(const unsigned int sample_size, const float scale,
+                     vector<vector<float>> &result) {
+  vector<unsigned int> base_vector;
+  vector<float> a_dimension;
 
   // represent the integers i = 1,...,K as binary
-  // multiple least significant bit by 1 plus its binary place reciprocal
+  // multiply least significant bit by 1 plus its binary place reciprocal
   // e.g., random number x_i = 1111 = 1/16 + 1/8 + 1/4 + 1/2 = 0.9375
   // take the floor of (N * x_i) = random index into the array of length N
   // Store indices in a k length vector of ints.
-  if (argc != 6) {
-    show_usage(argv[0], "Wrong number of arguments");
+
+  // Store first dimension, the sequence i/N (sample_size)
+  for (unsigned int i = 1; i <= sample_size; i++) {
+    a_dimension.push_back((float)i / float(sample_size));
   }
-
-  if (3 > primes.size() + 1) {
-    cerr << "Too many dimensions.  Current cap is at " << primes.size() + 1
-         << endl;
-    cerr << "Try again" << endl;
-    exit(1);
-  }
-
-  SampleSize = atoi(argv[1]);
-  a = atof(argv[2]);
-  b = atof(argv[3]);
-  c = atof(argv[4]);
-
-  scale = atof(argv[5]);
-
-  // Store first dimension, the sequence i/N (SampleSize)
-  for (i = 1; i <= SampleSize; i++) {
-    a_Dimension.push_back((float)i / float(SampleSize));
-  }
-  AllDimensions.push_back(a_Dimension);
-  a_Dimension.clear();
+  result.push_back(a_dimension);
+  a_dimension.clear();
 
   // van der Corput second dimension with 2 as the first prime.  Faster than
   // the remaining prime dimensions
 
-  for (i = 1; i <= SampleSize; i++) {
-    j = 0;
-    sum = 0.0;
-    twocount = 1;
+  for (unsigned int i = 1; i <= sample_size; i++) {
+    unsigned int j = 0;
+    double sum = 0.0;
+    unsigned int twocount = 1;
     bitset<32> i_int(i);
     while (twocount <= i) {
       if (i_int[j]) {
@@ -121,51 +124,71 @@ int main(int argc, char **argv) {
       j++;
       twocount *= 2;
     }
-    a_Dimension.push_back(sum);
+    a_dimension.push_back(sum);
   }
 
-  AllDimensions.push_back(a_Dimension);
-  a_Dimension.clear();
+  result.push_back(a_dimension);
+  a_dimension.clear();
 
   // Remaining dimensions are successive primes 3, 5, 7, ...
-  unsigned int count;
   unsigned int k = 0;
   while (k < 3) {
     unsigned int prime = primes[k];
-    for (i = 1; i <= SampleSize; i++) {
-      j = 0;
-      sum = 0.0;
-      count = 1;
-      baseVector = base_function(prime, i);
+    for (unsigned int i = 1; i <= sample_size; i++) {
+      unsigned int j = 0;
+      double sum = 0.0;
+      unsigned int count = 1;
+      base_vector = base_function(prime, i);
       while (count <= i) {
-        if (baseVector[j]) {
-          sum += baseVector[j] / (float)(count * prime);
+        if (base_vector[j]) {
+          sum += base_vector[j] / (float)(count * prime);
         }
         j++;
         count *= prime;
       }
-      a_Dimension.push_back(sum);
+      a_dimension.push_back(sum);
     }
-    AllDimensions.push_back(a_Dimension);
-    a_Dimension.clear();
+    result.push_back(a_dimension);
+    a_dimension.clear();
     k++;
   }
 
   // Center at origin (0,0,0) and scale
-  for (i = 0; i < SampleSize; i++) {
-    for (j = 0; j < 3; j++) {
-      AllDimensions[j][i] = scale * (1.0 - 2.0 * AllDimensions[j][i]);
+  for (unsigned int i = 0; i < sample_size; i++) {
+    for (unsigned int j = 0; j < 3; j++) {
+      result[j][i] = scale * (1.0 - 2.0 * result[j][i]);
     }
   }
+}
 
-  for (i = 0; i < SampleSize; i++) {
-    if (::sqrt(((AllDimensions[0][i]) * (AllDimensions[0][i])) / a +
-               ((AllDimensions[1][i]) * (AllDimensions[1][i])) / b +
-               ((AllDimensions[2][i]) * (AllDimensions[2][i])) / c) <
-        double(scale)) {
-      cout << AllDimensions[0][i] << " " << AllDimensions[1][i] << " "
-           << AllDimensions[2][i] << endl;
+void output_points(ostream &outs, const vector<vector<float>> &points,
+                   unsigned int sample_size, const float a, const float b,
+                   const float c, const float scale) {
+  const double scale_sqr = scale * scale;
+  for (unsigned int i = 0; i < sample_size; i++) {
+    if ((((points[0][i]) * (points[0][i])) / a +
+         ((points[1][i]) * (points[1][i])) / b +
+         ((points[2][i]) * (points[2][i])) / c) < scale_sqr) {
+      outs << points[0][i] << " " << points[1][i] << " " << points[2][i]
+           << endl;
     }
   }
+}
+
+int main(int argc, char **argv) {
+
+  unsigned int i, j, twocount;
+  vector<vector<float>> points;
+
+  unsigned int sample_size;
+  float a = 1.0;
+  float b = 1.0;
+  float c = 1.0;
+  float scale = 10;
+
+  parse_cmdline(argc, argv, sample_size, a, b, c, scale);
+  generate_points(sample_size, scale, points);
+
+  output_points(cout, points, sample_size, a, b, c, scale);
   return 0;
 }
