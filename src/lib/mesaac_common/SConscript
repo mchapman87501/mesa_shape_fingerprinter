@@ -1,0 +1,52 @@
+Import("*")
+import os
+import logging
+
+# For compiling mesaac_common with license files: 
+# Link statically with libcrypto, if possible.  SCons makes this difficult.
+# And how to get at the standard search path?
+cryptoLibSrcs = []
+dirs = env.Dir(['/usr/lib64', '/usr/lib', '/usr/local/lib'] + env['LIBPATH'])
+libnames = ["ssl", "crypto"]
+    
+for libname in libnames:
+    staticName = "lib%s.a" % libname
+    for d in dirs:
+        f = d.File(staticName)
+        if os.path.isfile(f.abspath):
+            cryptoLibSrcs.append(f)
+            break
+    else:
+        # Couldn't find a static version of the library.  Just go w. the
+        # dynamic version.
+        logging.warn("Could not find static version of %s" % libname)
+        cryptoLibSrcs.append(libname)
+
+env = env.Clone()
+env.Append(LIBS=cryptoLibSrcs)
+
+# For CentOS 5 x64:
+if env['PLATFORM'] == "posix":
+    env.Append(LIBS=["dl"])
+
+libSrcs = [(f + ".cpp") for f in 
+           Split("gzip b32 b64 license_utils mesaac_features license_info license_info_file mesaac_common")]
+
+l = env.StaticLibrary("mesaac_common", libSrcs)
+env.Default(l)
+Alias("binaries", l)
+Alias("libs", l)
+
+installer = env.Install(env["libDir"], l)
+Alias("install", installer)
+
+mesaac_common = [l] + cryptoLibSrcs
+# For CentOS 5 x64:
+if env['PLATFORM'] == "posix":
+    mesaac_common.append("dl")
+
+genLicenseCmd = SConscript("gen_license/SConscript", exports="env mesaac_common")
+SConscript(dirs="cat_license_info", exports="env mesaac_common")
+SConscript(dirs="test", exports="env genLicenseCmd mesaac_common")
+
+Return("mesaac_common")
