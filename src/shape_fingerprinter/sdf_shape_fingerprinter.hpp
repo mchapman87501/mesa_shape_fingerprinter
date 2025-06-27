@@ -9,7 +9,7 @@
 
 #include "shared_types.hpp"
 
-namespace mesaac {
+namespace mesaac::shape_fingerprinter {
 class SDFShapeFingerprinter {
 public:
   typedef enum { FMT_ASCII, FMT_COMPRESSED_ASCII, FMT_BINARY } FormatEnum;
@@ -19,7 +19,6 @@ public:
                         std::string hammsSpherePathname, float radiiEpsilon,
                         bool includeIDs, FormatEnum format,
                         unsigned int numFolds);
-  virtual ~SDFShapeFingerprinter();
 
   void run(int startIndex, int endIndex);
 
@@ -40,4 +39,4 @@ private:
   SDFShapeFingerprinter(const SDFShapeFingerprinter &src);
   SDFShapeFingerprinter &operator=(const SDFShapeFingerprinter src);
 };
-} // namespace mesaac
+} // namespace mesaac::shape_fingerprinter

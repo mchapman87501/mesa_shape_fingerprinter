@@ -11,7 +11,7 @@
 #include "mesaac_shape.hpp"
 #include "shared_types.hpp"
 
-namespace mesaac {
+namespace mesaac::shape_fingerprinter {
 class MolFingerprinter {
 public:
   MolFingerprinter(PointList &hammsEllipsoidCoords,
@@ -22,7 +22,7 @@ public:
   explicit MolFingerprinter(const MolFingerprinter &src);
 
   void setMolecule(mol::Mol &mol);
-  bool getNextFP(BitVector &fp);
+  bool getNextFP(shape_defs::BitVector &fp);
 
 protected:
   shape::AxisAligner m_axisAligner;
@@ -33,9 +33,10 @@ protected:
   unsigned int m_iFlip;
   PointList m_heavies;
 
-  void computeCurrFlipFingerprint(const PointList &points, BitVector &result);
+  void computeCurrFlipFingerprint(const PointList &points,
+                                  shape_defs::BitVector &result);
 
 private:
   MolFingerprinter &operator=(const MolFingerprinter &src);
 };
-} // namespace mesaac
+} // namespace mesaac::shape_fingerprinter
