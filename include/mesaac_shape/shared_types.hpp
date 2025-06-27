@@ -9,9 +9,9 @@
 namespace mesaac {
 namespace shape {
 // Informal: Point holds x, y, z and optional radius
-typedef std::vector<float> Point;
-typedef std::vector<Point> PointList;
-typedef shape_defs::BitVector Fingerprint;
-typedef shape_defs::ArrayBitVectors ShapeFingerprint;
+using Point = std::vector<float>;
+using PointList = std::vector<Point>;
+using Fingerprint = shape_defs::BitVector;
+using ShapeFingerprint = shape_defs::ArrayBitVectors;
 } // namespace shape
 } // namespace mesaac
