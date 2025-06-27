@@ -6,7 +6,6 @@
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 
 #include <random>
-#include <stdexcept>
 #include <string>
 
 #include "mesaac_common/b32.hpp"
