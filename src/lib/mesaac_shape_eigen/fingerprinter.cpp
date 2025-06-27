@@ -37,7 +37,7 @@ void Fingerprinter::compute(const AtomVector &atoms, ShapeFingerprint &result) {
   PointList centers;
   get_point_list(atoms, centers);
   for (unsigned int i = 0; i != C_FlipMatrixSize; i++) {
-    BitVector curr_fp;
+    shape_defs::BitVector curr_fp;
     compute_for_flip(centers, i, curr_fp);
     result.push_back(curr_fp);
   }

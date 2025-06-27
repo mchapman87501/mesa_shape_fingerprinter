@@ -87,7 +87,8 @@ void VolBox::add_points(const PointList &points) {
 // Get the number of points within this VolBox.
 unsigned int VolBox::size() { return m_bucket_points.size(); }
 
-inline static void validate_bits(BitVector &bits, unsigned int size) {
+inline static void validate_bits(shape_defs::BitVector &bits,
+                                 unsigned int size) {
   if (bits.size() < size) {
     ostringstream outs;
     outs << "set_bits_for_sphere:  not enough bits (" << bits.size()
@@ -100,7 +101,7 @@ void VolBox::get_points_within_spheres(const PointList &spheres,
                                        PointList &contained_points,
                                        unsigned int offset) const {
   contained_points.clear();
-  BitVector which_points;
+  shape_defs::BitVector which_points;
   set_bits_for_spheres(spheres, which_points, true, offset);
   contained_points.reserve(which_points.count());
   unsigned int i_max(which_points.size());
@@ -111,7 +112,8 @@ void VolBox::get_points_within_spheres(const PointList &spheres,
   }
 }
 
-void VolBox::set_bits_for_spheres(const PointList &spheres, BitVector &bits,
+void VolBox::set_bits_for_spheres(const PointList &spheres,
+                                  shape_defs::BitVector &bits,
                                   bool from_scratch,
                                   unsigned int offset) const {
   if (from_scratch) {
@@ -128,7 +130,7 @@ void VolBox::set_bits_for_spheres(const PointList &spheres, BitVector &bits,
 }
 
 void VolBox::set_folded_bits_for_spheres(const PointList &spheres,
-                                         BitVector &bits,
+                                         shape_defs::BitVector &bits,
                                          unsigned int num_folds,
                                          unsigned int offset) const {
   unsigned int fold_factor = 1 << num_folds;
@@ -141,14 +143,15 @@ void VolBox::set_folded_bits_for_spheres(const PointList &spheres,
   }
 }
 
-void VolBox::set_bits_for_one_sphere(const Point &sphere, BitVector &bits,
+void VolBox::set_bits_for_one_sphere(const Point &sphere,
+                                     shape_defs::BitVector &bits,
                                      unsigned int offset) const {
   validate_bits(bits, m_bucket_points.size());
   set_bits_for_one_sphere_unchecked(sphere, bits, offset);
 }
 
 void VolBox::set_bits_for_one_sphere_unchecked(const Point &sphere,
-                                               BitVector &bits,
+                                               shape_defs::BitVector &bits,
                                                unsigned int offset) const {
   // Find all buckets overlapped by the sphere.
   const float x = sphere[0], y = sphere[1], z = sphere[2],
@@ -172,7 +175,7 @@ void VolBox::set_bits_for_one_sphere_unchecked(const Point &sphere,
 }
 
 void VolBox::set_folded_bits_for_one_sphere_unchecked(
-    const Point &sphere, BitVector &bits, unsigned int offset,
+    const Point &sphere, shape_defs::BitVector &bits, unsigned int offset,
     unsigned int folded_size) const {
   // Find all buckets overlapped by the sphere.
   const float x = sphere[0], y = sphere[1], z = sphere[2],

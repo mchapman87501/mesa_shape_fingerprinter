@@ -43,7 +43,7 @@ struct TestFixture {
   }
 
   void get_bits(PointList &cloud, float x, float y, float z, float r,
-                BitVector &result) {
+                shape_defs::BitVector &result) {
     const float rsqr = r * r;
     for (unsigned int i = 0; i != cloud.size(); ++i) {
       Point &p(cloud[i]);
@@ -106,7 +106,7 @@ TEST_CASE("mesaac::shape_eigen::VolBox", "[mesaac]") {
     Point p{0, 0, 0, 22.0};
 
     {
-      BitVector all_bits(10240);
+      shape_defs::BitVector all_bits(10240);
       vb.set_bits_for_one_sphere(p, all_bits, 0);
       REQUIRE(all_bits.count() == 10240);
     }
@@ -114,7 +114,7 @@ TEST_CASE("mesaac::shape_eigen::VolBox", "[mesaac]") {
     {
       VolBox vb2(vb);
 
-      BitVector all_bits(10240);
+      shape_defs::BitVector all_bits(10240);
       vb2.set_bits_for_one_sphere(p, all_bits, 0);
       REQUIRE(all_bits.count() == 10240);
     }
@@ -125,7 +125,7 @@ TEST_CASE("mesaac::shape_eigen::VolBox", "[mesaac]") {
     VolBox vb(empty, 1.0);
 
     for (float x = -10.0; x != 10.0; x += 1.0) {
-      BitVector matches(0);
+      shape_defs::BitVector matches(0);
       Point p{x, x, x, 22.0};
       // What about proving that this does not clear any bits?
       // Ah, never mind.
@@ -143,7 +143,8 @@ TEST_CASE("mesaac::shape_eigen::VolBox", "[mesaac]") {
     float r_sphere = fixture.get_max_extent(sphere);
     unsigned int total = 0;
     for (float x = -15.0; x != 15.0; x += 1.0) {
-      BitVector vb_matches(sphere.size()), brute_force_matches(sphere.size());
+      shape_defs::BitVector vb_matches(sphere.size()),
+          brute_force_matches(sphere.size());
       Point p{x, x, x, r};
       vb.set_bits_for_one_sphere(p, vb_matches, 0);
       fixture.get_bits(sphere, x, x, x, r, brute_force_matches);
@@ -165,13 +166,13 @@ TEST_CASE("mesaac::shape_eigen::VolBox", "[mesaac]") {
     PointList center_spheres;
     const float r = 5.0;
 
-    BitVector brute_force(sphere.size());
+    shape_defs::BitVector brute_force(sphere.size());
     for (float x = -15.0; x != 15.0; x += 1.0) {
       center_spheres.push_back({x, x, x, r});
       fixture.get_bits(sphere, x, x, x, r, brute_force);
     }
 
-    BitVector vb_matches;
+    shape_defs::BitVector vb_matches;
     vb.set_bits_for_spheres(center_spheres, vb_matches, true, 0);
     REQUIRE(vb_matches == brute_force);
     REQUIRE(vb_matches.count() > 0);
@@ -188,7 +189,7 @@ TEST_CASE("mesaac::shape_eigen::VolBox", "[mesaac]") {
     PointList center_spheres;
     const float r = 5.0;
 
-    BitVector brute_force(sphere.size());
+    shape_defs::BitVector brute_force(sphere.size());
     for (float x = -15.0; x != 15.0; x += 1.0) {
       center_spheres.push_back({x, x, x, r});
       fixture.get_bits(sphere, x, x, x, r, brute_force);
@@ -309,7 +310,7 @@ TEST_CASE("mesaac::shape_eigen::VolBox", "[mesaac]") {
 
     const unsigned int num_cloud_points(vb.size());
     const unsigned int offset(10);
-    BitVector bits1, bits2;
+    shape_defs::BitVector bits1, bits2;
     bits1.resize(num_cloud_points);
     bits2.resize(num_cloud_points + offset);
 

@@ -11,7 +11,7 @@ namespace shape {
 // Informal: Point holds x, y, z and optional radius
 typedef std::vector<float> Point;
 typedef std::vector<Point> PointList;
-typedef BitVector Fingerprint;
-typedef ArrayBitVectors ShapeFingerprint;
+typedef shape_defs::BitVector Fingerprint;
+typedef shape_defs::ArrayBitVectors ShapeFingerprint;
 } // namespace shape
 } // namespace mesaac

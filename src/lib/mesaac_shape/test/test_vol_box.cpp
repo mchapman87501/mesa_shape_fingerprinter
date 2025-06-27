@@ -43,7 +43,7 @@ struct TestFixture {
   }
 
   void get_bits(PointList &cloud, float x, float y, float z, float r,
-                BitVector &result) {
+                shape_defs::BitVector &result) {
     const float rsqr = r * r;
     for (unsigned int i = 0; i != cloud.size(); ++i) {
       Point &p(cloud[i]);
@@ -94,7 +94,8 @@ struct TestFixture {
     return ::sqrtf(rsqr_max);
   }
 
-  void get_brute_force_folded(BitVector &src, BitVector &dest,
+  void get_brute_force_folded(shape_defs::BitVector &src,
+                              shape_defs::BitVector &dest,
                               unsigned int num_folds) {
     const unsigned int src_size = src.size();
     unsigned int folded_size = src_size / (1 << num_folds);
@@ -121,7 +122,7 @@ TEST_CASE("mesaac::shape::VolBox", "[mesaac]") {
     Point p{0, 0, 0, 22.0};
 
     {
-      BitVector all_bits(10240);
+      shape_defs::BitVector all_bits(10240);
       vb.set_bits_for_one_sphere(p, all_bits, 0);
       REQUIRE(all_bits.count() == 10240);
     }
@@ -129,7 +130,7 @@ TEST_CASE("mesaac::shape::VolBox", "[mesaac]") {
     {
       VolBox vb2(vb);
 
-      BitVector all_bits(10240);
+      shape_defs::BitVector all_bits(10240);
       vb2.set_bits_for_one_sphere(p, all_bits, 0);
       REQUIRE(all_bits.count() == 10240);
     }
@@ -140,7 +141,7 @@ TEST_CASE("mesaac::shape::VolBox", "[mesaac]") {
     VolBox vb_empty(empty, 1.0);
 
     for (float x = -10.0; x != 10.0; x += 1.0) {
-      BitVector matches(0);
+      shape_defs::BitVector matches(0);
       Point p{x, x, x, 22.0};
       // What about proving that this does not clear any bits?
       // Ah, never mind.
@@ -154,7 +155,8 @@ TEST_CASE("mesaac::shape::VolBox", "[mesaac]") {
     float r_sphere = fixture.get_max_extent(sphere);
     unsigned int total = 0;
     for (float x = -15.0; x != 15.0; x += 1.0) {
-      BitVector vb_matches(sphere.size()), brute_force_matches(sphere.size());
+      shape_defs::BitVector vb_matches(sphere.size()),
+          brute_force_matches(sphere.size());
       Point p{x, x, x, r};
       vb.set_bits_for_one_sphere(p, vb_matches, 0);
       fixture.get_bits(sphere, x, x, x, r, brute_force_matches);
@@ -172,13 +174,13 @@ TEST_CASE("mesaac::shape::VolBox", "[mesaac]") {
     PointList center_spheres;
     const float r = 5.0;
 
-    BitVector brute_force(sphere.size());
+    shape_defs::BitVector brute_force(sphere.size());
     for (float x = -15.0; x != 15.0; x += 1.0) {
       center_spheres.push_back({x, x, x, r});
       fixture.get_bits(sphere, x, x, x, r, brute_force);
     }
 
-    BitVector vb_matches;
+    shape_defs::BitVector vb_matches;
     vb.set_bits_for_spheres(center_spheres, vb_matches, true, 0);
     REQUIRE(brute_force == vb_matches);
     REQUIRE(vb_matches.count() > 0);
@@ -191,7 +193,7 @@ TEST_CASE("mesaac::shape::VolBox", "[mesaac]") {
     PointList center_spheres;
     const float r = 5.0;
 
-    BitVector brute_force(sphere.size());
+    shape_defs::BitVector brute_force(sphere.size());
     for (float x = -15.0; x != 15.0; x += 1.0) {
       center_spheres.push_back({x, x, x, r});
       fixture.get_bits(sphere, x, x, x, r, brute_force);
@@ -296,7 +298,7 @@ TEST_CASE("mesaac::shape::VolBox", "[mesaac]") {
 
     const unsigned int num_cloud_points(vb.size());
     const unsigned int offset(10);
-    BitVector bits1, bits2;
+    shape_defs::BitVector bits1, bits2;
     bits1.resize(num_cloud_points);
     bits2.resize(num_cloud_points + offset);
 
@@ -319,7 +321,7 @@ TEST_CASE("mesaac::shape::VolBox", "[mesaac]") {
       center_spheres.push_back({x, x, x, r});
     }
 
-    BitVector full_fp, unfolded;
+    shape_defs::BitVector full_fp, unfolded;
     vb.set_bits_for_spheres(center_spheres, full_fp, true, 0);
 
     const unsigned int max_folds = 5;
@@ -327,7 +329,7 @@ TEST_CASE("mesaac::shape::VolBox", "[mesaac]") {
     unsigned int folded_size = vb.size();
     for (num_folds = 0, folded_size = vb.size(); num_folds != max_folds;
          ++num_folds, folded_size /= 2) {
-      BitVector folded;
+      shape_defs::BitVector folded;
       folded.resize(folded_size);
       folded.reset();
       vb.set_folded_bits_for_spheres(center_spheres, folded, num_folds, 0);
@@ -335,7 +337,7 @@ TEST_CASE("mesaac::shape::VolBox", "[mesaac]") {
 
       // cout << "Folds: " << num_folds << " = " << folded << endl;
 
-      BitVector folded_brute;
+      shape_defs::BitVector folded_brute;
       fixture.get_brute_force_folded(full_fp, folded_brute, num_folds);
       REQUIRE(folded == folded_brute);
     }

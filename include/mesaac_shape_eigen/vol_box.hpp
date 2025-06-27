@@ -33,10 +33,11 @@ public:
   //       x, y, z, radius
   // If from_scratch is true, then bits are cleared and resized to
   // match self's number of points.
-  void set_bits_for_spheres(const PointList &spheres, BitVector &bits,
-                            bool from_scratch, unsigned int offset) const;
+  void set_bits_for_spheres(const PointList &spheres,
+                            shape_defs::BitVector &bits, bool from_scratch,
+                            unsigned int offset) const;
 
-  void set_bits_for_one_sphere(const Point &sphere, BitVector &bits,
+  void set_bits_for_one_sphere(const Point &sphere, shape_defs::BitVector &bits,
                                unsigned int offset) const;
 
   void get_points_within_spheres(const PointList &spheres,
@@ -53,7 +54,8 @@ protected:
   PointList m_bucket_points;
 
   void add_points(const PointList &points);
-  void set_bits_for_one_sphere_unchecked(const Point &sphere, BitVector &bits,
+  void set_bits_for_one_sphere_unchecked(const Point &sphere,
+                                         shape_defs::BitVector &bits,
                                          unsigned int offset) const;
   void get_points_in_cube(float x, float y, float z, float radius,
                           IndexList &result) const;
