@@ -1,1 +1,2 @@
-# STUB
+add_executable(hammersley_general hammersley_general.cpp)
+target_compile_features(hammersley_general PUBLIC cxx_std_20)
