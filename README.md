@@ -47,3 +47,9 @@ For this project, 3rd-party tests are distracting. That's why `CMakePresets.json
 ### OpenBabel and FetchContent
 
 [OpenBabel](https://github.com/openbabel/openbabel) is not compatible with CMake >= 4.0, because of its requirement for an older version of CMake. It looks as though efforts are underway to address this problem: See [issue #2784](https://github.com/openbabel/openbabel/pull/2784).
+
+## TODO
+
+### Re-use `ArgParser`
+
+[shape_filter_by_radius.cpp](./src/shape_filter_by_radius/shape_filter_by_radius.cpp) defines an `ArgParser` for parsing command-line options. It should be factored out to its own library for use in all of the user-facing executables.
