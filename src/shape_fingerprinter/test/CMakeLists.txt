@@ -13,6 +13,6 @@ endforeach()
 
 add_test(
     NAME shape_fingerprinter_test_basics
-    COMMAND python3 test_basics.py
+    COMMAND Python3::Interpreter test_basics.py
     )
 set_tests_properties(shape_fingerprinter_test_basics PROPERTIES LABELS "mesaac")

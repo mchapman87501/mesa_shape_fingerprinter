@@ -58,6 +58,9 @@ FetchContent_MakeAvailable(Catch2)
 
 
 # See note, above, about the arrangement of tests within this project.
+# Some executable tests are driven by Python.
+find_package(Python3 COMPONENTS Interpreter)
+
 include(add_mesaac_test)
 
 if(SHAPE_FINGERPRINTS_BUILD_TESTS)
