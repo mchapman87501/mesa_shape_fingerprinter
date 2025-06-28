@@ -25,11 +25,13 @@ class Error(Exception):
 
 class TestCase(unittest.TestCase):
     def test_no_args(self):
+        """Test the exit status when no args are given."""
         # Redirect stdout/stderr to prevent them appearing during builds.
         status, out, err = self._run([])
         self.assertNotEqual(0, status)
 
     def test_help(self):
+        """Test that usage output is generated."""
         for option in ["-h", "--help"]:
             status, out, err = self._run([option])
             self.assertEqual(0, status)
@@ -40,6 +42,7 @@ class TestCase(unittest.TestCase):
                 self.assertTrue(opt in err, opt)
 
     def test_correct_usage_with_ellipsoid(self):
+        """Test generating ellipsoid fingerprints, against reference output."""
         for eopt in ["-e", "--ellipsoid"]:
             options = [eopt, ELLIPSE]
             status, out, err, sd_pathname, sphere = self._run_cox2(options)
@@ -49,6 +52,7 @@ class TestCase(unittest.TestCase):
             self._verify_cox2_fps(lines, sd_pathname)
 
     def test_correct_usage(self):
+        """Test generating fingerprints, with valid invocation."""
         status, out, err, sd_pathname, sphere = self._run_cox2()
         self.assertEqual(0, status)
 
@@ -58,20 +62,21 @@ class TestCase(unittest.TestCase):
         self._verify_fp_basics(lines, sd_pathname)
 
     def test_invalid_option(self):
+        """Test expected response to use of (example) unsupported options."""
         for option in ["-j", "--junk"]:
             status, out, err, u1, u2 = self._run_cox2([option])
             self.assertNotEqual(0, status)
             self.assertTrue("unsupported" in err.lower())
 
     def test_with_ids(self):
+        """Test generation of fingerprints with associated structure IDs."""
         for option in ["-i", "--id"]:
-            status, out, err, sd_pathname, sph = self._run_cox2_ell([option])
+            status, out, _err, sd_pathname, _sph = self._run_cox2_ell([option])
             self.assertEqual(0, status)
-            lines = [line.strip() for line in out.splitlines()]
             ids = []
             fps = []
-            for curr_line in lines:
-                fields = curr_line.split()
+            for curr_line in out.splitlines():
+                fields = curr_line.strip().split()
                 self.assertEqual(2, len(fields))
                 fps.append(fields[0])
                 ids.append(fields[1])
@@ -89,32 +94,20 @@ class TestCase(unittest.TestCase):
             )
 
     def test_compressed_output(self):
+        """Test compressed ASCII output, with IDs."""
+        # TODO Test compressed binary output.
         for format_flag in ["-f", "--format"]:
             options = [format_flag, "C", "--id"]
             status, out, err, sd_pathname, sph = self._run_cox2_ell(options)
             self.assertEqual(0, status)
-            lines = [line.strip() for line in out.splitlines()]
             ids = []
             fps = []
-            for i, curr_line in enumerate(lines):
-                fields = curr_line.split()
+            for curr_line in out.splitlines():
+                fields = curr_line.strip().split()
                 self.assertEqual(2, len(fields))
-                compressed_fp = fields[0]
-                # FP must start w. the format flag: "C" => "compressed"
-                self.assertTrue(compressed_fp.startswith("C"))
-                gzipped = base64.b64decode(compressed_fp[1:])
-                # Get the fingerprints:
-                fp = (
-                    gzip.GzipFile(
-                        mode="r",
-                        compresslevel=0,
-                        fileobj=io.BytesIO(gzipped),
-                    )
-                    .read()
-                    .decode("utf8")
-                )
-                fps.append(fp)
-                ids.append(fields[1])
+                compressed_fp, fp_id = fields
+                fps.append(self._get_compressed_fp(compressed_fp))
+                ids.append(fp_id)
             self._verify_cox2_fps(fps, sd_pathname)
             self.assertTrue(self._verify_cox2_ids(ids, sd_pathname))
             # Just to help ensure the positive test is doing something...
@@ -128,7 +121,21 @@ class TestCase(unittest.TestCase):
                 self._verify_cox2_ids(ids, sd_pathname, logger=logger)
             )
 
+    def _get_compressed_fp(self, compressed_fp: str) -> str:
+        # FP must start w. the format flag: "C" => "compressed"
+        self.assertTrue(compressed_fp.startswith("C"))
+        gzipped = base64.b64decode(compressed_fp[1:])
+        inf = gzip.GzipFile(
+            mode="r",
+            compresslevel=0,
+            fileobj=io.BytesIO(gzipped),
+        )
+        result = inf.read().decode("utf8")
+        inf.close()
+        return result
+
     def test_records_option(self):
+        """Test processing of specific SD file records/structures."""
         sd_pathname = COX2_CONFS
         num_confs = self._num_sd_structures(sd_pathname)
         record_flags = itertools.cycle(["-r", "--records"])
@@ -137,35 +144,38 @@ class TestCase(unittest.TestCase):
                 if start_index < num_confs:
                     end_index = min(start_index + num_records, num_confs)
                     record_flag = next(record_flags)
-                    # My ref results were generated using an ellipsoid.
-                    args = [
-                        record_flag,
-                        str(start_index),
-                        str(end_index),
-                        "-e",
-                        ELLIPSE,
-                        sd_pathname,
-                        SPHERE,
-                        "1.0",
-                    ]
-                    status, out, err = self._run(args)
-                    self.assertEqual(0, status)
-                    actual = out.splitlines()
-                    actual_count = len(actual) // 4
-                    expected_count = end_index - start_index
-                    if expected_count != actual_count:
-                        logging.error(
-                            "Wrong # records for %s..%s"
-                            % (start_index, end_index)
+                    args = (start_index, end_index, record_flag)
+                    with self.subTest(args=args):
+                        self._records_subtest(
+                            start_index, end_index, record_flag
                         )
-                    self.assertEqual(expected_count, actual_count)
 
-                    expected = self._get_cox2_fps()[
-                        start_index * 4 : end_index * 4
-                    ]
-                    self._compare_fp_lines(expected, actual)
+    def _records_subtest(self, start_index, end_index, record_flag):
+        # My ref results were generated using an ellipsoid.
+        args = [
+            record_flag,
+            str(start_index),
+            str(end_index),
+            "-e",
+            ELLIPSE,
+            COX2_CONFS,
+            SPHERE,
+            "1.0",
+        ]
+        status, out, _err = self._run(args)
+        self.assertEqual(0, status)
+        actual = out.splitlines()
+        actual_count = len(actual) // 4  # 4 lines per record
+        expected_count = end_index - start_index
+        if expected_count != actual_count:
+            logging.error(f"Wrong # records for {start_index}..{end_index}")
+        self.assertEqual(expected_count, actual_count)
+
+        expected = self._get_cox2_fps()[start_index * 4 : end_index * 4]
+        self._compare_fp_lines(expected, actual)
 
     def test_invalid_records_option(self):
+        """Test processing of specific, invalid SD file records/structures."""
         sd_pathname = COX2_CONFS
         _num_confs = self._num_sd_structures(sd_pathname)
         record_flags = itertools.cycle(["-r", "--records"])
@@ -179,22 +189,23 @@ class TestCase(unittest.TestCase):
                 SPHERE,
                 "1.0",
             ]
-            status, out, err = self._run(args)
-            self.assertNotEqual(0, status)
+            with self.subTest(args=args):
+                status, _out, _err = self._run(args)
+                self.assertNotEqual(0, status)
 
     def test_folding(self):
+        """Test generating folded fingerprints."""
         # It should be enough to test ASCII output.
         status, out, err, sd_pathname, sph = self._run_cox2()
         self.assertEqual(0, status)
-        unfolded = [l.strip() for l in out.splitlines()]
+        unfolded = [line.strip() for line in out.splitlines()]
         full_len = len(unfolded[0])
 
         fold_flags = itertools.cycle(["-n", "--num_folds"])
         for num_folds in range(4):
             options = [next(fold_flags), str(num_folds)]
-            # logging.debug("Fold options: %s" % options)
             status, out, err, sdp, sph = self._run_cox2(options)
-            folded = [l.strip() for l in out.splitlines()]
+            folded = [line.strip() for line in out.splitlines()]
             self.assertEqual(len(unfolded), len(folded))
 
             do_fold = self._get_folder(full_len, num_folds)
@@ -202,10 +213,8 @@ class TestCase(unittest.TestCase):
                 self.assertEqual(do_fold(u), f)
 
     def _num_sd_structures(self, pathname):
-        inf = open(pathname, "r")
-        count = sum(1 for line in inf if line.strip() == "$$$$")
-        inf.close()
-        return count
+        with open(pathname) as inf:
+            return sum(1 for line in inf if line.strip() == "$$$$")
 
     def _run(self, args):
         args = [str(tsupp.SHAPE_FP_EXE)] + list(args)
@@ -213,27 +222,18 @@ class TestCase(unittest.TestCase):
         return result.returncode, result.stdout, result.stderr
 
     def _line_diffs_acceptable(self, line_index, expected, actual, max_diffs):
-        result = True
         diffs = 0
-        prefix = "Line %s" % (line_index + 1)
+        prefix = f"Line {line_index + 1}"
         chars = []
         for e, a in zip(expected, actual):
-            print(f"DEBUG: Compare {repr(e)} vs. {repr(a)}")
-            if e == a:
-                chars.append(".")
-            elif e < a:
-                chars.append(">")  # Greater than expected
-                diffs += 1
-            else:
-                chars.append("<")
-                diffs += 1
-        print("%s: %s" % (prefix, "".join(chars)))
+            chars.append("." if e == a else (">" if e < a else "<"))
+            diffs += 0 if e == a else 1
+        print(f"{prefix}: {''.join(chars)}")
         result = diffs <= max_diffs
 
         if len(expected) != len(actual):
             print(
-                "%s: Expected length %s, actual length %s"
-                % (prefix, len(expected), len(actual))
+                f"{prefix}: Expected length {len(expected)}, actual length {len(actual)}"
             )
             result = False
         return result
@@ -241,7 +241,7 @@ class TestCase(unittest.TestCase):
     def _differences_acceptable(self, expected, actual, max_diffs_per_fp):
         result = True
         if len(expected) != len(actual):
-            print("Expected %s lines, got %s" % (len(expected), len(actual)))
+            print(f"Expected {len(expected)} lines, got {len(actual)}")
             result = False
         # Compare as many lines as possible:
         for i, (eline, aline) in enumerate(zip(expected, actual)):
@@ -260,11 +260,9 @@ class TestCase(unittest.TestCase):
         return self._run_cox2(["-e", ELLIPSE] + (options or []))
 
     def _get_cox2_fps(self):
-        inf = gzip.open(tsupp.REF_PATH / "cox2_3d_first_few.fp.txt.gz")
-        raw = inf.read()
-        result = [line for line in raw.decode("utf8").splitlines()]
-        inf.close()
-        return result
+        with gzip.open(tsupp.REF_PATH / "cox2_3d_first_few.fp.txt.gz") as inf:
+            raw = inf.read()
+            return [line for line in raw.decode("utf8").splitlines()]
 
     def _compare_fp_lines(self, expected, actual):
         if actual != expected:
@@ -302,14 +300,12 @@ class TestCase(unittest.TestCase):
             logger.error("Did not get expected IDs")
             if len(expected_ids) != len(actual_ids):
                 logger.error(
-                    "Expected %s IDs, got %s"
-                    % (len(expected_ids), len(actual_ids))
+                    f"Expected {len(expected_ids)} IDs, got {len(actual_ids)}"
                 )
             for i, (eid, aid) in enumerate(zip(expected_ids, actual_ids)):
                 if eid != aid:
                     logger.error(
-                        "Line %d:  Expected '%s', actual '%s'"
-                        % (i + 1, eid, aid)
+                        "Line {i + 1}:  Expected '{eid}', actual '{aid}'"
                     )
             result = False
         return result
@@ -323,10 +319,7 @@ class TestCase(unittest.TestCase):
                 failures.append(i + 1)
         self.assertFalse(
             failures,
-            (
-                "These fingerprints did not have the expected length: %s"
-                % failures
-            ),
+            f"These fingerprints did not have the expected length: {failures}",
         )
 
         fps_per_struct = 4
