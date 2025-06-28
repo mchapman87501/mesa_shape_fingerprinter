@@ -1,6 +1,9 @@
-# STUB
-message(STATUS "DEBUG: Preparing the test dir")
-configure_file(cmake_paths.py.in cmake_paths.py)
+set(SPF_EXE "$<TARGET_FILE:${TARGET}>")
+configure_file(cmake_paths.py.in cmake_paths.py.gen.in @ONLY)
+file(GENERATE
+OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/cmake_paths.py"
+INPUT "${CMAKE_CURRENT_BINARY_DIR}/cmake_paths.py.gen.in"
+)
 
 # Copy all of the Python files to the binary directory...
 set(PYTHON_SRC test_basics.py testsupport.py)

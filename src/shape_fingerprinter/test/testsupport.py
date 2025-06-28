@@ -11,22 +11,13 @@ import logging
 import cmake_paths
 
 
-THIS_DIR = cmake_paths.current_src_dir
+THIS_DIR = cmake_paths.CURRENT_SRC_DIR
 RELPATH = THIS_DIR
 
 DATA_PATH = THIS_DIR / "data" / "in"
 REF_PATH = THIS_DIR / "data" / "ref"
-SHARED_DATA_DIR = cmake_paths.workspace_root / "tests" / "data"
-EXE_DIR = cmake_paths.current_bin_dir.parent
-
-print(f"""
-DEBUG:
-    THIS_DIR = {str(THIS_DIR)}
-    DATA_PATH = {str(DATA_PATH)}
-    REF_PATH = {str(REF_PATH)}
-    SHARED_DATA_DIR = {str(SHARED_DATA_DIR)}
-    EXE_DIR = {str(EXE_DIR)}
-""")
+SHARED_DATA_DIR = cmake_paths.WORKSPACE_ROOT / "tests" / "data"
+SHAPE_FP_EXE = cmake_paths.SHAPE_FP_EXE
 
 
 def gen_sd_records(inf):

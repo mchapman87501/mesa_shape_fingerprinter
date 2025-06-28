@@ -24,17 +24,6 @@ class Error(Exception):
 
 
 class TestCase(unittest.TestCase):
-    def _num_sd_structures(self, pathname):
-        inf = open(pathname, "r")
-        count = sum(1 for line in inf if line.strip() == "$$$$")
-        inf.close()
-        return count
-
-    def _run(self, args):
-        args = [str(tsupp.EXE_DIR / "shape_fingerprinter")] + list(args)
-        result = subprocess.run(args, capture_output=True, encoding="utf8")
-        return result.returncode, result.stdout, result.stderr
-
     def test_no_args(self):
         # Redirect stdout/stderr to prevent them appearing during builds.
         status, out, err = self._run([])
@@ -49,128 +38,6 @@ class TestCase(unittest.TestCase):
             # Ensure all valid options appear in the help msg.
             for opt in "-h --help -i --id".split():
                 self.assertTrue(opt in err, opt)
-
-    def _line_diffs_acceptable(self, line_index, expected, actual, max_diffs):
-        result = True
-        diffs = 0
-        prefix = "Line %s" % (line_index + 1)
-        chars = []
-        for e, a in zip(expected, actual):
-            print(f"DEBUG: Compare {repr(e)} vs. {repr(a)}")
-            if e == a:
-                chars.append(".")
-            elif e < a:
-                chars.append(">")  # Greater than expected
-                diffs += 1
-            else:
-                chars.append("<")
-                diffs += 1
-        print("%s: %s" % (prefix, "".join(chars)))
-        result = diffs <= max_diffs
-
-        if len(expected) != len(actual):
-            print(
-                "%s: Expected length %s, actual length %s"
-                % (prefix, len(expected), len(actual))
-            )
-            result = False
-        return result
-
-    def _differences_acceptable(self, expected, actual, max_diffs_per_fp):
-        result = True
-        if len(expected) != len(actual):
-            print("Expected %s lines, got %s" % (len(expected), len(actual)))
-            result = False
-        # Compare as many lines as possible:
-        for i, (eline, aline) in enumerate(zip(expected, actual)):
-            if eline != aline:
-                result = result and self._line_diffs_acceptable(
-                    i, eline, aline, max_diffs_per_fp
-                )
-
-        return result
-
-    def _run_cox2(self, options=None):
-        args = (options or []) + [COX2_CONFS, SPHERE, "1.0"]
-        return self._run(args) + (COX2_CONFS, SPHERE)
-
-    def _run_cox2_ell(self, options=None):
-        return self._run_cox2(["-e", ELLIPSE] + (options or []))
-
-    def _get_cox2_fps(self):
-        inf = gzip.open(tsupp.REF_PATH / "cox2_3d_first_few.fp.txt.gz")
-        raw = inf.read()
-        result = [line for line in raw.decode("utf8").splitlines()]
-        inf.close()
-        return result
-
-    def _compare_fp_lines(self, expected, actual):
-        if actual != expected:
-            # Allow up to <small number> fingerprint bit discrepancies
-            # per line before failing.
-            max_discrepancies_per_conf = 1
-            if not self._differences_acceptable(
-                expected, actual, max_discrepancies_per_conf
-            ):
-                self.fail("Actual fingerprints had too many discrepancies")
-
-    def _verify_cox2_fps(self, lines, sd_pathname):
-        self._verify_fp_basics(lines, sd_pathname)
-
-        # To generate new reference output:
-        # outf = gzip.open(COX2_FPS, "w")
-        # outf.write_lines(lines)
-        # outf.close()
-
-        expected = self._get_cox2_fps()
-        self._compare_fp_lines(expected, lines)
-
-    def _verify_cox2_ids(
-        self, actual_ids, sd_pathname, expected_copies=4, logger=None
-    ):
-        result = True
-        logger = logger or logging.getLogger()
-
-        expected_ids = []
-        with open(sd_pathname) as inf:
-            for eid in tsupp.gen_sd_names(inf):
-                expected_ids.extend([eid] * expected_copies)
-
-        if expected_ids != actual_ids:
-            logger.error("Did not get expected IDs")
-            if len(expected_ids) != len(actual_ids):
-                logger.error(
-                    "Expected %s IDs, got %s"
-                    % (len(expected_ids), len(actual_ids))
-                )
-            for i, (eid, aid) in enumerate(zip(expected_ids, actual_ids)):
-                if eid != aid:
-                    logger.error(
-                        "Line %d:  Expected '%s', actual '%s'"
-                        % (i + 1, eid, aid)
-                    )
-            result = False
-        return result
-
-    def _verify_fp_basics(self, lines, sd_pathname):
-        # Expect all fingerprints to have the same length:
-        expectedFPLen = 10240
-        failures = []
-        for i, line in enumerate(lines):
-            if len(line) != expectedFPLen:
-                failures.append(i + 1)
-        self.assertFalse(
-            failures,
-            (
-                "These fingerprints did not have the expected length: %s"
-                % failures
-            ),
-        )
-
-        fps_per_struct = 4
-        self.assertEqual(
-            len(lines), fps_per_struct * self._num_sd_structures(sd_pathname)
-        )
 
     def test_correct_usage_with_ellipsoid(self):
         for eopt in ["-e", "--ellipsoid"]:
@@ -315,19 +182,6 @@ class TestCase(unittest.TestCase):
             status, out, err = self._run(args)
             self.assertNotEqual(0, status)
 
-    def _get_folder(self, full_len, num_folds):
-        # Brute-force double-checking of folded fingerprints.
-        folded_size = full_len // (1 << num_folds)
-
-        def folder(fpstr):
-            result = ["0"] * folded_size
-            for i, bit in enumerate(fpstr):
-                if bit == "1":
-                    result[i % folded_size] = "1"
-            return "".join(result)
-
-        return folder
-
     def test_folding(self):
         # It should be enough to test ASCII output.
         status, out, err, sd_pathname, sph = self._run_cox2()
@@ -346,6 +200,152 @@ class TestCase(unittest.TestCase):
             do_fold = self._get_folder(full_len, num_folds)
             for u, f in zip(unfolded, folded):
                 self.assertEqual(do_fold(u), f)
+
+    def _num_sd_structures(self, pathname):
+        inf = open(pathname, "r")
+        count = sum(1 for line in inf if line.strip() == "$$$$")
+        inf.close()
+        return count
+
+    def _run(self, args):
+        args = [str(tsupp.SHAPE_FP_EXE)] + list(args)
+        result = subprocess.run(args, capture_output=True, encoding="utf8")
+        return result.returncode, result.stdout, result.stderr
+
+    def _line_diffs_acceptable(self, line_index, expected, actual, max_diffs):
+        result = True
+        diffs = 0
+        prefix = "Line %s" % (line_index + 1)
+        chars = []
+        for e, a in zip(expected, actual):
+            print(f"DEBUG: Compare {repr(e)} vs. {repr(a)}")
+            if e == a:
+                chars.append(".")
+            elif e < a:
+                chars.append(">")  # Greater than expected
+                diffs += 1
+            else:
+                chars.append("<")
+                diffs += 1
+        print("%s: %s" % (prefix, "".join(chars)))
+        result = diffs <= max_diffs
+
+        if len(expected) != len(actual):
+            print(
+                "%s: Expected length %s, actual length %s"
+                % (prefix, len(expected), len(actual))
+            )
+            result = False
+        return result
+
+    def _differences_acceptable(self, expected, actual, max_diffs_per_fp):
+        result = True
+        if len(expected) != len(actual):
+            print("Expected %s lines, got %s" % (len(expected), len(actual)))
+            result = False
+        # Compare as many lines as possible:
+        for i, (eline, aline) in enumerate(zip(expected, actual)):
+            if eline != aline:
+                result = result and self._line_diffs_acceptable(
+                    i, eline, aline, max_diffs_per_fp
+                )
+
+        return result
+
+    def _run_cox2(self, options=None):
+        args = (options or []) + [COX2_CONFS, SPHERE, "1.0"]
+        return self._run(args) + (COX2_CONFS, SPHERE)
+
+    def _run_cox2_ell(self, options=None):
+        return self._run_cox2(["-e", ELLIPSE] + (options or []))
+
+    def _get_cox2_fps(self):
+        inf = gzip.open(tsupp.REF_PATH / "cox2_3d_first_few.fp.txt.gz")
+        raw = inf.read()
+        result = [line for line in raw.decode("utf8").splitlines()]
+        inf.close()
+        return result
+
+    def _compare_fp_lines(self, expected, actual):
+        if actual != expected:
+            # Allow up to <small number> fingerprint bit discrepancies
+            # per line before failing.
+            max_discrepancies_per_conf = 1
+            if not self._differences_acceptable(
+                expected, actual, max_discrepancies_per_conf
+            ):
+                self.fail("Actual fingerprints had too many discrepancies")
+
+    def _verify_cox2_fps(self, lines, sd_pathname):
+        self._verify_fp_basics(lines, sd_pathname)
+
+        # To generate new reference output:
+        # outf = gzip.open(COX2_FPS, "w")
+        # outf.write_lines(lines)
+        # outf.close()
+
+        expected = self._get_cox2_fps()
+        self._compare_fp_lines(expected, lines)
+
+    def _verify_cox2_ids(
+        self, actual_ids, sd_pathname, expected_copies=4, logger=None
+    ):
+        result = True
+        logger = logger or logging.getLogger()
+
+        expected_ids = []
+        with open(sd_pathname) as inf:
+            for eid in tsupp.gen_sd_names(inf):
+                expected_ids.extend([eid] * expected_copies)
+
+        if expected_ids != actual_ids:
+            logger.error("Did not get expected IDs")
+            if len(expected_ids) != len(actual_ids):
+                logger.error(
+                    "Expected %s IDs, got %s"
+                    % (len(expected_ids), len(actual_ids))
+                )
+            for i, (eid, aid) in enumerate(zip(expected_ids, actual_ids)):
+                if eid != aid:
+                    logger.error(
+                        "Line %d:  Expected '%s', actual '%s'"
+                        % (i + 1, eid, aid)
+                    )
+            result = False
+        return result
+
+    def _verify_fp_basics(self, lines, sd_pathname):
+        # Expect all fingerprints to have the same length:
+        expectedFPLen = 10240
+        failures = []
+        for i, line in enumerate(lines):
+            if len(line) != expectedFPLen:
+                failures.append(i + 1)
+        self.assertFalse(
+            failures,
+            (
+                "These fingerprints did not have the expected length: %s"
+                % failures
+            ),
+        )
+
+        fps_per_struct = 4
+        self.assertEqual(
+            len(lines), fps_per_struct * self._num_sd_structures(sd_pathname)
+        )
+
+    def _get_folder(self, full_len, num_folds):
+        # Brute-force double-checking of folded fingerprints.
+        folded_size = full_len // (1 << num_folds)
+
+        def folder(fpstr):
+            result = ["0"] * folded_size
+            for i, bit in enumerate(fpstr):
+                if bit == "1":
+                    result[i % folded_size] = "1"
+            return "".join(result)
+
+        return folder
 
 
 if __name__ == "__main__":

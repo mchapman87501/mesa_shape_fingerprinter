@@ -1,5 +1,6 @@
 from pathlib import Path
 
-workspace_root = Path("@CMAKE_SOURCE_DIR@")
-current_src_dir = Path("@CMAKE_CURRENT_SOURCE_DIR@")
-current_bin_dir = Path("@CMAKE_CURRENT_BINARY_DIR@")
+WORKSPACE_ROOT = Path("@CMAKE_SOURCE_DIR@")
+CURRENT_SRC_DIR = Path("@CMAKE_CURRENT_SOURCE_DIR@")
+CURRENT_BIN_DIR = Path("@CMAKE_CURRENT_BINARY_DIR@")
+SHAPE_FP_EXE = Path("$<TARGET_FILE:shape_fingerprinter>")
