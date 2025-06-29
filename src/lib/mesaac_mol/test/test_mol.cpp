@@ -54,12 +54,8 @@ TEST_CASE("mesaac::mol::Mol", "[mesaac]") {
     }
     REQUIRE(visited == C_NumAtoms);
 
-    Bond b_orig;
-    b_orig.a0(1); // Bond numbers are one-based.
-    b_orig.a1(2);
-    b_orig.type(Bond::BTE_AROMATIC);
-    b_orig.stereo(Bond::BSE_CIS_TRANS_DOUBLE);
-    b_orig.optional_cols("xxxrrrccc");
+    Bond b_orig(1, 2, Bond::BTE_AROMATIC, Bond::BSE_CIS_TRANS_DOUBLE,
+                "xxxrrrccc");
     mol.add_bond(b_orig);
     visited = 0;
     for (const auto &bond : mol.bonds()) {

@@ -33,24 +33,11 @@ public:
       : m_a0(0), m_a1(0), m_type(BTE_SINGLE), m_stereo(BSE_NOT_STEREO),
         m_optional_cols("") {}
 
-  // TODO: use enums for valid values.
-  void init(unsigned int a0, unsigned int a1, BondTypeEnum type,
-            BondStereoEnum stereo, std::string optional_cols) {
-    m_a0 = a0;
-    m_a1 = a1;
-    // TODO: Complain if a0 == a1.
-
-    m_type = type;
-    m_stereo = stereo;
-    m_optional_cols = optional_cols;
-  };
-  void a0(unsigned int new_value) { m_a0 = new_value; }
-  void a1(unsigned int new_value) { m_a1 = new_value; }
-  void type(BondTypeEnum new_value) { m_type = new_value; }
-  void stereo(BondStereoEnum new_value) { m_stereo = new_value; }
-  void optional_cols(const std::string &new_value) {
-    m_optional_cols = new_value;
-  }
+  Bond(unsigned int a0, unsigned int a1, BondTypeEnum bond_type = BTE_SINGLE,
+       BondStereoEnum stereo = BSE_NOT_STEREO,
+       const std::string &optional_cols = "")
+      : m_a0(a0), m_a1(a1), m_type(bond_type), m_stereo(stereo),
+        m_optional_cols(optional_cols) {}
 
   unsigned int a0() const { return m_a0; }
   unsigned int a1() const { return m_a1; }

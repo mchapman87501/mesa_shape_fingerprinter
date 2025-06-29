@@ -134,7 +134,7 @@ bool SDReader::read_next_bond(Bond &b) {
       string optional_cols(line.substr(12));
       bond_type = (Bond::BondTypeEnum)uint_bond_type;
       stereo = (Bond::BondStereoEnum)uint_stereo;
-      b.init(a0, a1, bond_type, stereo, optional_cols);
+      b = Bond(a0, a1, bond_type, stereo, optional_cols);
       result = true;
     } else {
       cerr << file_pos() << "Could not parse bond from '" << line << "'."
