@@ -125,16 +125,18 @@ class TestCase(unittest.TestCase):
         return self._decode_b64_gzipped(cbinascii_content[1:]).decode("utf8")
 
     def test_binary_output(self):
-        completed_proc, sd_pathname = self._run_cox2_ell_binary()
-        status = completed_proc.returncode
-        if status != 0:
-            print("DEBUG: stderr:")
-            print(completed_proc.stderr)
-        self.assertEqual(0, status)
-        out_bytes = completed_proc.stdout
-        ids, fps = self._get_ids_and_binary_fps(out_bytes)
-        self._verify_cox2_fps(fps, sd_pathname)
-        self.assertTrue(self._verify_cox2_ids(ids, sd_pathname))
+        for format_flag in ["-f", "--format"]:
+            options = [format_flag, "B", "--id"]
+            completion, sd_pathname, _sph = self._run_cox2_ell(options)
+            status = completion.returncode
+            if status != 0:
+                print("DEBUG: stderr:")
+                print(completion.stderr)
+            self.assertEqual(0, status)
+            out_bytes = completion.stdout
+            ids, fps = self._get_ids_and_binary_fps(out_bytes)
+            self._verify_cox2_fps(fps, sd_pathname)
+            self.assertTrue(self._verify_cox2_ids(ids, sd_pathname))
 
     def _get_ids_and_binary_fps(self, fp_output: str) -> tuple[list, list]:
         ids = []
@@ -270,23 +272,6 @@ class TestCase(unittest.TestCase):
 
     def _run_cox2_ell(self, options=None):
         return self._run_cox2(["-e", ELLIPSE] + (options or []))
-
-    def _run_cox2_ell_binary(self):
-        sd_pathname = COX2_CONFS
-        args = [
-            str(tsupp.SHAPE_FP_EXE),
-            "-e",
-            ELLIPSE,
-            "-f",
-            "B",
-            "--id",
-            sd_pathname,
-            SPHERE,
-            "1.0",
-        ]
-        return subprocess.run(
-            args, capture_output=True, encoding="utf8"
-        ), sd_pathname
 
     def _line_diffs_acceptable(self, line_index, expected, actual, max_diffs):
         diffs = 0
