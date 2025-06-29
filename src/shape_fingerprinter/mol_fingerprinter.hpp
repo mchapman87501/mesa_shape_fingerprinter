@@ -17,9 +17,6 @@ public:
   MolFingerprinter(PointList &hammsEllipsoidCoords,
                    PointList &hammsSphereCoords, float epsilonSqr,
                    unsigned int numFolds);
-  virtual ~MolFingerprinter();
-
-  explicit MolFingerprinter(const MolFingerprinter &src);
 
   void setMolecule(mol::Mol &mol);
   bool getNextFP(shape_defs::BitVector &fp);
@@ -35,8 +32,5 @@ protected:
 
   void computeCurrFlipFingerprint(const PointList &points,
                                   shape_defs::BitVector &result);
-
-private:
-  MolFingerprinter &operator=(const MolFingerprinter &src);
 };
 } // namespace mesaac::shape_fingerprinter

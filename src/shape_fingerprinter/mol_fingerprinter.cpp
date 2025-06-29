@@ -24,13 +24,6 @@ MolFingerprinter::MolFingerprinter(PointList &hammsEllipsoidCoords,
       m_volBox(hammsEllipsoidCoords, epsilonSqr), m_numFolds(numFolds),
       m_iFlip(0) {}
 
-MolFingerprinter::~MolFingerprinter() {}
-
-MolFingerprinter::MolFingerprinter(const MolFingerprinter &src)
-    : m_axisAligner(src.m_axisAligner), m_volBox(src.m_volBox),
-      m_numFolds(src.m_numFolds), m_mol(src.m_mol), m_iFlip(src.m_iFlip),
-      m_heavies(src.m_heavies) {}
-
 void MolFingerprinter::setMolecule(mol::Mol &mol) {
   m_mol = mol;
   m_iFlip = 0;
