@@ -3,14 +3,16 @@
 Copyright (c) 2005-2009 Mesa Analytics & Computing, Inc.  All rights reserved
 """
 
-import unittest
-import testsupport as tsupp
-import gzip
 import base64
-import logging
+import gzip
 import io
 import itertools
+import logging
+import struct
 import subprocess
+import unittest
+
+import testsupport as tsupp
 
 # First conformers from the full cox2_3d:
 COX2_CONFS = tsupp.DATA_PATH / "cox2_3d_first_few.sd"
@@ -73,13 +75,7 @@ class TestCase(unittest.TestCase):
         for option in ["-i", "--id"]:
             status, out, _err, sd_pathname, _sph = self._run_cox2_ell([option])
             self.assertEqual(0, status)
-            ids = []
-            fps = []
-            for curr_line in out.splitlines():
-                fields = curr_line.strip().split()
-                self.assertEqual(2, len(fields))
-                fps.append(fields[0])
-                ids.append(fields[1])
+            ids, fps = self._get_ids_and_fps(out)
             self._verify_cox2_fps(fps, sd_pathname)
             self.assertTrue(self._verify_cox2_ids(ids, sd_pathname))
             # Just to help ensure the positive test is doing something...
@@ -93,44 +89,94 @@ class TestCase(unittest.TestCase):
                 self._verify_cox2_ids(ids, sd_pathname, logger=logger)
             )
 
-    def test_compressed_output(self):
+    def _get_ids_and_fps(self, fp_output: str) -> tuple[list, list]:
+        ids = []
+        fps = []
+        for curr_line in fp_output.splitlines():
+            fields = curr_line.strip().split()
+            self.assertEqual(2, len(fields))
+            fps.append(fields[0])
+            ids.append(fields[1])
+        return ids, fps
+
+    def test_compressed_ascii_output(self):
         """Test compressed ASCII output, with IDs."""
-        # TODO Test compressed binary output.
         for format_flag in ["-f", "--format"]:
             options = [format_flag, "C", "--id"]
             status, out, err, sd_pathname, sph = self._run_cox2_ell(options)
             self.assertEqual(0, status)
-            ids = []
-            fps = []
-            for curr_line in out.splitlines():
-                fields = curr_line.strip().split()
-                self.assertEqual(2, len(fields))
-                compressed_fp, fp_id = fields
-                fps.append(self._get_compressed_fp(compressed_fp))
-                ids.append(fp_id)
+            ids, fps = self._get_ids_and_cbinascii_fps(out)
             self._verify_cox2_fps(fps, sd_pathname)
             self.assertTrue(self._verify_cox2_ids(ids, sd_pathname))
-            # Just to help ensure the positive test is doing something...
-            logger = logging.getLogger("silent")
-            logger.setLevel(logging.CRITICAL)
-            self.assertFalse(
-                self._verify_cox2_ids(ids[-20:], sd_pathname, logger=logger)
-            )
-            ids[len(ids) // 3] += " -- 1/3rd error"
-            self.assertFalse(
-                self._verify_cox2_ids(ids, sd_pathname, logger=logger)
-            )
 
-    def _get_compressed_fp(self, compressed_fp: str) -> str:
+    def _get_ids_and_cbinascii_fps(self, fp_output: str) -> tuple[list, list]:
+        ids = []
+        fps = []
+        for curr_line in fp_output.splitlines():
+            fields = curr_line.strip().split()
+            self.assertEqual(2, len(fields))
+            cbinascii_content, fp_id = fields
+            fps.append(self._get_cbinascii_fp(cbinascii_content))
+            ids.append(fp_id)
+        return (ids, fps)
+
+    def _get_cbinascii_fp(self, cbinascii_content: str) -> str:
         # FP must start w. the format flag: "C" => "compressed"
-        self.assertTrue(compressed_fp.startswith("C"))
-        gzipped = base64.b64decode(compressed_fp[1:])
-        inf = gzip.GzipFile(
-            mode="r",
-            compresslevel=0,
-            fileobj=io.BytesIO(gzipped),
-        )
-        result = inf.read().decode("utf8")
+        self.assertTrue(cbinascii_content.startswith("C"))
+        return self._decode_b64_gzipped(cbinascii_content[1:]).decode("utf8")
+
+    def test_binary_output(self):
+        completed_proc, sd_pathname = self._run_cox2_ell_binary()
+        status = completed_proc.returncode
+        if status != 0:
+            print("DEBUG: stderr:")
+            print(completed_proc.stderr)
+        self.assertEqual(0, status)
+        out_bytes = completed_proc.stdout
+        ids, fps = self._get_ids_and_binary_fps(out_bytes)
+        self._verify_cox2_fps(fps, sd_pathname)
+        self.assertTrue(self._verify_cox2_ids(ids, sd_pathname))
+
+    def _get_ids_and_binary_fps(self, fp_output: str) -> tuple[list, list]:
+        ids = []
+        fps = []
+        for curr_line in fp_output.splitlines():
+            fields = curr_line.strip().split()
+            self.assertEqual(2, len(fields))
+            compressed_fp, fp_id = fields
+            fps.append(self._get_compressed_fp(compressed_fp))
+            ids.append(fp_id)
+        return (ids, fps)
+
+    def _get_compressed_fp(self, compressed_content: str) -> str:
+        # FP must start w. the format flag: "B" => "binary"
+        self.assertTrue(compressed_content.startswith("B"))
+
+        # The remainder of the FP is a B64 encoded sequence of bytes, B1.
+        # B64-decoding B1 produces a gzip-compressed sequence of bytes, B2.
+        # Decompressing B2 produces a sequence of boost::dynamic_bitset blocks.
+        # By default, each block is an unsigned long. From the boost docs:
+        # The first block written represents the bits in the position range
+        # [0,bits_per_block) in the bitset, the second block written the bits
+        # in the range [bits_pre_block,2*bits_per_block), and so on.
+        # For each block bval written, the bit (bval >> i) & 1 corresponds to
+        # the bit at position (b * bits_per_block + i) in the bitset.
+        bytes = self._decode_b64_gzipped(compressed_content[1:])
+        fp_bits = []
+        ULONG_FMT = "<L"  # Little-endian, unsigned long
+        block_size = struct.calcsize(ULONG_FMT)
+        for block_tuple in struct.iter_unpack(ULONG_FMT, bytes):
+            block = block_tuple[0]
+            for bit_pos in range(8 * block_size):
+                curr_bit = (block >> bit_pos) & 1
+                fp_bits.append(str(curr_bit))
+        return "".join(reversed(fp_bits))
+
+    def _decode_b64_gzipped(self, content: str):
+        gzipped = base64.b64decode(content)
+        buf = io.BytesIO(gzipped)
+        inf = gzip.GzipFile(mode="r", compresslevel=0, fileobj=buf)
+        result = inf.read()
         inf.close()
         return result
 
@@ -177,7 +223,6 @@ class TestCase(unittest.TestCase):
     def test_invalid_records_option(self):
         """Test processing of specific, invalid SD file records/structures."""
         sd_pathname = COX2_CONFS
-        _num_confs = self._num_sd_structures(sd_pathname)
         record_flags = itertools.cycle(["-r", "--records"])
         for start_index in [-10, -1]:
             # Try to get all records, starting w. start_index
@@ -216,10 +261,34 @@ class TestCase(unittest.TestCase):
         with open(pathname) as inf:
             return sum(1 for line in inf if line.strip() == "$$$$")
 
-    def _run(self, args):
+    def _run(self, args: list[str]):
         args = [str(tsupp.SHAPE_FP_EXE)] + list(args)
         result = subprocess.run(args, capture_output=True, encoding="utf8")
         return result.returncode, result.stdout, result.stderr
+
+    def _run_cox2(self, options=None):
+        args = (options or []) + [COX2_CONFS, SPHERE, "1.0"]
+        return self._run(args) + (COX2_CONFS, SPHERE)
+
+    def _run_cox2_ell(self, options=None):
+        return self._run_cox2(["-e", ELLIPSE] + (options or []))
+
+    def _run_cox2_ell_binary(self):
+        sd_pathname = COX2_CONFS
+        args = [
+            str(tsupp.SHAPE_FP_EXE),
+            "-e",
+            ELLIPSE,
+            "-f",
+            "B",
+            "--id",
+            sd_pathname,
+            SPHERE,
+            "1.0",
+        ]
+        return subprocess.run(
+            args, capture_output=True, encoding="utf8"
+        ), sd_pathname
 
     def _line_diffs_acceptable(self, line_index, expected, actual, max_diffs):
         diffs = 0
@@ -228,8 +297,10 @@ class TestCase(unittest.TestCase):
         for e, a in zip(expected, actual):
             chars.append("." if e == a else (">" if e < a else "<"))
             diffs += 0 if e == a else 1
-        print(f"{prefix}: {''.join(chars)}")
         result = diffs <= max_diffs
+
+        if diffs:
+            print(f"{prefix}: {''.join(chars)}")
 
         if len(expected) != len(actual):
             print(
@@ -251,13 +322,6 @@ class TestCase(unittest.TestCase):
                 )
 
         return result
-
-    def _run_cox2(self, options=None):
-        args = (options or []) + [COX2_CONFS, SPHERE, "1.0"]
-        return self._run(args) + (COX2_CONFS, SPHERE)
-
-    def _run_cox2_ell(self, options=None):
-        return self._run_cox2(["-e", ELLIPSE] + (options or []))
 
     def _get_cox2_fps(self):
         with gzip.open(tsupp.REF_PATH / "cox2_3d_first_few.fp.txt.gz") as inf:
@@ -312,10 +376,10 @@ class TestCase(unittest.TestCase):
 
     def _verify_fp_basics(self, lines, sd_pathname):
         # Expect all fingerprints to have the same length:
-        expectedFPLen = 10240
+        expected_fp_len = 10240
         failures = []
         for i, line in enumerate(lines):
-            if len(line) != expectedFPLen:
+            if len(line) != expected_fp_len:
                 failures.append(i + 1)
         self.assertFalse(
             failures,
