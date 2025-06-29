@@ -84,12 +84,8 @@ TEST_CASE("mesaac::shape::Fingerprinter", "[mesaac]") {
     // These atoms are regularly spaced in a straight line along x.
     // Their flips should all produce identical fingerprints.
     mol::AtomVector atoms;
-    for (int i = -4.0; i <= 4.0; i += 1.7) {
-      mol::Atom a;
-      a.x(i);
-      a.y(0.0);
-      a.z(0.0);
-      a.atomic_num(12);
+    for (float i = -4.0; i <= 4.0; i += 2.0) {
+      mol::Atom a(12, {i, 0, 0});
       atoms.push_back(a);
     }
     fixture.test_for_atom_vector(atoms, true);
@@ -100,12 +96,8 @@ TEST_CASE("mesaac::shape::Fingerprinter", "[mesaac]") {
     // They 'wobble' in y.  Their flips should produce different fps.
     mol::AtomVector atoms;
     float y = 0.5;
-    for (int i = -4.0; i <= 4.0; i += 1.7) {
-      mol::Atom a;
-      a.x(i);
-      a.y(y);
-      a.z(0.0);
-      a.atomic_num(12);
+    for (float i = -4.0; i <= 4.0; i += 2.0) {
+      mol::Atom a(12, {i, y, 0});
       atoms.push_back(a);
 
       y = -y;

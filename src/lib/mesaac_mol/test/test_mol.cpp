@@ -38,10 +38,8 @@ TEST_CASE("mesaac::mol::Mol", "[mesaac]") {
     const unsigned int C_NumAtoms = 10;
     unsigned int i;
     for (i = 0; i < C_NumAtoms; i++) {
-      Atom a;
-      a.atomic_num(i);
-      a.x(i);
-      mol.add_atom(a);
+      Atom atom(i, {(float)i, 0.0f, 0.0f});
+      mol.add_atom(atom);
     }
     REQUIRE(mol.num_atoms() == C_NumAtoms);
     REQUIRE(mol.num_heavy_atoms() == C_NumAtoms - 1);

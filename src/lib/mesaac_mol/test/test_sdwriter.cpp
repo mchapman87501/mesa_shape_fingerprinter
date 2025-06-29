@@ -63,20 +63,20 @@ TEST_CASE("mesaac::mol::SDWriter", "[mesaac]") {
     // Dimensionality of a molecule should be 3 if it contains
     // any non-zero z coordinates, 2 otherwise.
     Mol m;
-    Atom a;
-    a.atomic_num(1);
-    m.add_atom(a);
-    REQUIRE(m.dimensionality() == 2u);
-    a.x(1.0);
+    Atom a(1);
     m.add_atom(a);
     REQUIRE(m.dimensionality() == 2u);
 
-    a.y(1.0);
-    m.add_atom(a);
+    Atom b(1, {1.0f, 0.0f, 0.0f});
+    m.add_atom(b);
     REQUIRE(m.dimensionality() == 2u);
 
-    a.z(1.0);
-    m.add_atom(a);
+    Atom c(1, {1.0f, 1.0f, 0.0f});
+    m.add_atom(c);
+    REQUIRE(m.dimensionality() == 2u);
+
+    Atom d(1, {1.0f, 1.0f, 1.0f});
+    m.add_atom(d);
     REQUIRE(m.dimensionality() == 3u);
   }
 
@@ -190,9 +190,7 @@ TEST_CASE("mesaac::mol::SDWriter", "[mesaac]") {
     unsigned int hcount = 0;
     for (auto &atom : m.mutable_atoms()) {
       if (atom.is_hydrogen()) {
-        atom.x(-100.0);
-        atom.y(-100.0);
-        atom.z(-100.0);
+        atom.set_pos({-100.0f, -100.0f, -100.0f});
         hcount++;
       }
     }

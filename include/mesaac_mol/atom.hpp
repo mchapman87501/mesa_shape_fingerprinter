@@ -7,41 +7,39 @@
 #include <string>
 #include <vector>
 
-namespace mesaac {
-namespace mol {
+#include "position.hpp"
+
+namespace mesaac::mol {
 class Atom {
 public:
-  Atom() : m_atomic_num(0), m_x(0), m_y(0), m_z(0) {}
-  Atom(unsigned int atomic_num, float x, float y, float z)
-      : m_atomic_num(atomic_num), m_x(x), m_y(y), m_z(z) {}
+  Atom() {}
+  Atom(unsigned int atomic_num) : m_atomic_num(atomic_num) {}
+  Atom(unsigned int atomic_num, const Position &pos)
+      : Atom(atomic_num, pos, "") {}
+  Atom(unsigned int atomic_num, const Position &pos,
+       const std::string &optional_cols)
+      : m_atomic_num(atomic_num), m_pos(pos), m_optional_cols(optional_cols) {}
 
-  // XXX FIX THIS:  Immutable properties should be set in constructor.
-  // Setters like x(newvalue) are OK for mutable properties.
-  void atomic_num(unsigned int new_value);
-
-  void x(float new_value);
-  void y(float new_value);
-  void z(float new_value);
-
+  void set_pos(const Position &new_value) { m_pos = new_value; }
   // SD-specific HACK: Save the tail of the line from which this was read.
-  void optional_cols(const std::string &tail);
+  //   void optional_cols(const std::string &tail);
 
   unsigned int atomic_num() const { return m_atomic_num; };
-  float x() const { return m_x; }
-  float y() const { return m_y; }
-  float z() const { return m_z; }
+
+  float x() const { return m_pos.x(); }
+  float y() const { return m_pos.y(); }
+  float z() const { return m_pos.z(); }
   std::string optional_cols() const { return m_optional_cols; }
 
   std::string symbol() const;
   float radius() const;
   bool is_hydrogen() const;
 
-protected:
+private:
   unsigned int m_atomic_num;
-  float m_x, m_y, m_z;
+  Position m_pos;
   std::string m_optional_cols;
 };
 
 typedef std::vector<Atom> AtomVector;
-} // namespace mol
-} // namespace mesaac
+} // namespace mesaac::mol

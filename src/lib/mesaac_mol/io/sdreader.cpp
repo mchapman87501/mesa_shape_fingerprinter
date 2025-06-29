@@ -10,8 +10,7 @@
 
 using namespace std;
 
-namespace mesaac {
-namespace mol {
+namespace mesaac::mol {
 SDReader::SDReader(istream &inf, string pathname)
     : m_pathname(pathname), m_inf(inf), m_linenum(0) {
   m_nums.imbue(locale("C"));
@@ -84,13 +83,9 @@ bool SDReader::read_next_atom(Atom &a) {
     double x, y, z;
     if (double_field(line, 0, 10, x) && double_field(line, 10, 10, y) &&
         double_field(line, 20, 10, z)) {
-      a.x(x);
-      a.y(y);
-      a.z(z);
       string symbol(line.substr(31, 3));
-      a.atomic_num(get_atomic_num(symbol));
-      // Store the rest of the line verbatim
-      a.optional_cols(line.substr(34));
+      string optional_cols(line.substr(34));
+      a = Atom(get_atomic_num(symbol), {x, y, z}, optional_cols);
       result = true;
     } else {
       cerr << file_pos() << "Could not parse coordinates from '" << line << "'."
@@ -284,5 +279,4 @@ bool SDReader::read(Mol &next) {
   }
   return result;
 }
-} // namespace mol
-} // namespace mesaac
+} // namespace mesaac::mol

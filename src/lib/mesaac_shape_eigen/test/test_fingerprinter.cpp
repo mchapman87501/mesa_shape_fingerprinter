@@ -13,8 +13,7 @@
 
 using namespace std;
 
-namespace mesaac {
-namespace shape_eigen {
+namespace mesaac::shape_eigen {
 
 namespace {
 struct BoundingCube {
@@ -89,8 +88,8 @@ TEST_CASE("mesaac::shape_eigen::Fingerprinter", "[mesaac]") {
     // These atoms are regularly spaced in a straight line along x.
     // Their flips should all produce identical fingerprints.
     mol::AtomVector atoms;
-    for (int i = -4.0; i <= 4.0; i += 1.7) {
-      mol::Atom atom(12, i, 0.0, 0.0);
+    for (float i = -4.0; i <= 4.0; i += 2.0) {
+      mol::Atom atom(12, {float(i), 0, 0});
       atoms.push_back(atom);
     }
     fixture.test_for_atom_vector(atoms, true);
@@ -101,8 +100,8 @@ TEST_CASE("mesaac::shape_eigen::Fingerprinter", "[mesaac]") {
     // They 'wobble' in y.  Their flips should produce different fps.
     mol::AtomVector atoms;
     float y = 0.5;
-    for (int i = -4.0; i <= 4.0; i += 1.7) {
-      mol::Atom atom(12, i, y, 0.0);
+    for (float i = -4.0; i <= 4.0; i += 2.0) {
+      mol::Atom atom(12, {float(i), y, 0});
       atoms.push_back(atom);
       y = -y;
     }
@@ -110,5 +109,4 @@ TEST_CASE("mesaac::shape_eigen::Fingerprinter", "[mesaac]") {
   }
 }
 
-} // namespace shape_eigen
-} // namespace mesaac
+} // namespace mesaac::shape_eigen

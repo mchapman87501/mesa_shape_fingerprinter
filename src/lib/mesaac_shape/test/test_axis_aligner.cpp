@@ -144,7 +144,7 @@ public:
 
   void add_atom(mol::Mol &m, string symbol, float x, float y, float z) const {
     const unsigned char atomic_num(get_atomic_num(symbol));
-    mol::Atom a(atomic_num, x, y, z);
+    mol::Atom a(atomic_num, {x, y, z});
     m.add_atom(a);
   }
 

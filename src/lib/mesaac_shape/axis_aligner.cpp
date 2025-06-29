@@ -149,9 +149,7 @@ void AxisAligner::update_atom_coords(mol::AtomVector &atoms,
   for (; atom_iter != atoms.end(); ++atom_iter, ++center_iter) {
     mol::Atom &atom(*atom_iter);
     const Point &center(*center_iter);
-    atom.x(center[0]);
-    atom.y(center[1]);
-    atom.z(center[2]);
+    atom.set_pos({center[0], center[1], center[2]});
   }
 }
 
