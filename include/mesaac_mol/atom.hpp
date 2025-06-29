@@ -21,8 +21,6 @@ public:
       : m_atomic_num(atomic_num), m_pos(pos), m_optional_cols(optional_cols) {}
 
   void set_pos(const Position &new_value) { m_pos = new_value; }
-  // SD-specific HACK: Save the tail of the line from which this was read.
-  //   void optional_cols(const std::string &tail);
 
   unsigned int atomic_num() const { return m_atomic_num; };
 
