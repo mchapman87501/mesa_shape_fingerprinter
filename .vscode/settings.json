@@ -16,5 +16,6 @@
             "comments": "off",
             "strings": "off"
         }
-    }
+    },
+    "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools"
 }
