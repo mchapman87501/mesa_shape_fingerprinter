@@ -7,8 +7,7 @@
 #include <string>
 #include <vector>
 
-namespace mesaac {
-namespace mol {
+namespace mesaac::mol {
 class Bond {
 public:
   typedef enum {
@@ -67,5 +66,4 @@ protected:
 };
 
 typedef std::vector<Bond> BondVector;
-} // namespace mol
-} // namespace mesaac
+} // namespace mesaac::mol

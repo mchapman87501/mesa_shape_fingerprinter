@@ -9,8 +9,7 @@
 #include <sstream>
 #include <string>
 
-namespace mesaac {
-namespace mol {
+namespace mesaac::mol {
 
 class SDReader {
 public:
@@ -51,5 +50,4 @@ private:
   SDReader(const SDReader &src);
   SDReader &operator=(const SDReader &src);
 };
-} // namespace mol
-} // namespace mesaac
+} // namespace mesaac::mol

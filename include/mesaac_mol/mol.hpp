@@ -11,8 +11,7 @@
 #include <string>
 #include <vector>
 
-namespace mesaac {
-namespace mol {
+namespace mesaac::mol {
 typedef std::map<std::string, std::string> SDTagMap;
 
 class Mol {
@@ -72,8 +71,5 @@ protected:
 
   std::string m_properties_block;
   SDTagMap m_tags;
-
-private:
 };
-} // namespace mol
-} // namespace mesaac
+} // namespace mesaac::mol

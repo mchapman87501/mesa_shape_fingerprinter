@@ -143,7 +143,7 @@ public:
   }
 
   void add_atom(mol::Mol &m, string symbol, float x, float y, float z) const {
-    const unsigned char atomic_num(get_atomic_num(symbol));
+    const unsigned char atomic_num(mol::get_atomic_num(symbol));
     mol::Atom a(atomic_num, {x, y, z});
     m.add_atom(a);
   }
@@ -423,7 +423,7 @@ TEST_CASE("mesaac::shape::AxisAligner", "[mesaac]") {
     // Hardwired badness: max radius of all atoms in create_sample_atoms should
     // be that of sulfur.
     REQUIRE_THAT(dmax, Catch::Matchers::WithinAbs(
-                           mesaac::get_symbol_radius("S") * 2, 0.00001));
+                           mesaac::mol::get_symbol_radius("S") * 2, 0.00001));
 
     float dwidth = cwidth - pwidth, dheight = cheight - pheight,
           ddepth = cdepth - pdepth;

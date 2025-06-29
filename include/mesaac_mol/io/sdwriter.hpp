@@ -8,8 +8,7 @@
 #include <iostream>
 #include <sstream>
 
-namespace mesaac {
-namespace mol {
+namespace mesaac::mol {
 class SDWriter {
 public:
   SDWriter(std::ostream &outf);
@@ -29,5 +28,4 @@ private:
   SDWriter(const SDWriter &src);
   SDWriter &operator=(const SDWriter &src);
 };
-} // namespace mol
-} // namespace mesaac
+} // namespace mesaac::mol

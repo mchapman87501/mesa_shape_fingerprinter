@@ -6,7 +6,7 @@
 
 #include <string>
 
-namespace mesaac {
+namespace mesaac::mol {
 // Get information about atom radii, given element ID.
 // Returns element atom radius, Angstroms
 double get_radius(int atomic_number);
@@ -18,4 +18,4 @@ double get_symbol_radius(const std::string &atomic_symbol);
 unsigned char get_atomic_num(const std::string &atomic_symbol);
 std::string get_symbol(int atomic_number);
 
-} // namespace mesaac
+} // namespace mesaac::mol

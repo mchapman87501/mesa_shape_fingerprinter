@@ -16,7 +16,7 @@
 
 using namespace std;
 
-namespace mesaac {
+namespace mesaac::mol {
 namespace {
 static map<int, double> atomic_radius;
 static map<string, double> radius_by_symbol;
@@ -537,4 +537,4 @@ string get_symbol(int atomic_number) {
   return entry->second;
   ;
 }
-} // namespace mesaac
+} // namespace mesaac::mol

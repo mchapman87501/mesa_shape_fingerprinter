@@ -139,7 +139,7 @@ struct TestFixture {
   }
 
   void add_atom(mol::Mol &m, string symbol, float x, float y, float z) const {
-    const unsigned char atomic_num(get_atomic_num(symbol));
+    const unsigned char atomic_num(mol::get_atomic_num(symbol));
     mol::Atom a(atomic_num, {x, y, z});
     m.add_atom(a);
   } // namespace shape_eigen
