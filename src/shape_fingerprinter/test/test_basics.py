@@ -28,16 +28,15 @@ class Error(Exception):
 class TestCase(unittest.TestCase):
     def test_no_args(self):
         """Test the exit status when no args are given."""
-        # Redirect stdout/stderr to prevent them appearing during builds.
-        status, out, err = self._run([])
-        self.assertNotEqual(0, status)
+        completion = self._run([])
+        self.assertNotEqual(0, completion.returncode)
 
     def test_help(self):
         """Test that usage output is generated."""
         for option in ["-h", "--help"]:
-            status, out, err = self._run([option])
-            self.assertEqual(0, status)
-            err = err.lower()
+            completion = self._run([option])
+            self.assertEqual(0, completion.returncode)
+            err = completion.stderr.lower()
             self.assertTrue("usage" in err)
             # Ensure all valid options appear in the help msg.
             for opt in "-h --help -i --id".split():
@@ -47,18 +46,18 @@ class TestCase(unittest.TestCase):
         """Test generating ellipsoid fingerprints, against reference output."""
         for eopt in ["-e", "--ellipsoid"]:
             options = [eopt, ELLIPSE]
-            status, out, err, sd_pathname, sphere = self._run_cox2(options)
-            self.assertEqual(0, status)
+            completion, sd_pathname, sphere = self._run_cox2(options)
+            self.assertEqual(0, completion.returncode)
 
-            lines = [line.strip() for line in out.splitlines()]
+            lines = [line.strip() for line in completion.stdout.splitlines()]
             self._verify_cox2_fps(lines, sd_pathname)
 
     def test_correct_usage(self):
         """Test generating fingerprints, with valid invocation."""
-        status, out, err, sd_pathname, sphere = self._run_cox2()
-        self.assertEqual(0, status)
+        completion, sd_pathname, sphere = self._run_cox2()
+        self.assertEqual(0, completion.returncode)
 
-        lines = [line.strip() for line in out.splitlines()]
+        lines = [line.strip() for line in completion.stdout.splitlines()]
         # Can't verify the actual fingerprints.  Just verify their
         # sizes, I guess.
         self._verify_fp_basics(lines, sd_pathname)
@@ -66,16 +65,16 @@ class TestCase(unittest.TestCase):
     def test_invalid_option(self):
         """Test expected response to use of (example) unsupported options."""
         for option in ["-j", "--junk"]:
-            status, out, err, u1, u2 = self._run_cox2([option])
-            self.assertNotEqual(0, status)
-            self.assertTrue("unsupported" in err.lower())
+            completion, _u1, _u2 = self._run_cox2([option])
+            self.assertNotEqual(0, completion.returncode)
+            self.assertTrue("unsupported" in completion.stderr.lower())
 
     def test_with_ids(self):
         """Test generation of fingerprints with associated structure IDs."""
         for option in ["-i", "--id"]:
-            status, out, _err, sd_pathname, _sph = self._run_cox2_ell([option])
-            self.assertEqual(0, status)
-            ids, fps = self._get_ids_and_fps(out)
+            completion, sd_pathname, _sph = self._run_cox2_ell([option])
+            self.assertEqual(0, completion.returncode)
+            ids, fps = self._get_ids_and_fps(completion.stdout)
             self._verify_cox2_fps(fps, sd_pathname)
             self.assertTrue(self._verify_cox2_ids(ids, sd_pathname))
             # Just to help ensure the positive test is doing something...
@@ -103,9 +102,9 @@ class TestCase(unittest.TestCase):
         """Test compressed ASCII output, with IDs."""
         for format_flag in ["-f", "--format"]:
             options = [format_flag, "C", "--id"]
-            status, out, err, sd_pathname, sph = self._run_cox2_ell(options)
-            self.assertEqual(0, status)
-            ids, fps = self._get_ids_and_cbinascii_fps(out)
+            completion, sd_pathname, _sph = self._run_cox2_ell(options)
+            self.assertEqual(0, completion.returncode)
+            ids, fps = self._get_ids_and_cbinascii_fps(completion.stdout)
             self._verify_cox2_fps(fps, sd_pathname)
             self.assertTrue(self._verify_cox2_ids(ids, sd_pathname))
 
@@ -208,9 +207,9 @@ class TestCase(unittest.TestCase):
             SPHERE,
             "1.0",
         ]
-        status, out, _err = self._run(args)
-        self.assertEqual(0, status)
-        actual = out.splitlines()
+        completion = self._run(args)
+        self.assertEqual(0, completion.returncode)
+        actual = completion.stdout.splitlines()
         actual_count = len(actual) // 4  # 4 lines per record
         expected_count = end_index - start_index
         if expected_count != actual_count:
@@ -235,22 +234,22 @@ class TestCase(unittest.TestCase):
                 "1.0",
             ]
             with self.subTest(args=args):
-                status, _out, _err = self._run(args)
-                self.assertNotEqual(0, status)
+                completion = self._run(args)
+                self.assertNotEqual(0, completion.returncode)
 
     def test_folding(self):
         """Test generating folded fingerprints."""
         # It should be enough to test ASCII output.
-        status, out, err, sd_pathname, sph = self._run_cox2()
-        self.assertEqual(0, status)
-        unfolded = [line.strip() for line in out.splitlines()]
+        completion, _sd_pathname, _sph = self._run_cox2()
+        self.assertEqual(0, completion.returncode)
+        unfolded = [line.strip() for line in completion.stdout.splitlines()]
         full_len = len(unfolded[0])
 
         fold_flags = itertools.cycle(["-n", "--num_folds"])
         for num_folds in range(4):
             options = [next(fold_flags), str(num_folds)]
-            status, out, err, sdp, sph = self._run_cox2(options)
-            folded = [line.strip() for line in out.splitlines()]
+            completion, _sdp, _sph = self._run_cox2(options)
+            folded = [line.strip() for line in completion.stdout.splitlines()]
             self.assertEqual(len(unfolded), len(folded))
 
             do_fold = self._get_folder(full_len, num_folds)
@@ -263,12 +262,11 @@ class TestCase(unittest.TestCase):
 
     def _run(self, args: list[str]):
         args = [str(tsupp.SHAPE_FP_EXE)] + list(args)
-        result = subprocess.run(args, capture_output=True, encoding="utf8")
-        return result.returncode, result.stdout, result.stderr
+        return subprocess.run(args, capture_output=True, encoding="utf8")
 
     def _run_cox2(self, options=None):
         args = (options or []) + [COX2_CONFS, SPHERE, "1.0"]
-        return self._run(args) + (COX2_CONFS, SPHERE)
+        return (self._run(args), COX2_CONFS, SPHERE)
 
     def _run_cox2_ell(self, options=None):
         return self._run_cox2(["-e", ELLIPSE] + (options or []))
