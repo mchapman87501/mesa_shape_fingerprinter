@@ -1,7 +1,7 @@
-cmake_minimum_required(VERSION 4.0)
+cmake_minimum_required(VERSION 3.31)
 set(PROJECT shape_fingerprints)
 
-project(${PROJECT} VERSION 1.0.0 LANGUAGES C CXX Fortran)
+project(${PROJECT} VERSION 1.0.0 LANGUAGES C CXX)
 
 # This default value presumes all tests are defined in the toplevel tests directory --
 # a presumption that is not true of this project.
@@ -55,8 +55,6 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(Catch2)
 
-
-
 # See note, above, about the arrangement of tests within this project.
 # Some executable tests are driven by Python.
 find_package(Python3 COMPONENTS Interpreter)
@@ -64,10 +62,7 @@ find_package(Python3 COMPONENTS Interpreter)
 include(add_mesaac_test)
 
 if(SHAPE_FINGERPRINTS_BUILD_TESTS)
-    message(STATUS "DEBUG: Testing is enabled.")
     include(simple_code_coverage)
-
-    find_package(Catch2 3 REQUIRED)
     enable_testing()
 
     include(CTest)
