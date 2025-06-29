@@ -8,9 +8,8 @@
 
 using namespace std;
 
-namespace mesaac {
-namespace mol {
-
+namespace mesaac::mol {
+namespace {
 TEST_CASE("mesaac::mol::Bond", "[mesaac]") {
 
   SECTION("Basic tests") {
@@ -33,5 +32,5 @@ TEST_CASE("mesaac::mol::Bond", "[mesaac]") {
     REQUIRE(b4.optional_cols() == "xxxrrrccc");
   }
 }
-} // namespace mol
-} // namespace mesaac
+} // namespace
+} // namespace mesaac::mol

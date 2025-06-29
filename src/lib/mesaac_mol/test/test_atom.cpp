@@ -8,9 +8,9 @@
 
 using namespace std;
 
-namespace mesaac {
-namespace mol {
+namespace mesaac::mol {
 
+namespace {
 TEST_CASE("mesaac::Atom", "[mesaac]") {
   SECTION("Basic tests") {
     Atom a(6);
@@ -47,5 +47,5 @@ TEST_CASE("mesaac::Atom", "[mesaac]") {
     REQUIRE_THROWS_AS(a.symbol(), invalid_argument);
   }
 }
-} // namespace mol
-} // namespace mesaac
+} // namespace
+} // namespace mesaac::mol

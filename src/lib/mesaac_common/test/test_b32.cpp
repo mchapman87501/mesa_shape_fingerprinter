@@ -12,9 +12,7 @@
 
 using namespace std;
 
-namespace mesaac {
-
-namespace common {
+namespace mesaac::common {
 
 namespace {
 void roundtrip(string orig) {
@@ -24,8 +22,6 @@ void roundtrip(string orig) {
   string decoded = codec.decode(encoded);
   REQUIRE(orig == decoded);
 }
-
-} // namespace
 
 TEST_CASE("mesaac::common::B32", "[mesaac]") {
 
@@ -61,5 +57,5 @@ TEST_CASE("mesaac::common::B32", "[mesaac]") {
   }
 }
 
-} // namespace common
-}; // namespace mesaac
+} // namespace
+} // namespace mesaac::common

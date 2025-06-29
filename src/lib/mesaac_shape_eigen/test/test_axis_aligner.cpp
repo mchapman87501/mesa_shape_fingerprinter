@@ -13,8 +13,7 @@
 
 using namespace std;
 
-namespace mesaac {
-namespace shape_eigen {
+namespace mesaac::shape_eigen {
 
 namespace {
 class WBAxisAligner : public AxisAligner {
@@ -140,8 +139,8 @@ struct TestFixture {
 
   void add_atom(mol::Mol &m, string symbol, float x, float y, float z) const {
     const unsigned char atomic_num(mol::get_atomic_num(symbol));
-    mol::Atom a(atomic_num, {x, y, z});
-    m.add_atom(a);
+    mol::Atom atom(atomic_num, {x, y, z});
+    m.add_atom(atom);
   } // namespace shape_eigen
 
   void create_sample_mol(mol::Mol &mol, unsigned int &num_heavies) const {
@@ -189,12 +188,12 @@ struct TestFixture {
   }
 
   void create_sample_atoms(mol::AtomVector &atoms, unsigned int &num_heavies) {
-    mol::Mol m;
+    mol::Mol mol;
 
-    create_sample_mol(m, num_heavies);
+    create_sample_mol(mol, num_heavies);
     // Take care to deep-copy all of the atom pointers.
     atoms.clear();
-    const mol::AtomVector &src(m.atoms());
+    const mol::AtomVector &src(mol.atoms());
     for (const auto src_atom : src) {
       atoms.push_back(src_atom);
     }
@@ -208,9 +207,9 @@ struct TestFixture {
     //      << "  # to check: " << count << endl;
     if ((atoms.size() >= count) && (points.size() >= count)) {
       for (int i = count - 1; i >= 0; --i) {
-        const mol::Atom &a(atoms[i]);
+        const mol::Atom &atom(atoms[i]);
         const Point &p(points[i]);
-        if ((a.x() != p[0]) || (a.y() != p[1]) || (a.z() != p[2])) {
+        if ((atom.x() != p[0]) || (atom.y() != p[1]) || (atom.z() != p[2])) {
           return false;
         }
       }
@@ -276,9 +275,8 @@ struct TestFixture {
     return result;
   }
 
-  bool is_non_null_transform(Transform &a) { return !a.isZero(); }
+  bool is_non_null_transform(Transform &atom) { return !atom.isZero(); }
 };
-} // namespace
 
 TEST_CASE("mesaac::shape_eigen::AxisAligner", "[mesaac]") {
   TestFixture fixture;
@@ -506,10 +504,10 @@ TEST_CASE("mesaac::shape_eigen::AxisAligner", "[mesaac]") {
     }
     aligner->wb_update_atom_coords(atoms, points);
 
-    for (const auto &a : atoms) {
-      REQUIRE(a.x() == offset[0]);
-      REQUIRE(a.y() == offset[1]);
-      REQUIRE(a.z() == offset[2]);
+    for (const auto &atom : atoms) {
+      REQUIRE(atom.x() == offset[0]);
+      REQUIRE(atom.y() == offset[1]);
+      REQUIRE(atom.z() == offset[2]);
     }
   }
 
@@ -695,5 +693,5 @@ TEST_CASE("mesaac::shape_eigen::AxisAligner Benchmarks",
   };
 }
 
-} // namespace shape_eigen
-} // namespace mesaac
+} // namespace
+} // namespace mesaac::shape_eigen

@@ -9,8 +9,7 @@
 
 using namespace std;
 
-namespace mesaac {
-namespace shape {
+namespace mesaac::shape {
 namespace {
 struct BoundingCube {
   float xmin, ymin, zmin, xmax, ymax, zmax;
@@ -75,7 +74,6 @@ struct TestFixture {
     }
   }
 };
-} // namespace
 
 TEST_CASE("mesaac::shape::Fingerprinter", "[mesaac]") {
   TestFixture fixture;
@@ -106,5 +104,5 @@ TEST_CASE("mesaac::shape::Fingerprinter", "[mesaac]") {
   }
 }
 
-} // namespace shape
-} // namespace mesaac
+} // namespace
+} // namespace mesaac::shape

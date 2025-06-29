@@ -10,8 +10,7 @@
 
 using namespace std;
 
-namespace mesaac {
-namespace mol {
+namespace mesaac::mol {
 namespace {
 string strdiff_summary(const string &s1, const string &s2) {
   unsigned int i;
@@ -54,7 +53,6 @@ const string test_sdf_path(const string &rel_path) {
   const string mesaac_mol_data_in_dir(test_data_dir + "/lib/mesaac_mol/in/");
   return mesaac_mol_data_in_dir + rel_path;
 }
-} // namespace
 
 TEST_CASE("mesaac::mol::SDWriter", "[mesaac]") {
 
@@ -246,5 +244,5 @@ TEST_CASE("mesaac::mol::SDWriter", "[mesaac]") {
     cout << "TODO:  Test for lines containing only whitespace." << endl;
   }
 }
-} // namespace mol
-} // namespace mesaac
+} // namespace
+} // namespace mesaac::mol

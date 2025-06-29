@@ -13,8 +13,7 @@
 
 using namespace std;
 
-namespace mesaac {
-namespace common {
+namespace mesaac::common {
 
 namespace {
 void roundtrip(string orig) {
@@ -40,8 +39,6 @@ char random_char() {
   }
   return result;
 }
-
-} // namespace
 
 TEST_CASE("mesaac::common::B64", "[mesaac]") {
 
@@ -101,5 +98,5 @@ TEST_CASE("mesaac::common::B64", "[mesaac]") {
   }
 }
 
-} // namespace common
-} // namespace mesaac
+} // namespace
+} // namespace mesaac::common

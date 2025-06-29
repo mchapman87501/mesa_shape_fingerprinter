@@ -13,8 +13,7 @@
 
 using namespace std;
 
-namespace mesaac {
-namespace shape_eigen {
+namespace mesaac::shape_eigen {
 namespace {
 struct TestFixture {
   void read_test_points(string pathname, PointList &points) {
@@ -93,8 +92,6 @@ struct TestFixture {
     return ::sqrtf(rsqr_max);
   }
 };
-
-} // namespace
 
 TEST_CASE("mesaac::shape_eigen::VolBox", "[mesaac]") {
   TestFixture fixture;
@@ -326,5 +323,5 @@ TEST_CASE("mesaac::shape_eigen::VolBox", "[mesaac]") {
     REQUIRE(bits2.count() == bits1.count());
   }
 }
-} // namespace shape_eigen
-} // namespace mesaac
+} // namespace
+} // namespace mesaac::shape_eigen

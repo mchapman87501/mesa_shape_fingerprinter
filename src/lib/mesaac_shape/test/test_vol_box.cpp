@@ -12,8 +12,7 @@
 
 using namespace std;
 
-namespace mesaac {
-namespace shape {
+namespace mesaac::shape {
 
 namespace {
 struct TestFixture {
@@ -109,8 +108,6 @@ struct TestFixture {
     }
   }
 };
-
-} // namespace
 
 TEST_CASE("mesaac::shape::VolBox", "[mesaac]") {
   TestFixture fixture;
@@ -343,5 +340,5 @@ TEST_CASE("mesaac::shape::VolBox", "[mesaac]") {
     }
   }
 }
-} // namespace shape
-} // namespace mesaac
+} // namespace
+} // namespace mesaac::shape

@@ -79,7 +79,6 @@ struct TestFixture {
     }
   }
 };
-} // namespace
 
 TEST_CASE("mesaac::shape_eigen::Fingerprinter", "[mesaac]") {
   TestFixture fixture;
@@ -109,4 +108,5 @@ TEST_CASE("mesaac::shape_eigen::Fingerprinter", "[mesaac]") {
   }
 }
 
+} // namespace
 } // namespace mesaac::shape_eigen

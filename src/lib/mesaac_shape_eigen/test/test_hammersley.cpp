@@ -12,9 +12,9 @@
 
 using namespace std;
 
-namespace mesaac {
-namespace shape_eigen {
+namespace mesaac::shape_eigen {
 
+namespace {
 struct TestFixture {
   void check_max_extents(const PointList &points, float xmin, float xmax,
                          float ymin, float ymax, float zmin, float zmax) {
@@ -115,5 +115,5 @@ TEST_CASE("mesaac::shape_eigen::Hammersley", "[mesaac]") {
   }
 }
 
-} // namespace shape_eigen
-} // namespace mesaac
+} // namespace
+} // namespace mesaac::shape_eigen

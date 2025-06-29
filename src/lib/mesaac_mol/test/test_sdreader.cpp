@@ -8,11 +8,11 @@
 
 #include "mesaac_mol.hpp"
 
+
+namespace mesaac::mol {
+namespace {
 using namespace std;
 
-namespace mesaac {
-namespace mol {
-namespace {
 string strdiff_summary(const string &s1, const string &s2) {
   unsigned int i;
   unsigned int i_max = s1.size();
@@ -54,7 +54,6 @@ public:
     return resultf.str();
   }
 };
-} // namespace
 
 TEST_CASE("mesaac::mol::SDReader", "[mesaac]") {
 
@@ -267,5 +266,5 @@ TEST_CASE("mesaac::mol::SDReader", "[mesaac]") {
     REQUIRE(num_found == 0u);
   }
 }
-} // namespace mol
-} // namespace mesaac
+} // namespace
+} // namespace mesaac::mol

@@ -15,8 +15,7 @@
 
 using namespace std;
 
-namespace mesaac {
-namespace shape {
+namespace mesaac::shape {
 
 namespace {
 class WBAxisAligner : public AxisAligner {
@@ -705,8 +704,6 @@ int benchmark_align_to_axes(const TestFixture &fixture,
   return 0;
 }
 
-} // namespace
-
 TEST_CASE("Benchmark mesaac::shape::AxisAligner",
           "[mesaac][mesaac_benchmark]") {
   TestFixture fixture;
@@ -728,5 +725,5 @@ TEST_CASE("Benchmark mesaac::shape::AxisAligner",
   };
 }
 
-} // namespace shape
-} // namespace mesaac
+} // namespace
+} // namespace mesaac::shape

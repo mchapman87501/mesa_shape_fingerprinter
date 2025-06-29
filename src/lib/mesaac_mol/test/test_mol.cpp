@@ -8,16 +8,13 @@
 
 using namespace std;
 
-namespace mesaac {
-
-namespace mol {
+namespace mesaac::mol {
 namespace {
 string header_block(Mol &m) {
   ostringstream outs;
   outs << m.name() << "<br/>" << m.metadata() << "<br/>" << m.comments();
   return outs.str();
 }
-} // namespace
 
 TEST_CASE("mesaac::mol::Mol", "[mesaac]") {
 
@@ -110,6 +107,7 @@ TEST_CASE("mesaac::mol::Mol", "[mesaac]") {
     ins >> v;
     REQUIRE(v == 42.0);
   }
-} // TEST_CASE
-} // namespace mol
-} // namespace mesaac
+}
+
+} // namespace
+} // namespace mesaac::mol
