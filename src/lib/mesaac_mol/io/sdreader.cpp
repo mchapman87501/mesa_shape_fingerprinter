@@ -123,17 +123,17 @@ bool SDReader::read_next_bond(Bond &b) {
   // Try to read anyway:
   {
     unsigned int a0, a1;
-    Bond::BondTypeEnum bond_type;
+    BondType bond_type;
     unsigned int uint_bond_type;
-    Bond::BondStereoEnum stereo;
+    BondStereo stereo;
     unsigned int uint_stereo;
     if (uint_field(line, 0, 3, a0) && uint_field(line, 3, 6, a1) &&
         // So much for enum-driven value safety:
         uint_field(line, 6, 9, uint_bond_type) &&
         uint_field(line, 9, 12, uint_stereo)) {
       string optional_cols(line.substr(12));
-      bond_type = (Bond::BondTypeEnum)uint_bond_type;
-      stereo = (Bond::BondStereoEnum)uint_stereo;
+      bond_type = static_cast<BondType>(uint_bond_type);
+      stereo = static_cast<BondStereo>(uint_stereo);
       b = Bond(a0, a1, bond_type, stereo, optional_cols);
       result = true;
     } else {

@@ -51,15 +51,15 @@ TEST_CASE("mesaac::mol::Mol", "[mesaac]") {
     }
     REQUIRE(visited == C_NumAtoms);
 
-    Bond b_orig(1, 2, Bond::BTE_AROMATIC, Bond::BSE_CIS_TRANS_DOUBLE,
+    Bond b_orig(1, 2, BondType::bt_aromatic, BondStereo::bs_cis_trans_double,
                 "xxxrrrccc");
     mol.add_bond(b_orig);
     visited = 0;
     for (const auto &bond : mol.bonds()) {
       REQUIRE(bond.a0() == 1U);
       REQUIRE(bond.a1() == 2U);
-      REQUIRE(bond.type() == Bond::BTE_AROMATIC);
-      REQUIRE(bond.stereo() == Bond::BSE_CIS_TRANS_DOUBLE);
+      REQUIRE(bond.type() == BondType::bt_aromatic);
+      REQUIRE(bond.stereo() == BondStereo::bs_cis_trans_double);
       REQUIRE(bond.optional_cols() == "xxxrrrccc");
       visited++;
     }

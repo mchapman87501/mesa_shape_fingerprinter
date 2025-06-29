@@ -8,47 +8,48 @@
 #include <vector>
 
 namespace mesaac::mol {
+enum class BondType : unsigned int {
+  bt_single = 1,
+  bt_double = 2,
+  bt_triple = 3,
+  bt_aromatic = 4,
+  bt_single_or_double = 5,
+  bt_single_or_aromatic = 6,
+  bt_double_or_aromatic = 7,
+  bt_any = 8
+};
+
+enum class BondStereo : unsigned int {
+  bs_not_stereo = 0,
+  bs_up = 1,
+  bs_either = 4,
+  bs_down_double = 6, // ?
+  bs_cis_trans_double = 3
+};
+
 class Bond {
 public:
-  typedef enum {
-    BTE_SINGLE = 1,
-    BTE_DOUBLE = 2,
-    BTE_TRIPLE = 3,
-    BTE_AROMATIC = 4,
-    BTE_SINGLE_OR_DOUBLE = 5,
-    BTE_SINGLE_OR_AROMATIC = 6,
-    BTE_DOUBLE_OR_AROMATIC = 7,
-    BTE_ANY = 8
-  } BondTypeEnum;
-
-  typedef enum {
-    BSE_NOT_STEREO = 0,
-    BSE_UP = 1,
-    BSE_EITHER = 4,
-    BSE_DOWN_DOUBLE = 6, // ?
-    BSE_CIS_TRANS_DOUBLE = 3
-  } BondStereoEnum;
-
   Bond()
-      : m_a0(0), m_a1(0), m_type(BTE_SINGLE), m_stereo(BSE_NOT_STEREO),
-        m_optional_cols("") {}
+      : m_a0(0), m_a1(0), m_type(BondType::bt_single),
+        m_stereo(BondStereo::bs_not_stereo), m_optional_cols("") {}
 
-  Bond(unsigned int a0, unsigned int a1, BondTypeEnum bond_type = BTE_SINGLE,
-       BondStereoEnum stereo = BSE_NOT_STEREO,
+  Bond(unsigned int a0, unsigned int a1,
+       BondType bond_type = BondType::bt_single,
+       BondStereo stereo = BondStereo::bs_not_stereo,
        const std::string &optional_cols = "")
       : m_a0(a0), m_a1(a1), m_type(bond_type), m_stereo(stereo),
         m_optional_cols(optional_cols) {}
 
   unsigned int a0() const { return m_a0; }
   unsigned int a1() const { return m_a1; }
-  BondTypeEnum type() const { return m_type; }
-  BondStereoEnum stereo() const { return m_stereo; }
+  BondType type() const { return m_type; }
+  BondStereo stereo() const { return m_stereo; }
   std::string optional_cols() const { return m_optional_cols; }
 
 protected:
   unsigned int m_a0, m_a1;
-  BondTypeEnum m_type;
-  BondStereoEnum m_stereo;
+  BondType m_type;
+  BondStereo m_stereo;
   std::string m_optional_cols;
 };
 

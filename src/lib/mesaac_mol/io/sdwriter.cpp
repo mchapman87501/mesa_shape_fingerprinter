@@ -8,34 +8,51 @@
 #include <ctime>
 #include <iomanip>
 #include <sstream>
+#include <type_traits>
 
 using namespace std;
 
 namespace mesaac {
 namespace mol {
-SDWriter::SDWriter(ostream &outf) : m_outf(outf) { m_fmt.imbue(locale("C")); }
+SDWriter::SDWriter(ostream &outf) : m_outf(outf) {}
 
-SDWriter::~SDWriter() {}
-
-string SDWriter::f_str(float f, const unsigned int field_width,
-                       unsigned int decimals) {
+namespace {
+string f_str(float f, const unsigned int field_width = 10,
+             unsigned int decimals = 4) {
   // Bah!  C++ stream operators make it very difficult to
   // achieve strict formatting such as %10.4f.
   // It would be great to move on to C++23 and std::format.
+  ostringstream fmt;
+  fmt.imbue(locale("C"));
   char buffer[field_width + 1];
-  m_fmt.str("");
-  m_fmt << "%" << field_width << "." << decimals << "f";
-  snprintf(buffer, field_width + 1, m_fmt.str().c_str(), f);
+  fmt.str("");
+  fmt << "%" << field_width << "." << decimals << "f";
+  snprintf(buffer, field_width + 1, fmt.str().c_str(), f);
   return string(buffer);
 }
 
-string SDWriter::uint_str(unsigned int u, const unsigned int field_width) {
+string uint_str(unsigned int u, const unsigned int field_width = 3) {
+  ostringstream fmt;
+  fmt.imbue(locale("C"));
   char buffer[field_width + 1];
-  m_fmt.str("");
-  m_fmt << "%" << field_width << "u";
-  snprintf(buffer, field_width + 1, m_fmt.str().c_str(), u);
+  fmt.str("");
+  fmt << "%" << field_width << "u";
+  snprintf(buffer, field_width + 1, fmt.str().c_str(), u);
   return string(buffer);
 }
+
+string bond_type_str(BondType value) {
+  // This is another argument for C++23, which provides std::to_underlying.
+  auto ivalue = static_cast<std::underlying_type_t<BondType>>(value);
+  return uint_str(ivalue);
+}
+
+string stereo_type_str(BondStereo value) {
+  auto ivalue = static_cast<std::underlying_type_t<BondStereo>>(value);
+  return uint_str(ivalue);
+}
+
+} // namespace
 
 static inline string molfile_timestamp() {
   string result = "0000000000";
@@ -79,7 +96,7 @@ bool SDWriter::write(Mol &mol) {
 
   for (const auto &bond : mol.bonds()) {
     m_outf << uint_str(bond.a0()) << uint_str(bond.a1())
-           << uint_str(bond.type()) << uint_str(bond.stereo())
+           << bond_type_str(bond.type()) << stereo_type_str(bond.stereo())
            << bond.optional_cols() << endl;
   }
 

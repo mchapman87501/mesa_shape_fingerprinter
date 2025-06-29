@@ -13,22 +13,21 @@ namespace {
 TEST_CASE("mesaac::mol::Bond", "[mesaac]") {
 
   SECTION("Basic tests") {
-    mol::Bond b(1, 2);
+    Bond b(1, 2);
 
     REQUIRE(b.a0() == 1);
     REQUIRE(b.a1() == 2);
 
-    REQUIRE(b.type() == mol::Bond::BTE_SINGLE);
-    REQUIRE(b.stereo() == mol::Bond::BSE_NOT_STEREO);
+    REQUIRE(b.type() == BondType::bt_single);
+    REQUIRE(b.stereo() == BondStereo::bs_not_stereo);
 
-    mol::Bond b2(1, 2, mol::Bond::BTE_DOUBLE);
-    REQUIRE(b2.type() == mol::Bond::BTE_DOUBLE);
+    Bond b2(1, 2, BondType::bt_double);
+    REQUIRE(b2.type() == BondType::bt_double);
 
-    mol::Bond b3(1, 2, mol::Bond::BTE_DOUBLE, mol::Bond::BSE_EITHER);
-    REQUIRE(b3.stereo() == mol::Bond::BSE_EITHER);
+    Bond b3(1, 2, BondType::bt_double, BondStereo::bs_either);
+    REQUIRE(b3.stereo() == BondStereo::bs_either);
 
-    mol::Bond b4(1, 2, mol::Bond::BTE_DOUBLE, mol::Bond::BSE_NOT_STEREO,
-                 "xxxrrrccc");
+    Bond b4(1, 2, BondType::bt_double, BondStereo::bs_not_stereo, "xxxrrrccc");
     REQUIRE(b4.optional_cols() == "xxxrrrccc");
   }
 }
