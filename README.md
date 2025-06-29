@@ -30,10 +30,13 @@ ctest --preset coverage
 cmake --build --preset coverage --target process_coverage
 ```
 
-The HTML-formatted coverage reports can be viewed with your default web browser. On macOS, for example:
+The HTML-formatted coverage reports can be viewed with your default web browser. For example:
 
 ```shell
+# macOS
 open build/coverage/report/index.html
+# Ubuntu
+firefox build/coverage/report/index.html
 ```
 
 ## Issues
@@ -47,6 +50,19 @@ For this project, 3rd-party tests are distracting. That's why `CMakePresets.json
 ### OpenBabel and FetchContent
 
 [OpenBabel](https://github.com/openbabel/openbabel) is not compatible with CMake >= 4.0, because of its requirement for an older version of CMake. It looks as though efforts are underway to address this problem: See [issue #2784](https://github.com/openbabel/openbabel/pull/2784).
+
+### gcovr
+
+`gcovr` may not be installed by default.
+
+```shell
+# macOS
+brew install gcovr
+# Ubuntu
+sudo apt install gcovr
+```
+
+
 
 ## TODO
 
