@@ -1,4 +1,3 @@
-set(SPF_EXE "$<TARGET_FILE:${TARGET}>")
 configure_file(cmake_paths.py.in cmake_paths.py.gen.in @ONLY)
 file(GENERATE
 OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/cmake_paths.py"
