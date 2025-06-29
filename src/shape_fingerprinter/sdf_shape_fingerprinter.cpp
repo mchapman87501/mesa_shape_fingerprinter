@@ -52,7 +52,7 @@ void readPoints(string &pathname, string description, PointList &points) {
 }
 
 inline string compressed_fp(shape_defs::BitVector &fp) {
-  typedef shape_defs::BitVector::block_type Block;
+  using Block = shape_defs::BitVector::block_type;
   Block buffer[fp.num_blocks()];
 
   boost::to_block_range(fp, buffer);

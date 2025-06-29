@@ -10,10 +10,10 @@
 
 namespace mesaac {
 namespace shape_defs {
-typedef boost::dynamic_bitset<> BitVector;
-typedef std::vector<BitVector> ArrayBitVectors;
-typedef std::vector<ArrayBitVectors> ShapeFPBlocks;
+using BitVector = boost::dynamic_bitset<>;
+using ArrayBitVectors = std::vector<BitVector>;
+using ShapeFPBlocks = std::vector<ArrayBitVectors>;
 
-typedef std::vector<std::vector<char>> ArrayCountVectors;
+using ArrayCountVectors = std::vector<std::vector<char>>;
 } // namespace shape_defs
 } // namespace mesaac
