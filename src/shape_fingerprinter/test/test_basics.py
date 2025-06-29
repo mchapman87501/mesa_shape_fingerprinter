@@ -21,10 +21,6 @@ SPHERE = tsupp.SHARED_DATA_DIR / "hammersley" / "hamm_spheroid_10k_11rad.txt"
 ELLIPSE = tsupp.SHARED_DATA_DIR / "hammersley" / "hamm_ellipsoid_10k_11rad.txt"
 
 
-class Error(Exception):
-    pass
-
-
 class TestCase(unittest.TestCase):
     def test_no_args(self):
         """Test the exit status when no args are given."""
@@ -88,16 +84,6 @@ class TestCase(unittest.TestCase):
                 self._verify_cox2_ids(ids, sd_pathname, logger=logger)
             )
 
-    def _get_ids_and_fps(self, fp_output: str) -> tuple[list, list]:
-        ids = []
-        fps = []
-        for curr_line in fp_output.splitlines():
-            fields = curr_line.strip().split()
-            self.assertEqual(2, len(fields))
-            fps.append(fields[0])
-            ids.append(fields[1])
-        return ids, fps
-
     def test_compressed_ascii_output(self):
         """Test compressed ASCII output, with IDs."""
         for format_flag in ["-f", "--format"]:
@@ -107,6 +93,86 @@ class TestCase(unittest.TestCase):
             ids, fps = self._get_ids_and_cbinascii_fps(completion.stdout)
             self._verify_cox2_fps(fps, sd_pathname)
             self.assertTrue(self._verify_cox2_ids(ids, sd_pathname))
+
+    def test_binary_output(self):
+        for format_flag in ["-f", "--format"]:
+            options = [format_flag, "B", "--id"]
+            completion, sd_pathname, _sph = self._run_cox2_ell(options)
+            status = completion.returncode
+            if status != 0:
+                print("DEBUG: stderr:")
+                print(completion.stderr)
+            self.assertEqual(0, status)
+            out_bytes = completion.stdout
+            ids, fps = self._get_ids_and_binary_fps(out_bytes)
+            self._verify_cox2_fps(fps, sd_pathname)
+            self.assertTrue(self._verify_cox2_ids(ids, sd_pathname))
+
+    def test_records_option(self):
+        """Test processing of specific SD file records/structures."""
+        sd_pathname = COX2_CONFS
+        num_confs = self._num_sd_structures(sd_pathname)
+        record_flags = itertools.cycle(["-r", "--records"])
+        for num_records in [0, 10, num_confs]:
+            for start_index in [0, 10, 15]:
+                if start_index < num_confs:
+                    end_index = min(start_index + num_records, num_confs)
+                    record_flag = next(record_flags)
+                    args = (start_index, end_index, record_flag)
+                    with self.subTest(args=args):
+                        self._records_subtest(
+                            start_index, end_index, record_flag
+                        )
+
+    def test_invalid_records_option(self):
+        """Test processing of specific, invalid SD file records/structures."""
+        sd_pathname = COX2_CONFS
+        record_flags = itertools.cycle(["-r", "--records"])
+        for start_index in [-10, -1]:
+            # Try to get all records, starting w. start_index
+            args = [
+                next(record_flags),
+                str(start_index),
+                "-1",
+                sd_pathname,
+                SPHERE,
+                "1.0",
+            ]
+            with self.subTest(args=args):
+                completion = self._run(args)
+                self.assertNotEqual(0, completion.returncode)
+
+    def test_folding(self):
+        """Test generating folded fingerprints."""
+        # It should be enough to test ASCII output.
+        completion, _sd_pathname, _sph = self._run_cox2()
+        self.assertEqual(0, completion.returncode)
+        unfolded = [line.strip() for line in completion.stdout.splitlines()]
+        full_len = len(unfolded[0])
+
+        fold_flags = itertools.cycle(["-n", "--num_folds"])
+        for num_folds in [0, 1, 4]:
+            options = [next(fold_flags), str(num_folds)]
+            with self.subTest(options=options):
+                completion, _sdp, _sph = self._run_cox2(options)
+                folded = [
+                    line.strip() for line in completion.stdout.splitlines()
+                ]
+                self.assertEqual(len(unfolded), len(folded))
+
+                do_fold = self._get_folder(full_len, num_folds)
+                for u, f in zip(unfolded, folded):
+                    self.assertEqual(do_fold(u), f)
+
+    def _get_ids_and_fps(self, fp_output: str) -> tuple[list, list]:
+        ids = []
+        fps = []
+        for curr_line in fp_output.splitlines():
+            fields = curr_line.strip().split()
+            self.assertEqual(2, len(fields))
+            fps.append(fields[0])
+            ids.append(fields[1])
+        return ids, fps
 
     def _get_ids_and_cbinascii_fps(self, fp_output: str) -> tuple[list, list]:
         ids = []
@@ -123,20 +189,6 @@ class TestCase(unittest.TestCase):
         # FP must start w. the format flag: "C" => "compressed"
         self.assertTrue(cbinascii_content.startswith("C"))
         return self._decode_b64_gzipped(cbinascii_content[1:]).decode("utf8")
-
-    def test_binary_output(self):
-        for format_flag in ["-f", "--format"]:
-            options = [format_flag, "B", "--id"]
-            completion, sd_pathname, _sph = self._run_cox2_ell(options)
-            status = completion.returncode
-            if status != 0:
-                print("DEBUG: stderr:")
-                print(completion.stderr)
-            self.assertEqual(0, status)
-            out_bytes = completion.stdout
-            ids, fps = self._get_ids_and_binary_fps(out_bytes)
-            self._verify_cox2_fps(fps, sd_pathname)
-            self.assertTrue(self._verify_cox2_ids(ids, sd_pathname))
 
     def _get_ids_and_binary_fps(self, fp_output: str) -> tuple[list, list]:
         ids = []
@@ -181,22 +233,6 @@ class TestCase(unittest.TestCase):
         inf.close()
         return result
 
-    def test_records_option(self):
-        """Test processing of specific SD file records/structures."""
-        sd_pathname = COX2_CONFS
-        num_confs = self._num_sd_structures(sd_pathname)
-        record_flags = itertools.cycle(["-r", "--records"])
-        for num_records in [0, 10, num_confs]:
-            for start_index in [0, 10, 15]:
-                if start_index < num_confs:
-                    end_index = min(start_index + num_records, num_confs)
-                    record_flag = next(record_flags)
-                    args = (start_index, end_index, record_flag)
-                    with self.subTest(args=args):
-                        self._records_subtest(
-                            start_index, end_index, record_flag
-                        )
-
     def _records_subtest(self, start_index, end_index, record_flag):
         # My ref results were generated using an ellipsoid.
         args = [
@@ -220,43 +256,6 @@ class TestCase(unittest.TestCase):
 
         expected = self._get_cox2_fps()[start_index * 4 : end_index * 4]
         self._compare_fp_lines(expected, actual)
-
-    def test_invalid_records_option(self):
-        """Test processing of specific, invalid SD file records/structures."""
-        sd_pathname = COX2_CONFS
-        record_flags = itertools.cycle(["-r", "--records"])
-        for start_index in [-10, -1]:
-            # Try to get all records, starting w. start_index
-            args = [
-                next(record_flags),
-                str(start_index),
-                "-1",
-                sd_pathname,
-                SPHERE,
-                "1.0",
-            ]
-            with self.subTest(args=args):
-                completion = self._run(args)
-                self.assertNotEqual(0, completion.returncode)
-
-    def test_folding(self):
-        """Test generating folded fingerprints."""
-        # It should be enough to test ASCII output.
-        completion, _sd_pathname, _sph = self._run_cox2()
-        self.assertEqual(0, completion.returncode)
-        unfolded = [line.strip() for line in completion.stdout.splitlines()]
-        full_len = len(unfolded[0])
-
-        fold_flags = itertools.cycle(["-n", "--num_folds"])
-        for num_folds in range(4):
-            options = [next(fold_flags), str(num_folds)]
-            completion, _sdp, _sph = self._run_cox2(options)
-            folded = [line.strip() for line in completion.stdout.splitlines()]
-            self.assertEqual(len(unfolded), len(folded))
-
-            do_fold = self._get_folder(full_len, num_folds)
-            for u, f in zip(unfolded, folded):
-                self.assertEqual(do_fold(u), f)
 
     def _num_sd_structures(self, pathname):
         with open(pathname) as inf:
@@ -315,10 +314,7 @@ class TestCase(unittest.TestCase):
         if actual != expected:
             # Allow up to <small number> fingerprint bit discrepancies
             # per line before failing.
-            max_discrepancies_per_conf = 1
-            if not self._differences_acceptable(
-                expected, actual, max_discrepancies_per_conf
-            ):
+            if not self._differences_acceptable(expected, actual, 1):
                 self.fail("Actual fingerprints had too many discrepancies")
 
     def _verify_cox2_fps(self, lines, sd_pathname):
