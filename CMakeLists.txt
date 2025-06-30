@@ -7,6 +7,7 @@ project(${PROJECT} VERSION 1.0.0 LANGUAGES C CXX)
 # a presumption that is not true of this project.
 option(SHAPE_FINGERPRINTS_BUILD_TESTS "Build test targets" ${PROJECT_IS_TOP_LEVEL})
 
+option(SHAPE_FINGERPRINTS_BUILD_DOCS "Build documentation" OFF)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules")
 
@@ -72,3 +73,7 @@ if(SHAPE_FINGERPRINTS_BUILD_TESTS)
 endif()
 
 add_subdirectory(src)
+
+if (SHAPE_FINGERPRINTS_BUILD_DOCS)
+    add_subdirectory(doc)
+endif()

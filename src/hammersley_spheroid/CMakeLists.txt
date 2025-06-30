@@ -3,6 +3,8 @@ set(TARGET hammersley_spheroid)
 add_executable(${TARGET} hammersley_spheroid.cpp)
 target_compile_features(${TARGET} PUBLIC cxx_std_20)
 
+install(TARGETS ${TARGET} DESTINATION bin)
+
 # TODO Add usage tests -- invalid/missing command-line args, etc.
 
 # TODO Add a regression test that verifies expected output

@@ -14,6 +14,16 @@
       }
     },
     {
+      "name": "release",
+      "description": "Compile a release build, with documentation.",
+      "inherits": "default",
+      "binaryDir": "${sourceDir}/build/release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "SHAPE_FINGERPRINTS_BUILD_DOCS": "YES"
+      }
+    },
+    {
       "name": "coverage",
       "description": "Compile with unit tests, with code coverage",
       "inherits": "default",
@@ -37,6 +47,11 @@
     {
       "name": "default",
       "configurePreset": "default",
+      "targets": ["all"]
+    },
+    {
+      "name": "release",
+      "configurePreset": "release",
       "targets": ["all"]
     },
     {
@@ -69,6 +84,11 @@
           "label": "mesaac_benchmark"
         }
       }
+    },
+    {
+      "name": "release",
+      "inherits": "default",
+      "configurePreset": "release"
     },
     {
       "name": "benchmark",
