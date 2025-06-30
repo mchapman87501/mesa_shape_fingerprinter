@@ -10,18 +10,10 @@ namespace mesaac {
 namespace common {
 class B32 {
 public:
-  B32();
-  virtual ~B32();
+  B32() {}
 
   std::string encode(std::string src);
   std::string decode(std::string src);
-
-protected:
-  const std::string getAlphabet();
-  std::string transcode(std::string src, int srcBitsPerWord,
-                        int destBitsPerWord, bool pad);
-  std::string toChars(std::string bytes);
-  std::string fromChars(std::string chars);
 };
 } // namespace common
 } // namespace mesaac

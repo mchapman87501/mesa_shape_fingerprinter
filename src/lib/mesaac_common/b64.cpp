@@ -15,52 +15,15 @@ using namespace std;
 const unsigned int BitsPerEncodedWord = 6;
 const unsigned int BitsPerDecodedWord = 8;
 
-namespace mesaac {
-namespace common {
-B64::B64() {}
-
-B64::~B64() {}
-
-const char PadChar = '=';
-static string alphabet =
+namespace mesaac::common {
+namespace {
+const char pad_char = '=';
+const string alphabet =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
-static inline char masked(unsigned int inbuff) {
-  return alphabet[inbuff & 0x3F];
-}
+inline char masked(unsigned int inbuff) { return alphabet[inbuff & 0x3F]; }
 
-string B64::encode(string src) {
-  string result;
-
-  unsigned int iMax = src.size();
-  unsigned int i = 0;
-  while (i < iMax) {
-    // Correctness before speed :\  legibility doesn't enter into it.
-    unsigned int inbuff = 0;
-    unsigned int iPadIndex = 2;
-    inbuff |= ((0xFF & src[i++]) << 16);
-    if (i < iMax) {
-      iPadIndex++;
-      inbuff |= ((0xFF & src[i++]) << 8);
-      if (i < iMax) {
-        iPadIndex++;
-        inbuff |= ((0xFF & src[i++]));
-      }
-    }
-    char outchars[5] = {0, 0, 0, 0, 0};
-    outchars[3] = masked(inbuff);
-    outchars[2] = masked(inbuff >> 6);
-    outchars[1] = masked(inbuff >> 12);
-    outchars[0] = masked(inbuff >> 18);
-    while (iPadIndex <= 3) {
-      outchars[iPadIndex++] = PadChar;
-    }
-    result.append(string(outchars));
-  }
-  return result;
-}
-
-static inline unsigned int from_char(char c) {
+inline unsigned int from_char(char c) {
   // This should be quicker than a string.find, given the latter
   // involves average 32 comparisons.
   if ((c >= 'A') && (c <= 'Z')) {
@@ -88,11 +51,43 @@ static inline unsigned int from_char(char c) {
   } break;
   }
 }
+} // namespace
+
+string B64::encode(string src) {
+  string result;
+
+  unsigned int i_max = src.size();
+  unsigned int i = 0;
+  while (i < i_max) {
+    // Correctness before speed :\  legibility doesn't enter into it.
+    unsigned int inbuff = 0;
+    unsigned int i_pad_index = 2;
+    inbuff |= ((0xFF & src[i++]) << 16);
+    if (i < i_max) {
+      i_pad_index++;
+      inbuff |= ((0xFF & src[i++]) << 8);
+      if (i < i_max) {
+        i_pad_index++;
+        inbuff |= ((0xFF & src[i++]));
+      }
+    }
+    char outchars[5] = {0, 0, 0, 0, 0};
+    outchars[3] = masked(inbuff);
+    outchars[2] = masked(inbuff >> 6);
+    outchars[1] = masked(inbuff >> 12);
+    outchars[0] = masked(inbuff >> 18);
+    while (i_pad_index <= 3) {
+      outchars[i_pad_index++] = pad_char;
+    }
+    result.append(string(outchars));
+  }
+  return result;
+}
 
 string B64::decode(string src) {
   string result("");
 
-  size_t i_max = src.find_first_of(PadChar);
+  size_t i_max = src.find_first_of(pad_char);
   if (i_max == string::npos) {
     i_max = src.size();
   }
@@ -125,5 +120,4 @@ string B64::decode(string src) {
   return result;
 }
 
-} // namespace common
-} // namespace mesaac
+} // namespace mesaac::common

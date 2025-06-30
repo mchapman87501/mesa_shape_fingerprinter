@@ -6,15 +6,12 @@
 
 #include "mesaac_common/b32.hpp"
 
-namespace mesaac {
-namespace common {
+namespace mesaac::common {
 class B64 {
 public:
-  B64();
-  virtual ~B64();
+  B64() {}
 
   std::string encode(std::string src);
   std::string decode(std::string src);
 };
-} // namespace common
-} // namespace mesaac
+} // namespace mesaac::common

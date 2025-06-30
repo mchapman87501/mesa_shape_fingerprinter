@@ -55,6 +55,25 @@ TEST_CASE("mesaac::common::B32", "[mesaac]") {
       roundtrip(src);
     }
   }
+
+  SECTION("Decode invalid B32 string") {
+    // For a different approach see test_b64's section on decoding
+    // corrupted B64 strings.
+    B32 codec;
+    for (unsigned char curr_char = 0; curr_char < 0xFF; ++curr_char) {
+      // The B32 alphabet is not exposed to this test code.  Hence
+      // some of this hardwired nonsense.
+      // Verify that B32::decode throws for any character that is
+      // neither a decimal numeral ("0"..."9") nor an uppercase latin letter
+      // ("A"..."Z").
+      const string bad_char_samples = "abcdefghijklmnopqrstuvwxyz_-+,";
+      B32 codec;
+      for (const auto &bad_char : bad_char_samples) {
+        string input(16, bad_char);
+        REQUIRE_THROWS_AS(codec.decode(input), runtime_error);
+      }
+    }
+  }
 }
 
 } // namespace

@@ -12,9 +12,7 @@
 
 using namespace std;
 
-namespace mesaac {
-namespace common {
-namespace gzip {
+namespace mesaac::common::gzip {
 string compress(const string src, int level) {
   string result("");
 
@@ -41,15 +39,15 @@ string compress(const string src, int level) {
     // Loop until the compressor fails to completely exhaust the
     // compression buffer.
     do {
-      const int BuffSize = 1024;
-      unsigned char compressed_buff[BuffSize + 1];
-      strm.avail_out = BuffSize;
+      const int buff_size = 1024;
+      unsigned char compressed_buff[buff_size + 1];
+      strm.avail_out = buff_size;
       strm.next_out = compressed_buff;
 
       int flush = Z_FINISH; // Other legal value is Z_NO_FLUSH
       status = deflate(&strm, flush);
       if (Z_STREAM_ERROR != status) {
-        unsigned int bytes_written = BuffSize - strm.avail_out;
+        unsigned int bytes_written = buff_size - strm.avail_out;
         string chunk((char *)compressed_buff, bytes_written);
         result += chunk;
       } else {
@@ -82,31 +80,31 @@ string decompress(const string src) {
   strm.opaque = Z_NULL;
   strm.avail_in = 0;
   strm.next_in = Z_NULL;
-  int windowBits = 15 + 32;
+  int window_bits = 15 + 32;
 
-  int status = inflateInit2(&strm, windowBits);
+  int status = inflateInit2(&strm, window_bits);
   if (Z_OK != status) {
     throw runtime_error("Could not initialize gzip decompressor");
   } else {
     // See zlib's examples/zpipe.c
-    const unsigned int Chunk = 16 * 1024;
-    unsigned char in[Chunk];
+    const unsigned int chunk_size = 16 * 1024;
+    unsigned char in[chunk_size];
     unsigned int i_src = 0;
     do {
-      string srcChunk(src.substr(i_src, Chunk - 1));
-      unsigned int num_chars = srcChunk.size();
+      string src_chunk(src.substr(i_src, chunk_size - 1));
+      unsigned int num_chars = src_chunk.size();
       if (0 == num_chars) {
         break;
       }
 
-      memcpy((void *)in, (void *)srcChunk.c_str(), num_chars);
+      memcpy((void *)in, (void *)src_chunk.c_str(), num_chars);
       i_src += num_chars;
       strm.avail_in = num_chars;
       strm.next_in = in;
 
       do {
-        unsigned char out[Chunk];
-        strm.avail_out = Chunk;
+        unsigned char out[chunk_size];
+        strm.avail_out = chunk_size;
         strm.next_out = out;
         status = inflate(&strm, Z_NO_FLUSH);
         string msg;
@@ -130,7 +128,7 @@ string decompress(const string src) {
           }
           throw runtime_error(msg);
         }
-        unsigned int bytes_written = Chunk - strm.avail_out;
+        unsigned int bytes_written = chunk_size - strm.avail_out;
         result += string((char *)out, bytes_written);
       } while (0 == strm.avail_out);
     } while (Z_STREAM_END != status);
@@ -142,6 +140,4 @@ string decompress(const string src) {
   }
   return result;
 }
-} // namespace gzip
-} // namespace common
-} // namespace mesaac
+} // namespace mesaac::common::gzip

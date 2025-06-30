@@ -4,67 +4,72 @@
 
 #include "mesaac_common/b32.hpp"
 
+#include <sstream>
+
 using namespace std;
 
-namespace mesaac {
-namespace common {
-B32::B32() {}
+namespace mesaac::common {
 
-B32::~B32() {}
-
-const string B32::getAlphabet() { return "0123456789ABCDEFGHJKMNPQRSTVWXYZ"; }
-
-string B32::encode(string src) { return toChars(transcode(src, 8, 5, true)); }
-
-string B32::decode(string src) {
-  return transcode(fromChars(src), 5, 8, false);
-}
-
-string B32::transcode(string src, int srcBitsPerWord, int destBitsPerWord,
-                      bool pad) {
+namespace {
+const string alphabet = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
+string transcode(string src, int src_bits_per_word, int dest_bits_per_word,
+                 bool pad) {
   string result;
   unsigned char word = 0;
-  int topBit = 0x01 << (srcBitsPerWord - 1);
-  int bitsToGo = destBitsPerWord;
-  const int iMax = srcBitsPerWord * src.size();
+  int top_bit = 0x01 << (src_bits_per_word - 1);
+  int bits_to_go = dest_bits_per_word;
+  const int iMax = src_bits_per_word * src.size();
   for (int i = 0; i < iMax; ++i) {
-    unsigned char chunk = (unsigned char)src[i / srcBitsPerWord];
-    unsigned char bitMask = topBit >> (i % srcBitsPerWord);
+    unsigned char chunk = (unsigned char)src[i / src_bits_per_word];
+    unsigned char bit_mask = top_bit >> (i % src_bits_per_word);
     word <<= 1;
-    if (chunk & bitMask) {
+    if (chunk & bit_mask) {
       word |= 1;
     }
-    bitsToGo--;
-    if (bitsToGo <= 0) {
+    bits_to_go--;
+    if (bits_to_go <= 0) {
       result.push_back(word);
       word = 0;
-      bitsToGo = destBitsPerWord;
+      bits_to_go = dest_bits_per_word;
     }
   }
 
-  if (pad && (bitsToGo < destBitsPerWord)) {
-    word <<= bitsToGo;
+  if (pad && (bits_to_go < dest_bits_per_word)) {
+    word <<= bits_to_go;
     result.push_back(word);
   }
   return result;
 }
 
-string B32::toChars(string bytes) {
-  string result;
-  const string alphabet(getAlphabet());
-  for (string::iterator i = bytes.begin(); i != bytes.end(); ++i) {
-    result += alphabet[0xFF & *i];
+string to_chars(string bytes) {
+  string result(bytes.size(), '\0');
+  for (size_t i = 0; i < bytes.size(); ++i) {
+
+    result[i] = alphabet.at(0xFF & bytes[i]);
   }
   return result;
 }
 
-string B32::fromChars(string chars) {
-  string result;
-  const string alphabet(getAlphabet());
-  for (string::iterator i = chars.begin(); i != chars.end(); ++i) {
-    result.push_back((char)(alphabet.find(*i)));
+string from_chars(string chars) {
+  string result(chars.size(), '\0');
+  for (size_t i = 0; i < chars.size(); ++i) {
+    auto alpha = alphabet.find(chars[i]);
+    if (alpha == string::npos) {
+      ostringstream msg;
+      msg << "Invalid B32 character " << (unsigned int)(chars[i] & 0xFF);
+      throw runtime_error(msg.str());
+    }
+    result[i] = alpha;
   }
   return result;
 }
-} // namespace common
-} // namespace mesaac
+
+} // namespace
+
+string B32::encode(string src) { return to_chars(transcode(src, 8, 5, true)); }
+
+string B32::decode(string src) {
+  return transcode(from_chars(src), 5, 8, false);
+}
+
+} // namespace mesaac::common
