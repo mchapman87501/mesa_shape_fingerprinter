@@ -65,6 +65,15 @@ class TestCase(unittest.TestCase):
             self.assertNotEqual(0, completion.returncode)
             self.assertTrue("unsupported" in completion.stderr.lower())
 
+    def test_invalid_atom_scale(self):
+        """Test expected response to use of invalid atom_scale."""
+        for atom_scale in ["not_a_float", "-1.0"]:
+            args = [COX2_CONFS, SPHERE, atom_scale]
+            with self.subTest(args=args):
+                completion = self._run(args)
+                self.assertNotEqual(0, completion.returncode)
+                self.assertTrue("atom_scale" in completion.stderr.lower())
+
     def test_with_ids(self):
         """Test generation of fingerprints with associated structure IDs."""
         for option in ["-i", "--id"]:
@@ -95,6 +104,7 @@ class TestCase(unittest.TestCase):
             self.assertTrue(self._verify_cox2_ids(ids, sd_pathname))
 
     def test_binary_output(self):
+        """Test binary output, with IDs."""
         for format_flag in ["-f", "--format"]:
             options = [format_flag, "B", "--id"]
             completion, sd_pathname, _sph = self._run_cox2_ell(options)
@@ -103,10 +113,18 @@ class TestCase(unittest.TestCase):
                 print("DEBUG: stderr:")
                 print(completion.stderr)
             self.assertEqual(0, status)
-            out_bytes = completion.stdout
-            ids, fps = self._get_ids_and_binary_fps(out_bytes)
+            ids, fps = self._get_ids_and_binary_fps(completion.stdout)
             self._verify_cox2_fps(fps, sd_pathname)
             self.assertTrue(self._verify_cox2_ids(ids, sd_pathname))
+
+    def test_invalid_format(self):
+        """Verify expected behavior for unsupported formats."""
+        for format_flag in ["-f", "--format"]:
+            options = [format_flag, "INVALID"]
+            with self.subTest(options=options):
+                completion, _path, _sph = self._run_cox2(options)
+                self.assertNotEqual(0, completion.returncode)
+                self.assertTrue("Unsupported format" in completion.stderr)
 
     def test_records_option(self):
         """Test processing of specific SD file records/structures."""
@@ -163,6 +181,13 @@ class TestCase(unittest.TestCase):
                 do_fold = self._get_folder(full_len, num_folds)
                 for u, f in zip(unfolded, folded):
                     self.assertEqual(do_fold(u), f)
+
+    def test_missing_num_folds(self):
+        """Verify expected behavior when number of folds is not given."""
+        options = ["-n"]
+        completion = self._run(options)
+        self.assertNotEqual(0, completion.returncode)
+        self.assertTrue("no value specified" in completion.stderr.lower())
 
     def _get_ids_and_fps(self, fp_output: str) -> tuple[list, list]:
         ids = []

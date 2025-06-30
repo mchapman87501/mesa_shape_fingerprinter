@@ -97,7 +97,8 @@ public:
     if ((m_argc - i) != 3) {
       show_usage("Wrong number of arguments");
     }
-    // By default, the he_pathname should be the same as the
+    // By default, the ellipsoid pathname should be the same as the spheroid
+    // pathname.
     sd_pathname = m_argv[i++];
     hs_pathname = m_argv[i++];
     if (!custom_he_path) {
@@ -158,9 +159,9 @@ protected:
   }
 
   void show_usage(string err_msg = "", int status = 1) {
-    cerr << "Usage: " << basename(m_argv[0]) << " [options] "
-         << "sd_file hamms_sphere_file atom_scale" << endl
-         << "Generate shape fingerprints for 3D conformers.\n\
+    cerr << "Usage: " << basename(m_argv[0])
+         << " [options] sd_file hamms_sphere_file atom_scale\n\
+Generate shape fingerprints for 3D conformers.\n\
 \n\
 sd_file              = a file of conformers in SD format, with 3D coordinates\n\
 hamms_sphere_file    = a file containing 3D Hammersley sphere points, one point \n\
