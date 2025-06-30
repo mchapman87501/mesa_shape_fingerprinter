@@ -13,17 +13,17 @@ namespace mesaac::mol {
 namespace {
 TEST_CASE("mesaac::Atom", "[mesaac]") {
   SECTION("Basic tests") {
-    Atom a(6);
-    REQUIRE(a.atomic_num() == 6);
+    Atom atom(6);
+    REQUIRE(atom.atomic_num() == 6);
 
-    REQUIRE(a.x() == 0.0f);
-    REQUIRE(a.y() == 0.0f);
-    REQUIRE(a.z() == 0.0f);
+    REQUIRE(atom.x() == 0.0f);
+    REQUIRE(atom.y() == 0.0f);
+    REQUIRE(atom.z() == 0.0f);
 
-    REQUIRE(a.optional_cols() == "");
-    REQUIRE(a.symbol() == "C");
-    REQUIRE(a.radius() == 1.7f);
-    REQUIRE(!a.is_hydrogen());
+    REQUIRE(atom.optional_cols() == "");
+    REQUIRE(atom.symbol() == "C");
+    REQUIRE(atom.radius() == 1.7f);
+    REQUIRE(!atom.is_hydrogen());
 
     Atom hyd(1, Position(), "fooo");
     REQUIRE(hyd.symbol() == "H");
@@ -36,15 +36,15 @@ TEST_CASE("mesaac::Atom", "[mesaac]") {
     REQUIRE(!oxy.is_hydrogen());
     REQUIRE(oxy.optional_cols() == "bar");
 
-    a.set_pos(Position(10, 11, -200.5));
-    REQUIRE(a.x() == 10.0f);
-    REQUIRE(a.y() == 11.0f);
-    REQUIRE(a.z() == -200.5f);
+    atom.set_pos(Position(10, 11, -200.5));
+    REQUIRE(atom.x() == 10.0f);
+    REQUIRE(atom.y() == 11.0f);
+    REQUIRE(atom.z() == -200.5f);
   }
 
   SECTION("Invalid atomic number") {
-    Atom a(512);
-    REQUIRE_THROWS_AS(a.symbol(), invalid_argument);
+    Atom atom(512);
+    REQUIRE_THROWS_AS(atom.symbol(), invalid_argument);
   }
 }
 } // namespace

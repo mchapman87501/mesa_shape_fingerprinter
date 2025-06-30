@@ -103,9 +103,8 @@ bool SDWriter::write(Mol &mol) {
   m_outf << mol.properties_block();
 
   const SDTagMap &tags(mol.tags());
-  SDTagMap::const_iterator k;
-  for (k = tags.begin(); k != tags.end(); ++k) {
-    string value(k->second);
+  for (const auto &tag : tags) {
+    string value(tag.second);
     // Strip all trailing blank lines in value.
     // Also strip trailing whitespace from the last line of value --
     // hope that's legitimate.
@@ -113,7 +112,7 @@ bool SDWriter::write(Mol &mol) {
            (value.find_last_of("\n\t ") == value.size() - 1)) {
       value.erase(value.size() - 1);
     }
-    m_outf << k->first << endl << value << endl << endl;
+    m_outf << tag.first << endl << value << endl << endl;
   }
   m_outf << "$$$$" << endl;
 

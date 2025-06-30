@@ -32,14 +32,14 @@ TEST_CASE("mesaac::mol::Mol", "[mesaac]") {
 
   SECTION("Atoms and Bonds") {
     Mol mol;
-    const unsigned int C_NumAtoms = 10;
+    const unsigned int num_atoms = 10;
     unsigned int i;
-    for (i = 0; i < C_NumAtoms; i++) {
+    for (i = 0; i < num_atoms; i++) {
       Atom atom(i, {(float)i, 0.0f, 0.0f});
       mol.add_atom(atom);
     }
-    REQUIRE(mol.num_atoms() == C_NumAtoms);
-    REQUIRE(mol.num_heavy_atoms() == C_NumAtoms - 1);
+    REQUIRE(mol.num_atoms() == num_atoms);
+    REQUIRE(mol.num_heavy_atoms() == num_atoms - 1);
 
     unsigned int visited = 0;
     for (const auto &atom : mol.atoms()) {
@@ -49,7 +49,7 @@ TEST_CASE("mesaac::mol::Mol", "[mesaac]") {
       REQUIRE(atom.z() == 0.0f);
       visited++;
     }
-    REQUIRE(visited == C_NumAtoms);
+    REQUIRE(visited == num_atoms);
 
     Bond b_orig(1, 2, BondType::bt_aromatic, BondStereo::bs_cis_trans_double,
                 "xxxrrrccc");
@@ -88,15 +88,15 @@ TEST_CASE("mesaac::mol::Mol", "[mesaac]") {
     mol.add_tag("t2", 2.0);
     REQUIRE(mol.tags().size() == 2);
 
-    const string FirstValue("3 and something");
-    mol.add_tag("t3", FirstValue);
+    const string first_value("3 and something");
+    mol.add_tag("t3", first_value);
     REQUIRE(mol.tags().size() == 3);
 
     // XXX FIX THIS:  you can't retrieve a tag using the
     // same syntax as you used to set it...
     SDTagMap::const_iterator it = mol.tags().find(">  <t3>");
     REQUIRE(it != mol.tags().end());
-    REQUIRE(it->second == FirstValue);
+    REQUIRE(it->second == first_value);
 
     // Duplicate
     mol.add_tag("t3", 42.0);
