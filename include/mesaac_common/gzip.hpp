@@ -6,6 +6,7 @@
 
 #include <string>
 
+/// @brief Gzip de/compression functions.
 namespace mesaac::common::gzip {
 
 /// @brief Compress a string.

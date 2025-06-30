@@ -7,6 +7,8 @@
 #include <string>
 
 namespace mesaac::common {
+
+/// @brief A Base32 codec
 class B32 {
 public:
   B32() {}

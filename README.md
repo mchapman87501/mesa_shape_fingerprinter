@@ -2,11 +2,13 @@
 
 ## Overview
 
-This repository intends to hold all open-source code for the Mesa Analytics shape fingerprinter ca. 2010-2011.
+This repository will hold all open-source code for the Mesa Analytics shape fingerprinter ca. 2010-2011.
 
 ## Building
 
-The original Mesa code was built with SCons. This repository uses CMake 4.0 or later.
+This repository uses CMake 3.31 or later.
+
+Several build configurations are supported. Here's how to build the default (Debug) configuration.
 
 ```shell
 # To configure a build directory in ./build:
@@ -23,10 +25,17 @@ ctest --preset default
 
 To get a code coverage report for all tests, a similar set of cmake commands can be used.
 
+Start by configuring, building and running tests.
+
 ```shell
 cmake --preset coverage
 cmake --build --preset coverage
 ctest --preset coverage
+```
+
+Then generate the coverage report. This step requires `gcovr`. See below for installation suggestions for `gcovr`.
+
+```shell
 cmake --build --preset coverage --target process_coverage
 ```
 
@@ -35,37 +44,47 @@ The HTML-formatted coverage reports can be viewed with your default web browser.
 ```shell
 # macOS
 open build/coverage/report/index.html
+
 # Ubuntu
-firefox build/coverage/report/index.html
+firefox build/coverage/report/index.html &
 ```
 
 ## Issues
 
 ### Lots of 3rd Party Tests
 
-The 3rd-party packages that are made available through `FetchContent` define a lot of time-consuming unit tests. Eigen defines the bulk of these tests.
+The 3rd-party packages that are made available through CMake's `FetchContent_MakeAvailable` define time-consuming unit tests. Eigen defines the bulk of these tests.
 
-For this project, 3rd-party tests are distracting. That's why `CMakePresets.json` explores a way of running only the project's own tests, as identified by CMake labels.
+For this project, 3rd-party tests are distracting. That's why `CMakePresets.json` specifies to run only those tests that have the `mesaac` CMake test label.
 
 ### OpenBabel and FetchContent
 
-[OpenBabel](https://github.com/openbabel/openbabel) is not compatible with CMake >= 4.0, because of its requirement for an older version of CMake. It looks as though efforts are underway to address this problem: See [issue #2784](https://github.com/openbabel/openbabel/pull/2784).
+[OpenBabel](https://github.com/openbabel/openbabel) is not compatible with the latest (at time of writing) CMake revisions, because of its requirement for an older version of CMake. It looks as though efforts are underway to address this problem: See [issue #2784](https://github.com/openbabel/openbabel/pull/2784).
+
+In the meantime, OpenBabel must be installed separately before building this project.
+
+```shell
+# macOS
+brew install open-babel
+
+# linux
+sudo apt install libopenbabel-dev
+```
 
 ### gcovr
 
-`gcovr` may not be installed by default.
+As mentioned above, `gcovr` is needed for `coverage` builds. It can be installed on macOS and linux as follows:
 
 ```shell
 # macOS
 brew install gcovr
+
 # Ubuntu
 sudo apt install gcovr
 ```
-
-
 
 ## TODO
 
 ### Re-use `ArgParser`
 
-[shape_filter_by_radius.cpp](./src/shape_filter_by_radius/shape_filter_by_radius.cpp) defines an `ArgParser` for parsing command-line options. It should be factored out to its own library for use in all of the user-facing executables.
+The `shape_filter_by_radius` source code defines an `ArgParser` for parsing command-line options. It should be factored out to its own library for use in all of the user-facing executables.

@@ -7,6 +7,8 @@
 #include "mesaac_common/b32.hpp"
 
 namespace mesaac::common {
+
+/// @brief A Base64 codec
 class B64 {
 public:
   B64() {}

@@ -1,0 +1,7 @@
+OUTPUT_DIRECTORY = @CMAKE_CURRENT_BINARY_DIR@
+INPUT = @CMAKE_SOURCE_DIR@/README.md @CMAKE_SOURCE_DIR@/include/mesaac_common @CMAKE_SOURCE_DIR@/include/mesaac_mol @CMAKE_SOURCE_DIR@/include/mesaac_shape @CMAKE_SOURCE_DIR@/include/mesaac_shape_eigen
+RECURSIVE = YES
+USE_MDFILE_AS_MAINPAGE = @CMAKE_SOURCE_DIR@/README.md
+GENERATE_HTML = YES
+PROJECT_NAME = "shape_fingerprints"
+PROJECT_BRIEF = "MesaAC Shape Fingerprints"

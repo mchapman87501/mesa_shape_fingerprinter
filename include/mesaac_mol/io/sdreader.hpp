@@ -24,8 +24,10 @@ public:
 
   /// @brief Read the next molecule/structure.
   /// @param mol on successful return, the next read molecule
-  /// @return whether or not a molecule could be read into `mol`. **Note:**
-  /// if the return value is `false`, then the state of `mol` is not defined
+  /// @return whether or not a molecule could be read into `mol`
+  ///
+  /// @note If the return value is `false`, then the state of `mol` is not
+  /// defined.
   bool read(Mol &mol);
 
 protected:
