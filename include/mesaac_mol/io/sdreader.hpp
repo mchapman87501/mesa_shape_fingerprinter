@@ -13,9 +13,19 @@ namespace mesaac::mol {
 
 class SDReader {
 public:
+  /// @brief Create an SD file reader.
+  /// @param inf stream from which to read SD structures
+  /// @param pathname if given, the pathname from which `inf` is reading
   SDReader(std::istream &inf, std::string pathname = "(input stream)");
 
+  /// @brief Skip the next molecule.
+  /// @return true if the reader was able to skip ahead
   bool skip();
+
+  /// @brief Read the next molecule/structure.
+  /// @param mol on successful return, the next read molecule
+  /// @return whether or not a molecule could be read into `mol`. **Note:**
+  /// if the return value is `false`, then the state of `mol` is not defined
   bool read(Mol &mol);
 
 protected:

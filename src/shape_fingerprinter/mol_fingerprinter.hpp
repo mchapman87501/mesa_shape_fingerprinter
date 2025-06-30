@@ -14,23 +14,33 @@
 namespace mesaac::shape_fingerprinter {
 class MolFingerprinter {
 public:
-  MolFingerprinter(PointList &hammsEllipsoidCoords,
-                   PointList &hammsSphereCoords, float epsilonSqr,
+  MolFingerprinter(PointList &hamms_ellipsoid_coords,
+                   PointList &hamms_sphere_coords, float epsilon_sqr,
                    unsigned int numFolds);
 
-  void setMolecule(mol::Mol &mol);
-  bool getNextFP(shape_defs::BitVector &fp);
+  /// @brief Set the molecule for which to compute fingerprints.
+  /// @param mol the molecule for which to compute subsequent fingerprints
+  void set_molecule(mol::Mol &mol);
+
+  /// @brief Get the next fingerprint for the current molecule.  Multiple
+  /// fingerprints may be obtained, one for each orientation ("flip") of the
+  /// molecule.
+  /// @param fp on successful return, the next fingerprint
+  /// @return `true` if `fp` was successfully computed, `false`
+  /// otherwise.  **Note:** if the return value is `false`, then the state of
+  /// `fp` is indeterminate.
+  bool get_next_fp(shape_defs::BitVector &fp);
 
 protected:
-  shape::AxisAligner m_axisAligner;
-  shape::VolBox m_volBox;
-  unsigned int m_numFolds;
+  shape::AxisAligner m_axis_aligner;
+  shape::VolBox m_volbox;
+  unsigned int m_num_folds;
 
   mol::Mol m_mol;
-  unsigned int m_iFlip;
+  unsigned int m_i_flip;
   PointList m_heavies;
 
-  void computeCurrFlipFingerprint(const PointList &points,
-                                  shape_defs::BitVector &result);
+  void compute_curr_flip_fingerprint(const PointList &points,
+                                     shape_defs::BitVector &result);
 };
 } // namespace mesaac::shape_fingerprinter

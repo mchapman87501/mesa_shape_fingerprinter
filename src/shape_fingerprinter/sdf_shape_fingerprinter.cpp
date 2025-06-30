@@ -15,7 +15,8 @@
 using namespace std;
 
 namespace mesaac::shape_fingerprinter {
-static void openInput(ifstream &inf, string &pathname, string description) {
+namespace {
+void open_input(ifstream &inf, string &pathname, string description) {
   inf.open(pathname.c_str());
   if (!inf) {
     cerr << "Cannot open " << description << " '" << pathname
@@ -24,22 +25,9 @@ static void openInput(ifstream &inf, string &pathname, string description) {
   }
 }
 
-SDFShapeFingerprinter::SDFShapeFingerprinter(string sdPathname,
-                                             string hammsEllipsoidPathname,
-                                             string hammsSpherePathname,
-                                             float radiiEpsilon,
-                                             bool includeIDs, FormatEnum format,
-                                             unsigned int numFolds)
-    : m_sdPathname(sdPathname),
-      m_hammsEllipsoidPathname(hammsEllipsoidPathname),
-      m_hammsSpherePathname(hammsSpherePathname),
-      m_epsilonSqr(radiiEpsilon * radiiEpsilon), m_includeIDs(includeIDs),
-      m_format(format), m_numFolds(numFolds) {}
-
-namespace {
-void readPoints(string &pathname, string description, PointList &points) {
+void read_points(string &pathname, string description, PointList &points) {
   ifstream inf;
-  openInput(inf, pathname, description);
+  open_input(inf, pathname, description);
 
   float coord;
   while (inf >> coord) {
@@ -74,41 +62,51 @@ inline string cbinascii_fp(shape_defs::BitVector &fp) {
 }
 
 } // namespace
+SDFShapeFingerprinter::SDFShapeFingerprinter(
+    string sd_pathname, string hamms_ellipsoid_pathname,
+    string hamms_sphere_pathname, float radii_epsilon, bool include_ids,
+    FormatEnum format, unsigned int num_folds)
+    : m_sd_pathname(sd_pathname),
+      m_hamms_ellipsoid_pathname(hamms_ellipsoid_pathname),
+      m_hamms_sphere_pathname(hamms_sphere_pathname),
+      m_epsilon_sqr(radii_epsilon * radii_epsilon), m_include_ids(include_ids),
+      m_format(format), m_num_folds(num_folds) {}
 
-void SDFShapeFingerprinter::run(int startIndex, int endIndex) {
+void SDFShapeFingerprinter::run(int start_index, int end_index) {
   PointList ellipsoid, sphere;
-  readPoints(m_hammsEllipsoidPathname, "hamms_ellipsoid_filename", ellipsoid);
-  readPoints(m_hammsSpherePathname, "hamms_sphere_filename", sphere);
-  processMolecules(ellipsoid, sphere, startIndex, endIndex);
+  read_points(m_hamms_ellipsoid_pathname, "hamms_ellipsoid_filename",
+              ellipsoid);
+  read_points(m_hamms_sphere_pathname, "hamms_sphere_filename", sphere);
+  process_molecules(ellipsoid, sphere, start_index, end_index);
 }
 
-void SDFShapeFingerprinter::processMolecules(PointList &ellipsoid,
-                                             PointList &sphere, int startIndex,
-                                             int endIndex) {
-  if (startIndex < 0) {
-    cerr << "Invalid start index " << startIndex << " -- must be >= 0" << endl;
+void SDFShapeFingerprinter::process_molecules(PointList &ellipsoid,
+                                              PointList &sphere,
+                                              int start_index, int end_index) {
+  if (start_index < 0) {
+    cerr << "Invalid start index " << start_index << " -- must be >= 0" << endl;
     exit(1);
   }
-  ifstream inf(m_sdPathname.c_str());
+  ifstream inf(m_sd_pathname.c_str());
   if (!inf) {
     // TODO: throw exception
-    cerr << "Cannot open sd file '" << m_sdPathname << "'" << endl;
+    cerr << "Cannot open sd file '" << m_sd_pathname << "'" << endl;
     exit(1);
   }
-  mol::SDReader reader(inf, m_sdPathname);
-  MolFingerprinter mfp(ellipsoid, sphere, m_epsilonSqr, m_numFolds);
+  mol::SDReader reader(inf, m_sd_pathname);
+  MolFingerprinter mfp(ellipsoid, sphere, m_epsilon_sqr, m_num_folds);
 
   int i = 0;
-  while (i < startIndex && reader.skip()) {
+  while (i < start_index && reader.skip()) {
     i += 1;
   }
 
-  // If endIndex < 0, just process everything.
+  // If end_index < 0, just process everything.
   mol::Mol mol;
-  while (((endIndex < 0) || (i < endIndex)) && reader.read(mol)) {
-    mfp.setMolecule(mol);
+  while (((end_index < 0) || (i < end_index)) && reader.read(mol)) {
+    mfp.set_molecule(mol);
     shape_defs::BitVector fp;
-    while (mfp.getNextFP(fp)) {
+    while (mfp.get_next_fp(fp)) {
       switch (m_format) {
       case FMT_COMPRESSED_ASCII:
         cout << "C" << cbinascii_fp(fp);
@@ -123,7 +121,7 @@ void SDFShapeFingerprinter::processMolecules(PointList &ellipsoid,
         cout << fp;
         break;
       }
-      if (m_includeIDs) {
+      if (m_include_ids) {
         cout << " " << mol.name();
       }
       cout << endl;

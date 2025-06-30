@@ -14,29 +14,31 @@ class SDFShapeFingerprinter {
 public:
   typedef enum { FMT_ASCII, FMT_COMPRESSED_ASCII, FMT_BINARY } FormatEnum;
 
-  SDFShapeFingerprinter(std::string sdPathname,
-                        std::string hammsEllipsoidPathname,
-                        std::string hammsSpherePathname, float radiiEpsilon,
-                        bool includeIDs, FormatEnum format,
-                        unsigned int numFolds);
+  SDFShapeFingerprinter(std::string sd_pathname,
+                        std::string hamms_ellipsoid_pathname,
+                        std::string hams_sphere_pathname, float radii_epsilon,
+                        bool include_ids, FormatEnum format,
+                        unsigned int num_folds);
 
-  void run(int startIndex, int endIndex);
+  void run(int start_index, int end_index);
 
 protected:
-  std::string m_sdPathname;
-  std::string m_hammsEllipsoidPathname;
-  std::string m_hammsSpherePathname;
+  std::string m_sd_pathname;
+  std::string m_hamms_ellipsoid_pathname;
+  std::string m_hamms_sphere_pathname;
 
-  const float m_epsilonSqr;
-  bool m_includeIDs;
+  const float m_epsilon_sqr;
+  bool m_include_ids;
   FormatEnum m_format;
-  unsigned int m_numFolds;
+  unsigned int m_num_folds;
 
-  void processMolecules(PointList &ellipsoid, PointList &sphere, int startIndex,
-                        int endIndex);
+  void process_molecules(PointList &ellipsoid, PointList &sphere,
+                         int start_index, int end_index);
 
 private:
   SDFShapeFingerprinter(const SDFShapeFingerprinter &src);
-  SDFShapeFingerprinter &operator=(const SDFShapeFingerprinter src);
+  SDFShapeFingerprinter(SDFShapeFingerprinter &&src);
+  SDFShapeFingerprinter &operator=(const SDFShapeFingerprinter &src);
+  SDFShapeFingerprinter &operator=(SDFShapeFingerprinter &&src);
 };
 } // namespace mesaac::shape_fingerprinter
