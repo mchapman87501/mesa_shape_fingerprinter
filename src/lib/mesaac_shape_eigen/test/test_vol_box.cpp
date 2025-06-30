@@ -211,10 +211,12 @@ TEST_CASE("mesaac::shape_eigen::VolBox", "[mesaac]") {
     unsigned int total_points = sphere.size();
     const float R = fixture.get_max_extent(sphere);
 
-    float d_r = (R - 1.5) / 10.0;
-    for (float r = 1.5; r <= R; r += d_r) {
+    const size_t steps = 10;
+    float d_r = (R - 1.5) / steps;
+    float r = 1.5;
+    for (size_t i = 0; i < steps; ++i) {
       PointList centers;
-      centers.push_back({0, 0, 0, r});
+      centers.push_back({0.0f, 0.0f, 0.0f, r});
 
       PointList expected;
       fixture.get_contained_points(sphere, centers, expected);
@@ -228,6 +230,8 @@ TEST_CASE("mesaac::shape_eigen::VolBox", "[mesaac]") {
       float expected_count = total_points * (r * r * r) / (R * R * R);
       REQUIRE_THAT(expected_count,
                    Catch::Matchers::WithinRel(contained.size(), 0.05));
+
+      r += d_r;
     }
   }
 
@@ -243,8 +247,10 @@ TEST_CASE("mesaac::shape_eigen::VolBox", "[mesaac]") {
 
     // Test various, fully-contained locations.
     const float max_offset = 0.9 * (R - r);
-    const float d_center = max_offset / 10.0;
-    for (float center = -max_offset; center <= max_offset; center += d_center) {
+    const size_t steps = 10;
+    const float d_center = max_offset / steps;
+    float center = -max_offset;
+    for (size_t i = 0; i < steps; ++i) {
       PointList centers;
       centers.push_back({center, 0, 0, r});
 
@@ -266,6 +272,7 @@ TEST_CASE("mesaac::shape_eigen::VolBox", "[mesaac]") {
 
       REQUIRE_THAT(exp_cnt,
                    Catch::Matchers::WithinRel(contained.size(), 0.075));
+      center += d_center;
     }
   }
 

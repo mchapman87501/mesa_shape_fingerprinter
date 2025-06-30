@@ -213,7 +213,8 @@ TEST_CASE("mesaac::shape::VolBox", "[mesaac]") {
     const float R = fixture.get_max_extent(sphere);
 
     float d_r = (R - 1.5) / 10.0;
-    for (float r = 1.5; r <= R; r += d_r) {
+    float r = 1.5;
+    while (r <= R) {
       const PointList centers{{0, 0, 0, r}};
 
       PointList expected;
@@ -228,6 +229,8 @@ TEST_CASE("mesaac::shape::VolBox", "[mesaac]") {
       double expected_count = total_points * (r * r * r) / (R * R * R);
       REQUIRE_THAT(expected_count,
                    Catch::Matchers::WithinRel(contained.size(), 0.0475));
+
+      r += d_r;
     }
   }
 
@@ -240,8 +243,10 @@ TEST_CASE("mesaac::shape::VolBox", "[mesaac]") {
 
     // Test various, fully-contained locations.
     const float max_offset = 0.9 * (R - r);
-    const float d_center = max_offset / 10.0;
-    for (float center = -max_offset; center <= max_offset; center += d_center) {
+    const size_t steps = 10;
+    const float d_center = max_offset / steps;
+    float center = -max_offset;
+    for (size_t i = 0; i < steps; ++i) {
       const PointList centers{{center, 0, 0, r}};
 
       PointList expected;
@@ -261,6 +266,8 @@ TEST_CASE("mesaac::shape::VolBox", "[mesaac]") {
       REQUIRE(expected == contained);
       REQUIRE_THAT(exp_cnt,
                    Catch::Matchers::WithinRel(contained.size(), 0.075));
+
+      center += d_center;
     }
 
     SECTION("No double counting of overlapping spherules") {
@@ -314,7 +321,8 @@ TEST_CASE("mesaac::shape::VolBox", "[mesaac]") {
   SECTION("Test basic folded fingerprints") {
     PointList center_spheres;
     const float r = 5.0;
-    for (float x = -15.0; x != 15.0; x += 1.0) {
+    for (int ix = -15; ix <= 15; ++ix) {
+      float x(ix);
       center_spheres.push_back({x, x, x, r});
     }
 
@@ -324,7 +332,7 @@ TEST_CASE("mesaac::shape::VolBox", "[mesaac]") {
     const unsigned int max_folds = 5;
     unsigned int num_folds;
     unsigned int folded_size = vb.size();
-    for (num_folds = 0, folded_size = vb.size(); num_folds != max_folds;
+    for (num_folds = 0; num_folds != max_folds;
          ++num_folds, folded_size /= 2) {
       shape_defs::BitVector folded;
       folded.resize(folded_size);

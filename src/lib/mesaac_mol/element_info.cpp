@@ -495,7 +495,6 @@ bool inited = init_radii();
 } // namespace
 
 double get_radius(int atomic_number) {
-  double result = atomic_radius[atomic_number];
   const auto entry = atomic_radius.find(atomic_number);
   if (entry == atomic_radius.end()) {
     ostringstream msg;

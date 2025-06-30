@@ -21,6 +21,16 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Coverage"
       }
+    },
+    {
+      "name": "ubuntu-clang-tidy",
+      "description": "Ubuntu: use clang++ to ease use of clang-tidy -- I dunno how to avoid the hardwired clang++-<version>",
+      "inherits": "default",
+      "binaryDir": "${sourceDir}/build/ubuntu-clang-tidy",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "/usr/bin/clang-20",
+        "CMAKE_CXX_COMPILER": "/usr/bin/clang++-20"
+      }
     }
   ],
   "buildPresets": [
@@ -32,6 +42,11 @@
     {
       "name": "coverage",
       "configurePreset": "coverage",
+      "targets": ["all"]
+    },
+    {
+      "name": "ubuntu-clang-tidy",
+      "configurePreset": "ubuntu-clang-tidy",
       "targets": ["all"]
     }
   ],
