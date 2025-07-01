@@ -12,10 +12,10 @@ using namespace std;
 namespace mesaac::mol {
 
 namespace {
-bool double_field(const string &line, unsigned int i_start, unsigned int i_len,
-                  double &value) {
+bool float_field(const string &line, unsigned int i_start, unsigned int i_len,
+                 float &value) {
   try {
-    value = std::stod(line.substr(i_start, i_len));
+    value = std::stof(line.substr(i_start, i_len));
     return true;
   } catch (std::exception &e) {
     return false;
@@ -83,9 +83,9 @@ std::optional<Atom> SDReader::read_next_atom() {
   if (line.size() < 34) {
     cerr << file_pos() << "Atom line is too short: '" << line << "'." << endl;
   } else {
-    double x, y, z;
-    if (double_field(line, 0, 10, x) && double_field(line, 10, 10, y) &&
-        double_field(line, 20, 10, z)) {
+    float x, y, z;
+    if (float_field(line, 0, 10, x) && float_field(line, 10, 10, y) &&
+        float_field(line, 20, 10, z)) {
       return Atom({.atomic_num = get_atomic_num(line.substr(31, 3)),
                    .pos = {x, y, z},
                    .optional_cols = line.substr(34)});

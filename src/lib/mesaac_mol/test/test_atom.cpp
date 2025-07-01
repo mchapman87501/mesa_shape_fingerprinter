@@ -3,6 +3,7 @@
 //
 
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_floating_point.hpp>
 
 #include "mesaac_mol/atom.hpp"
 
@@ -16,9 +17,9 @@ TEST_CASE("mesaac::Atom", "[mesaac]") {
     Atom atom({.atomic_num = 6});
     REQUIRE(atom.atomic_num() == 6);
 
-    REQUIRE(atom.x() == 0.0f);
-    REQUIRE(atom.y() == 0.0f);
-    REQUIRE(atom.z() == 0.0f);
+    REQUIRE_THAT(atom.x(), Catch::Matchers::WithinAbs(0.0f, 1.0e-6));
+    REQUIRE_THAT(atom.y(), Catch::Matchers::WithinAbs(0.0f, 1.0e-6));
+    REQUIRE_THAT(atom.z(), Catch::Matchers::WithinAbs(0.0f, 1.0e-6));
 
     REQUIRE(atom.optional_cols() == "");
     REQUIRE(atom.symbol() == "C");
