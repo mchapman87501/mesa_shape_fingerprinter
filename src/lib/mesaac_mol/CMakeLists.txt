@@ -6,6 +6,7 @@ set(SRC
     io/sdreader.cpp
     mol.cpp
     element_info.cpp
+    sd_tag_map.cpp
 )
 
 set(HEADER_DIR ${CMAKE_SOURCE_DIR}/include/${TARGET})
@@ -18,6 +19,7 @@ set(HEADERS
     ${HEADER_DIR}/io.hpp
     ${HEADER_DIR}/mol.hpp
     ${HEADER_DIR}/position.hpp
+    ${HEADER_DIR}/sd_tag_map.hpp
 )
 
 add_library(${TARGET} STATIC ${SRC})

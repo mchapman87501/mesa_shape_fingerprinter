@@ -13,7 +13,7 @@ namespace mesaac::mol {
 namespace {
 TEST_CASE("mesaac::Atom", "[mesaac]") {
   SECTION("Basic tests") {
-    Atom atom(6);
+    Atom atom({.atomic_num = 6});
     REQUIRE(atom.atomic_num() == 6);
 
     REQUIRE(atom.x() == 0.0f);
@@ -25,13 +25,13 @@ TEST_CASE("mesaac::Atom", "[mesaac]") {
     REQUIRE(atom.radius() == 1.7f);
     REQUIRE(!atom.is_hydrogen());
 
-    Atom hyd(1, Position(), "fooo");
+    Atom hyd({.atomic_num = 1, .pos = Position(), .optional_cols = "fooo"});
     REQUIRE(hyd.symbol() == "H");
     REQUIRE(hyd.radius() == 1.09f);
     REQUIRE(hyd.is_hydrogen());
     REQUIRE(hyd.optional_cols() == "fooo");
 
-    Atom oxy(8, Position(), "bar");
+    Atom oxy({.atomic_num = 8, .pos = Position(), .optional_cols = "bar"});
     REQUIRE(oxy.symbol() == "O");
     REQUIRE(!oxy.is_hydrogen());
     REQUIRE(oxy.optional_cols() == "bar");
@@ -43,7 +43,7 @@ TEST_CASE("mesaac::Atom", "[mesaac]") {
   }
 
   SECTION("Invalid atomic number") {
-    Atom atom(512);
+    Atom atom({.atomic_num = 512});
     REQUIRE_THROWS_AS(atom.symbol(), invalid_argument);
   }
 }

@@ -83,7 +83,7 @@ TEST_CASE("mesaac::shape::Fingerprinter", "[mesaac]") {
     // Their flips should all produce identical fingerprints.
     mol::AtomVector atoms;
     for (float i = -4.0; i <= 4.0; i += 2.0) {
-      mol::Atom a(12, {i, 0, 0});
+      mol::Atom a({.atomic_num = 12, .pos = {i, 0, 0}});
       atoms.push_back(a);
     }
     fixture.test_for_atom_vector(atoms, true);
@@ -95,7 +95,7 @@ TEST_CASE("mesaac::shape::Fingerprinter", "[mesaac]") {
     mol::AtomVector atoms;
     float y = 0.5;
     for (float i = -4.0; i <= 4.0; i += 2.0) {
-      mol::Atom a(12, {i, y, 0});
+      mol::Atom a({.atomic_num = 12, .pos = {i, y, 0}});
       atoms.push_back(a);
 
       y = -y;

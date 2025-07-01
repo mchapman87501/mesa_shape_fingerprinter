@@ -22,22 +22,19 @@ TEST_CASE("mesaac::mol::Mol", "[mesaac]") {
 
     Mol m1;
     REQUIRE(header_block(m1) == "<br/><br/>");
-    m1.name("A molecule");
-    m1.metadata("ill-formed");
-    m1.comments("t&t");
-    REQUIRE(header_block(m1) == ("A molecule<br/>ill-formed<br/>t&t"));
-    m1.clear();
-    REQUIRE(header_block(m1) == "<br/><br/>");
+    Mol m2({.name = "A molecule", .metadata = "ill-formed", .comments = "t&t"});
+    REQUIRE(header_block(m2) == ("A molecule<br/>ill-formed<br/>t&t"));
   } // namespace mesaac
 
   SECTION("Atoms and Bonds") {
-    Mol mol;
+    AtomVector atoms;
     const unsigned int num_atoms = 10;
     unsigned int i;
     for (i = 0; i < num_atoms; i++) {
-      Atom atom(i, {(float)i, 0.0f, 0.0f});
-      mol.add_atom(atom);
+      Atom atom({.atomic_num = i, .pos = {(float)i, 0.0f, 0.0f}});
+      atoms.emplace_back(atom);
     }
+    Mol mol({.atoms = atoms});
     REQUIRE(mol.num_atoms() == num_atoms);
     REQUIRE(mol.num_heavy_atoms() == num_atoms - 1);
 
@@ -51,11 +48,11 @@ TEST_CASE("mesaac::mol::Mol", "[mesaac]") {
     }
     REQUIRE(visited == num_atoms);
 
-    Bond b_orig(1, 2, BondType::bt_aromatic, BondStereo::bs_cis_trans_double,
-                "xxxrrrccc");
-    mol.add_bond(b_orig);
+    Bond b_orig({1, 2, BondType::bt_aromatic, BondStereo::bs_cis_trans_double,
+                 "xxxrrrccc"});
+    Mol mol2({.bonds = {b_orig}});
     visited = 0;
-    for (const auto &bond : mol.bonds()) {
+    for (const auto &bond : mol2.bonds()) {
       REQUIRE(bond.a0() == 1U);
       REQUIRE(bond.a1() == 2U);
       REQUIRE(bond.type() == BondType::bt_aromatic);
@@ -64,44 +61,42 @@ TEST_CASE("mesaac::mol::Mol", "[mesaac]") {
       visited++;
     }
     REQUIRE(1u == visited);
-
-    mol.clear();
-    REQUIRE(mol.num_atoms() == 0U);
-    REQUIRE(mol.bonds().begin() == mol.bonds().end());
   }
 
   SECTION("Properties") {
     Mol mol;
+    REQUIRE(mol.properties_block() == "");
 
-    REQUIRE(mol.properties_block() == "");
     string pb("M  1\nM  2\nM  END\n");
-    mol.properties_block(pb);
-    REQUIRE(mol.properties_block() == pb);
-    mol.clear();
-    REQUIRE(mol.properties_block() == "");
+    Mol mol2({.properties_block = pb});
+    REQUIRE(mol2.properties_block() == pb);
   }
 
   SECTION("Tags") {
     Mol mol;
     REQUIRE(mol.tags().empty());
-    mol.add_tag("t1", 1.0);
-    mol.add_tag("t2", 2.0);
-    REQUIRE(mol.tags().size() == 2);
 
+    SDTagMap tags;
+    tags.add("t1", 1.0);
+    tags.add("t2", 2.0);
     const string first_value("3 and something");
-    mol.add_tag("t3", first_value);
-    REQUIRE(mol.tags().size() == 3);
+    tags.add("t3", first_value);
+
+    Mol mol2({.tags = tags});
+    REQUIRE(mol2.tags().size() == 3);
 
     // XXX FIX THIS:  you can't retrieve a tag using the
     // same syntax as you used to set it...
-    SDTagMap::const_iterator it = mol.tags().find(">  <t3>");
-    REQUIRE(it != mol.tags().end());
+    SDTagMap::const_iterator it = mol2.tags().find(">  <t3>");
+    REQUIRE(it != mol2.tags().end());
     REQUIRE(it->second == first_value);
 
-    // Duplicate
-    mol.add_tag("t3", 42.0);
-    it = mol.tags().find(">  <t3>");
-    REQUIRE(it != mol.tags().end());
+    // XXX FIX THIS - this belongs in a test_sd_tag_map TEST_CASE.
+    // Mixing of concerns: verify SDTagMap uses "last one wins"
+    // when updating content.
+    tags.add("t3", 42.0);
+    it = tags.find(">  <t3>");
+    REQUIRE(it != tags.end());
     istringstream ins(it->second);
     double v;
     ins >> v;

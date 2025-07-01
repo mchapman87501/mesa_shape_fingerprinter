@@ -29,16 +29,20 @@ enum class BondStereo : unsigned int {
 
 class Bond {
 public:
+  struct BondParams {
+    const unsigned int a0, a1;
+    const BondType bond_type = BondType::bt_single;
+    const BondStereo stereo = BondStereo::bs_not_stereo;
+    const std::string optional_cols;
+  };
+
   Bond()
       : m_a0(0), m_a1(0), m_type(BondType::bt_single),
         m_stereo(BondStereo::bs_not_stereo), m_optional_cols("") {}
 
-  Bond(unsigned int a0, unsigned int a1,
-       BondType bond_type = BondType::bt_single,
-       BondStereo stereo = BondStereo::bs_not_stereo,
-       const std::string &optional_cols = "")
-      : m_a0(a0), m_a1(a1), m_type(bond_type), m_stereo(stereo),
-        m_optional_cols(optional_cols) {}
+  Bond(const BondParams &&params)
+      : m_a0(params.a0), m_a1(params.a1), m_type(params.bond_type),
+        m_stereo(params.stereo), m_optional_cols(params.optional_cols) {}
 
   unsigned int a0() const { return m_a0; }
   unsigned int a1() const { return m_a1; }

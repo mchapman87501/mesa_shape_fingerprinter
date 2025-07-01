@@ -141,53 +141,55 @@ public:
     return std::make_unique<WBAxisAligner>(sphere, atom_scale, true);
   }
 
-  void add_atom(mol::Mol &m, string symbol, float x, float y, float z) const {
+  mol::Atom atom(string symbol, float x, float y, float z) const {
     const unsigned char atomic_num(mol::get_atomic_num(symbol));
-    mol::Atom a(atomic_num, {x, y, z});
-    m.add_atom(a);
+    return mol::Atom({atomic_num, {x, y, z}});
   }
 
   void create_sample_mol(mol::Mol &mol, unsigned int &num_heavies) const {
     // Coordinates taken from first cox2_3d conformer.
-    add_atom(mol, "C", 27.7051, 22.0403, 17.0243);
-    add_atom(mol, "N", 26.4399, 22.0976, 16.4318);
-    add_atom(mol, "C", 25.5381, 21.4424, 17.2831);
-    add_atom(mol, "C", 26.2525, 20.9753, 18.3748);
-    add_atom(mol, "C", 27.5943, 21.3608, 18.2218);
-    add_atom(mol, "C", 24.0821, 21.3670, 17.1082);
-    add_atom(mol, "C", 26.1324, 22.6824, 15.1634);
-    add_atom(mol, "C", 23.4105, 22.2668, 16.2675);
-    add_atom(mol, "C", 22.0220, 22.2007, 16.1197);
-    add_atom(mol, "C", 21.2976, 21.2409, 16.8307);
-    add_atom(mol, "C", 21.9509, 20.3402, 17.6750);
-    add_atom(mol, "C", 23.3399, 20.4115, 17.8175);
-    add_atom(mol, "C", 26.3695, 24.0457, 14.9358);
-    add_atom(mol, "C", 26.0627, 24.6119, 13.6959);
-    add_atom(mol, "C", 25.5236, 23.8179, 12.6910);
-    add_atom(mol, "C", 25.2821, 22.4660, 12.9010);
-    add_atom(mol, "C", 25.5848, 21.8942, 14.1391);
-    add_atom(mol, "F", 25.2311, 24.3643, 11.5034);
-    add_atom(mol, "C", 28.9655, 22.5443, 16.4025);
-    add_atom(mol, "S", 19.5328, 21.1457, 16.6315);
-    add_atom(mol, "O", 19.0413, 22.4851, 16.3229);
-    add_atom(mol, "O", 18.9873, 20.4577, 17.7975);
-    add_atom(mol, "C", 19.3258, 20.1152, 15.2035);
-    add_atom(mol, "H", 25.8309, 20.4354, 19.2156);
-    add_atom(mol, "H", 28.4100, 21.1477, 18.9041);
-    add_atom(mol, "H", 23.9630, 23.0298, 15.7210);
-    add_atom(mol, "H", 21.5209, 22.9035, 15.4575);
-    add_atom(mol, "H", 21.3956, 19.5863, 18.2287);
-    add_atom(mol, "H", 23.8404, 19.7079, 18.4815);
-    add_atom(mol, "H", 26.7480, 24.6961, 15.7203);
-    add_atom(mol, "H", 26.2341, 25.6696, 13.5167);
-    add_atom(mol, "H", 24.8658, 21.8592, 12.1019);
-    add_atom(mol, "H", 25.4187, 20.8273, 14.2701);
-    add_atom(mol, "H", 29.8338, 22.0387, 16.8401);
-    add_atom(mol, "H", 29.0870, 23.6157, 16.5858);
-    add_atom(mol, "H", 28.9947, 22.3510, 15.3261);
-    add_atom(mol, "H", 18.2555, 20.0118, 15.0126);
-    add_atom(mol, "H", 19.7633, 19.1356, 15.4046);
-    add_atom(mol, "H", 19.8115, 20.5898, 14.3489);
+    mol::AtomVector atoms{
+        atom("C", 27.7051, 22.0403, 17.0243),
+        atom("N", 26.4399, 22.0976, 16.4318),
+        atom("C", 25.5381, 21.4424, 17.2831),
+        atom("C", 26.2525, 20.9753, 18.3748),
+        atom("C", 27.5943, 21.3608, 18.2218),
+        atom("C", 24.0821, 21.3670, 17.1082),
+        atom("C", 26.1324, 22.6824, 15.1634),
+        atom("C", 23.4105, 22.2668, 16.2675),
+        atom("C", 22.0220, 22.2007, 16.1197),
+        atom("C", 21.2976, 21.2409, 16.8307),
+        atom("C", 21.9509, 20.3402, 17.6750),
+        atom("C", 23.3399, 20.4115, 17.8175),
+        atom("C", 26.3695, 24.0457, 14.9358),
+        atom("C", 26.0627, 24.6119, 13.6959),
+        atom("C", 25.5236, 23.8179, 12.6910),
+        atom("C", 25.2821, 22.4660, 12.9010),
+        atom("C", 25.5848, 21.8942, 14.1391),
+        atom("F", 25.2311, 24.3643, 11.5034),
+        atom("C", 28.9655, 22.5443, 16.4025),
+        atom("S", 19.5328, 21.1457, 16.6315),
+        atom("O", 19.0413, 22.4851, 16.3229),
+        atom("O", 18.9873, 20.4577, 17.7975),
+        atom("C", 19.3258, 20.1152, 15.2035),
+        atom("H", 25.8309, 20.4354, 19.2156),
+        atom("H", 28.4100, 21.1477, 18.9041),
+        atom("H", 23.9630, 23.0298, 15.7210),
+        atom("H", 21.5209, 22.9035, 15.4575),
+        atom("H", 21.3956, 19.5863, 18.2287),
+        atom("H", 23.8404, 19.7079, 18.4815),
+        atom("H", 26.7480, 24.6961, 15.7203),
+        atom("H", 26.2341, 25.6696, 13.5167),
+        atom("H", 24.8658, 21.8592, 12.1019),
+        atom("H", 25.4187, 20.8273, 14.2701),
+        atom("H", 29.8338, 22.0387, 16.8401),
+        atom("H", 29.0870, 23.6157, 16.5858),
+        atom("H", 28.9947, 22.3510, 15.3261),
+        atom("H", 18.2555, 20.0118, 15.0126),
+        atom("H", 19.7633, 19.1356, 15.4046),
+        atom("H", 19.8115, 20.5898, 14.3489),
+    };
+    mol = mol::Mol({.atoms = atoms});
     num_heavies = 23;
   }
 
@@ -614,17 +616,19 @@ TEST_CASE("mesaac::shape::AxisAligner", "[mesaac]") {
     // Confirm that the line, including its hydrogens, gets mapped onto
     // the X axis.
 
-    mol::Mol mol;
     float x, y, z, w, h, d;
 
-    fixture.add_atom(mol, "C", 0.0, 0.0, 0.0); // Stay inside the point cloud
-    fixture.add_atom(mol, "H", 0.0, 0.0, 1.0);
-    fixture.add_atom(mol, "C", 0.0, 0.0, 2.0);
-    fixture.add_atom(mol, "H", 0.0, 0.0, 3.0);
-    fixture.add_atom(mol, "C", 0.0, 0.0, 4.0);
-    fixture.add_atom(mol, "H", 0.0, 0.0, 5.0);
-    fixture.add_atom(mol, "C", 0.0, 0.0, 6.0);
-    fixture.add_atom(mol, "H", 0.0, 0.0, 7.0);
+    mol::Mol mol(
+        {.atoms = {
+             fixture.atom("C", 0.0, 0.0, 0.0), // Stay inside the point cloud
+             fixture.atom("H", 0.0, 0.0, 1.0),
+             fixture.atom("C", 0.0, 0.0, 2.0),
+             fixture.atom("H", 0.0, 0.0, 3.0),
+             fixture.atom("C", 0.0, 0.0, 4.0),
+             fixture.atom("H", 0.0, 0.0, 5.0),
+             fixture.atom("C", 0.0, 0.0, 6.0),
+             fixture.atom("H", 0.0, 0.0, 7.0),
+         }});
 
     aligner->wb_get_atom_points(mol.atoms(), points, true);
     fixture.get_pointlist_info(points, x, y, z, w, h, d);

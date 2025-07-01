@@ -3,26 +3,46 @@
 //
 
 #include "mesaac_mol/io/sdreader.hpp"
+#include "mesaac_mol/element_info.hpp"
 
 #include <sstream>
-
-#include "mesaac_mol/element_info.hpp"
 
 using namespace std;
 
 namespace mesaac::mol {
-SDReader::SDReader(istream &inf, string pathname)
-    : m_pathname(pathname), m_inf(inf), m_linenum(0) {
-  m_nums.imbue(locale("C"));
+
+namespace {
+bool double_field(const string &line, unsigned int i_start, unsigned int i_len,
+                  double &value) {
+  try {
+    value = std::stod(line.substr(i_start, i_len));
+    return true;
+  } catch (std::exception &e) {
+    return false;
+  }
 }
+
+bool uint_field(const string &line, unsigned int i_start, unsigned int i_len,
+                unsigned int &value) {
+  try {
+    value = std::stoul(line.substr(i_start, i_len));
+    return true;
+  } catch (std::exception &e) {
+    return false;
+  }
+}
+
+} // namespace
+
+SDReader::SDReader(istream &inf, const string &pathname)
+    : m_pathname(pathname), m_inf(inf), m_linenum(0) {}
 
 bool SDReader::getline(string &line) {
   std::getline(m_inf, line);
-  bool result = (bool)m_inf;
+  bool result = m_inf.good();
   if (result) {
     m_linenum++;
   }
-  // cerr << file_pos() << "'" << line << "'" << endl;
   return result;
 }
 
@@ -30,22 +50,6 @@ string SDReader::file_pos() {
   ostringstream result;
   result << "File " << m_pathname << ", line " << m_linenum << ":  ";
   return result.str();
-}
-
-bool SDReader::double_field(string &line, unsigned int i_start,
-                            unsigned int i_len, double &value) {
-  m_nums.str(line.substr(i_start, i_len));
-  m_nums.clear();
-  m_nums >> value;
-  return !m_nums.fail();
-}
-
-bool SDReader::uint_field(string &line, unsigned int i_start,
-                          unsigned int i_len, unsigned int &value) {
-  m_nums.str(line.substr(i_start, i_len));
-  m_nums.clear();
-  m_nums >> value;
-  return !m_nums.fail();
 }
 
 // TODO:  Also extract number of atom lists, etc.
@@ -72,8 +76,7 @@ void SDReader::get_counts(unsigned int &num_atoms, unsigned int &num_bonds,
   }
 }
 
-bool SDReader::read_next_atom(Atom &a) {
-  bool result = false;
+std::optional<Atom> SDReader::read_next_atom() {
   string line;
   getline(line);
   // TODO: Enough w. the inline literal constants.
@@ -83,36 +86,32 @@ bool SDReader::read_next_atom(Atom &a) {
     double x, y, z;
     if (double_field(line, 0, 10, x) && double_field(line, 10, 10, y) &&
         double_field(line, 20, 10, z)) {
-      string symbol(line.substr(31, 3));
-      string optional_cols(line.substr(34));
-      a = Atom(get_atomic_num(symbol), {x, y, z}, optional_cols);
-      result = true;
+      return Atom({.atomic_num = get_atomic_num(line.substr(31, 3)),
+                   .pos = {x, y, z},
+                   .optional_cols = line.substr(34)});
     } else {
       cerr << file_pos() << "Could not parse coordinates from '" << line << "'."
            << endl;
     }
   }
-  return result;
+  return std::nullopt;
 }
 
-bool SDReader::read_atoms(Mol &mol, unsigned int num_atoms) {
-  bool result = true;
+bool SDReader::read_atoms(AtomVector &atoms, unsigned int num_atoms) {
   for (unsigned int i = 0; i != num_atoms; i++) {
-    Atom a;
-    if (read_next_atom(a)) {
-      mol.add_atom(a);
+    const auto atom = read_next_atom();
+    if (atom.has_value()) {
+      atoms.emplace_back(atom.value());
     } else {
       // When an error is encountered, give up on the current
       // molecule.
-      result = false;
-      break;
+      return false;
     }
   }
-  return result;
+  return true;
 }
 
-bool SDReader::read_next_bond(Bond &b) {
-  bool result = false;
+std::optional<Bond> SDReader::read_next_bond() {
   string line;
   getline(line);
   if (line.size() < 12) {
@@ -134,31 +133,28 @@ bool SDReader::read_next_bond(Bond &b) {
       string optional_cols(line.substr(12));
       bond_type = static_cast<BondType>(uint_bond_type);
       stereo = static_cast<BondStereo>(uint_stereo);
-      b = Bond(a0, a1, bond_type, stereo, optional_cols);
-      result = true;
+      return Bond({a0, a1, bond_type, stereo, optional_cols});
     } else {
       cerr << file_pos() << "Could not parse bond from '" << line << "'."
            << endl;
     }
   }
-  return result;
+  return std::nullopt;
 }
 
-bool SDReader::read_bonds(Mol &mol, unsigned int num_bonds) {
-  bool result = true;
+bool SDReader::read_bonds(BondVector &bonds, unsigned int num_bonds) {
   for (unsigned int i = 0; i != num_bonds; i++) {
-    Bond b;
-    if (read_next_bond(b)) {
-      mol.add_bond(b);
+    const auto bond = read_next_bond();
+    if (bond.has_value()) {
+      bonds.emplace_back(bond.value());
     } else {
-      result = false;
-      break;
+      return false;
     }
   }
-  return result;
+  return true;
 }
 
-bool SDReader::read_properties_block(Mol &mol) {
+bool SDReader::read_properties_block(string &properties_block) {
   bool result = false;
   ostringstream blockf;
   string line;
@@ -170,7 +166,7 @@ bool SDReader::read_properties_block(Mol &mol) {
       break;
     }
   }
-  mol.properties_block(blockf.str());
+  properties_block = blockf.str();
 
   return result;
 }
@@ -179,7 +175,7 @@ static bool is_blank(string &line) {
   return (line.find_first_not_of(" \t") == string::npos);
 }
 
-bool SDReader::read_one_tag(Mol &mol, string &line) {
+bool SDReader::read_one_tag(SDTagMap &tags, string &line) {
   bool result = false;
   if (m_inf) {
     getline(line);
@@ -196,17 +192,17 @@ bool SDReader::read_one_tag(Mol &mol, string &line) {
       }
       // TODO:  Extract the actual tag, distinguishing between
       // <TAG_NAME>, DTn field numbers and registry numbers
-      mol.add_unparsed_tag(tag, value.str());
+      tags.add_unparsed(tag, value.str());
       result = true;
     }
   }
   return result;
 }
 
-bool SDReader::read_tags(Mol &mol) {
+bool SDReader::read_tags(SDTagMap &tags) {
   bool result = true;
   string line;
-  while (read_one_tag(mol, line)) {
+  while (read_one_tag(tags, line)) {
     // loop
   }
   if (line != "$$$$") {
@@ -237,37 +233,38 @@ bool SDReader::skip() {
 }
 
 bool SDReader::read(Mol &next) {
+  string name;
+  string metadata;
+  string comments;
+  AtomVector atoms;
+  BondVector bonds;
+  string properties_block;
+  SDTagMap tags;
+  string counts_line;
+
   bool result = false;
-  next.clear();
   if (m_inf) {
     // When to check for EOF?
-    string mol_name;
-    string mol_metadata;
-    string comments;
+
     while (m_inf && !result) {
       unsigned int start_line(m_linenum);
       // If we can read the molecule name, assume we'll find a
       // complete molecule.
-      if (getline(mol_name)) {
-        getline(mol_metadata); // User's info, program name etc.
-        getline(comments);     // comment
-        next.name(mol_name);
-        next.metadata(mol_metadata);
-        next.comments(comments);
+      if (getline(name)) {
+        getline(metadata); // User's info, program name etc.
+        getline(comments);
 
         unsigned int num_atoms = 0;
         unsigned int num_bonds = 0;
-        string counts_line;
         get_counts(num_atoms, num_bonds, counts_line);
-        next.counts_line(counts_line);
 
         // A molecule could be just an atom, I suppose, but it can't
         // be just bonds.
         if (num_atoms > 0) {
           // If unable to read this molecule, skip to the next one.
           result =
-              (read_atoms(next, num_atoms) && read_bonds(next, num_bonds) &&
-               read_properties_block(next) && read_tags(next));
+              (read_atoms(atoms, num_atoms) && read_bonds(bonds, num_bonds) &&
+               read_properties_block(properties_block) && read_tags(tags));
         }
         if (!result) {
           cerr << "Could not read molecule starting at line " << start_line
@@ -276,6 +273,18 @@ bool SDReader::read(Mol &next) {
         }
       }
     }
+  }
+  if (result) {
+    next = Mol({.atoms = atoms,
+                .bonds = bonds,
+                .tags = tags,
+                .name = name,
+                .metadata = metadata,
+                .comments = comments,
+                .counts_line = counts_line,
+                .properties_block = properties_block});
+  } else {
+    next = Mol();
   }
   return result;
 }

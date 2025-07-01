@@ -60,22 +60,21 @@ TEST_CASE("mesaac::mol::SDWriter", "[mesaac]") {
     // Based on a layman's reading of MDL ctfile spec:
     // Dimensionality of a molecule should be 3 if it contains
     // any non-zero z coordinates, 2 otherwise.
-    Mol m;
-    Atom a(1);
-    m.add_atom(a);
-    REQUIRE(m.dimensionality() == 2u);
+    Atom atom1({.atomic_num = 1});
+    Mol m1({.atoms = {atom1}});
+    REQUIRE(m1.dimensionality() == 2u);
 
-    Atom b(1, {1.0f, 0.0f, 0.0f});
-    m.add_atom(b);
-    REQUIRE(m.dimensionality() == 2u);
+    Atom atom2({1, {1.0f, 0.0f, 0.0f}});
+    Mol m2({.atoms = {atom1, atom2}});
+    REQUIRE(m2.dimensionality() == 2u);
 
-    Atom c(1, {1.0f, 1.0f, 0.0f});
-    m.add_atom(c);
-    REQUIRE(m.dimensionality() == 2u);
+    Atom atom3({1, {1.0f, 1.0f, 0.0f}});
+    Mol m3({.atoms = {atom1, atom2, atom3}});
+    REQUIRE(m3.dimensionality() == 2u);
 
-    Atom d(1, {1.0f, 1.0f, 1.0f});
-    m.add_atom(d);
-    REQUIRE(m.dimensionality() == 3u);
+    Atom atom4({1, {1.0f, 1.0f, 1.0f}});
+    Mol m4({.atoms = {atom1, atom2, atom3, atom4}});
+    REQUIRE(m4.dimensionality() == 3u);
   }
 
   SECTION("Basic writing") {
@@ -179,27 +178,31 @@ TEST_CASE("mesaac::mol::SDWriter", "[mesaac]") {
     string pathname(test_sdf_path("one_structure.sdf"));
     ifstream inf(pathname.c_str());
     SDReader reader(inf, pathname);
-    Mol m;
-    REQUIRE(reader.read(m));
+    Mol m_in;
+    REQUIRE(reader.read(m_in));
     inf.close();
 
     // Take it on faith that the hydrogens are not all superposed
     // at (-100,-100,-100) in the input file.
     unsigned int hcount = 0;
-    for (auto &atom : m.mutable_atoms()) {
+    for (auto &atom : m_in.mutable_atoms()) {
       if (atom.is_hydrogen()) {
         atom.set_pos({-100.0f, -100.0f, -100.0f});
         hcount++;
       }
     }
-    m.add_tag("test_sdwriter.hcount", hcount);
-    m.add_tag("test_sdwriter.blank_terminated", "foo\n\n");
-    m.add_tag("test_sdwriter.not_blank_termed", "foo");
-    m.add_tag("test_sdwriter.multi_blank_termed", "foo    \n\n\n\n");
+
+    SDTagMap tags;
+    tags.add("test_sdwriter.hcount", hcount);
+    tags.add("test_sdwriter.blank_terminated", "foo\n\n");
+    tags.add("test_sdwriter.not_blank_termed", "foo");
+    tags.add("test_sdwriter.multi_blank_termed", "foo    \n\n\n\n");
+
+    Mol m_tagged({.atoms = m_in.atoms(), .tags = tags});
 
     ostringstream outs;
     SDWriter writer(outs);
-    writer.write(m);
+    writer.write(m_tagged);
     unsigned int written_hcount = 0;
     string s(outs.str());
     const string pattern(" -100.0000 -100.0000 -100.0000 H ");
