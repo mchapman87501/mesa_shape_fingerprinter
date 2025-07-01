@@ -27,7 +27,8 @@ static inline void get_point_list(const AtomVector &atoms, PointList &result) {
   result.clear();
   result.reserve(atoms.size());
   for (const Atom &atom : atoms) {
-    result.push_back({atom.x(), atom.y(), atom.z(), atom.radius()});
+    const auto &pos(atom.pos());
+    result.push_back({pos.x(), pos.y(), pos.z(), atom.radius()});
   }
 }
 

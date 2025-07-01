@@ -50,7 +50,8 @@ void AxisAligner::get_atom_points(const mol::AtomVector &atoms,
   centers.clear();
   for (const auto &atom : atoms) {
     if (include_hydrogens || !atom.is_hydrogen()) {
-      centers.push_back({atom.x(), atom.y(), atom.z(), atom.radius()});
+      const auto &pos(atom.pos());
+      centers.push_back({pos.x(), pos.y(), pos.z(), atom.radius()});
     }
   }
 }

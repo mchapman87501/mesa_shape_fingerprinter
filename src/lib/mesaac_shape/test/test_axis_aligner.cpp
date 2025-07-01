@@ -215,7 +215,8 @@ public:
       for (int i = count - 1; i >= 0; --i) {
         const mol::Atom &a(atoms[i]);
         const Point &p(points[i]);
-        if ((a.x() != p[0]) || (a.y() != p[1]) || (a.z() != p[2])) {
+        const mol::Position &pos(a.pos());
+        if ((pos.x() != p[0]) || (pos.y() != p[1]) || (pos.z() != p[2])) {
           return false;
         }
       }
@@ -538,9 +539,10 @@ TEST_CASE("mesaac::shape::AxisAligner", "[mesaac]") {
     aligner->wb_update_atom_coords(atoms, points);
 
     for (const auto &atom : atoms) {
-      REQUIRE_THAT(offset[0], Catch::Matchers::WithinAbs(atom.x(), 0.00001));
-      REQUIRE_THAT(offset[1], Catch::Matchers::WithinAbs(atom.y(), 0.00001));
-      REQUIRE_THAT(offset[2], Catch::Matchers::WithinAbs(atom.z(), 0.00001));
+      const auto &pos(atom.pos());
+      REQUIRE_THAT(offset[0], Catch::Matchers::WithinAbs(pos.x(), 0.00001));
+      REQUIRE_THAT(offset[1], Catch::Matchers::WithinAbs(pos.y(), 0.00001));
+      REQUIRE_THAT(offset[2], Catch::Matchers::WithinAbs(pos.z(), 0.00001));
     }
   }
 
@@ -654,9 +656,9 @@ TEST_CASE("mesaac::shape::AxisAligner", "[mesaac]") {
         const mol::Atom &prev(*iprev);
         const mol::Atom &curr(*i);
         // Not the best test -- dunno the expected direction:
-        float dx = ::fabs(curr.x() - prev.x());
-        float dy = ::fabs(curr.y() - prev.y());
-        float dz = ::fabs(curr.z() - prev.z());
+        float dx = ::fabs(curr.pos().x() - prev.pos().x());
+        float dy = ::fabs(curr.pos().y() - prev.pos().y());
+        float dz = ::fabs(curr.pos().z() - prev.pos().z());
         REQUIRE_THAT(dx_dy, Catch::Matchers::WithinRel(dx / dy, 0.00014f));
         REQUIRE_THAT(dx_dz, Catch::Matchers::WithinRel(dx / dz, 0.00014f));
         REQUIRE_THAT(dy_dz, Catch::Matchers::WithinRel(dy / dz, 0.00014f));

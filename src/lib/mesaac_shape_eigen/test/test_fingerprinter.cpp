@@ -25,8 +25,9 @@ struct TestFixture {
   void get_av_bounds(mol::AtomVector &atoms, BoundingCube &b) {
     bool first = true;
     for (auto &atom : atoms) {
-      float r(atom.radius());
-      float x(atom.x()), y(atom.y()), z(atom.z());
+      const float r(atom.radius());
+      const mol::Position &pos(atom.pos());
+      const float x(pos.x()), y(pos.y()), z(pos.z());
 
       if (first) {
         b.xmin = x - r;

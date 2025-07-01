@@ -90,7 +90,8 @@ bool SDWriter::write(Mol &mol) {
          << mol.comments() << endl
          << mol.counts_line() << endl;
   for (const auto &atom : mol.atoms()) {
-    m_outf << f_str(atom.x()) << f_str(atom.y()) << f_str(atom.z()) << " "
+    const auto &pos(atom.pos());
+    m_outf << f_str(pos.x()) << f_str(pos.y()) << f_str(pos.z()) << " "
            << setw(3) << left << atom.symbol() << atom.optional_cols() << endl;
   }
 

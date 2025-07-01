@@ -25,7 +25,7 @@ unsigned int Mol::dimensionality() const {
   // TODO:  Cache this value, invalidating whenever atoms are added or
   // cleared.
   for (const Atom &a : m_atoms) {
-    if (a.z() != 0) {
+    if (a.pos().z() != 0) {
       return 3;
     }
   }

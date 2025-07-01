@@ -41,9 +41,9 @@ TEST_CASE("mesaac::mol::Mol", "[mesaac]") {
     unsigned int visited = 0;
     for (const auto &atom : mol.atoms()) {
       REQUIRE(atom.atomic_num() == visited);
-      REQUIRE(atom.x() == visited);
-      REQUIRE(atom.y() == 0.0f);
-      REQUIRE(atom.z() == 0.0f);
+      REQUIRE(atom.pos().x() == visited);
+      REQUIRE(atom.pos().y() == 0.0f);
+      REQUIRE(atom.pos().z() == 0.0f);
       visited++;
     }
     REQUIRE(visited == num_atoms);

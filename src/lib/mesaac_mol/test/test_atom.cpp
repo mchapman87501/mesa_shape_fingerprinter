@@ -17,9 +17,9 @@ TEST_CASE("mesaac::Atom", "[mesaac]") {
     Atom atom({.atomic_num = 6});
     REQUIRE(atom.atomic_num() == 6);
 
-    REQUIRE_THAT(atom.x(), Catch::Matchers::WithinAbs(0.0f, 1.0e-6));
-    REQUIRE_THAT(atom.y(), Catch::Matchers::WithinAbs(0.0f, 1.0e-6));
-    REQUIRE_THAT(atom.z(), Catch::Matchers::WithinAbs(0.0f, 1.0e-6));
+    REQUIRE_THAT(atom.pos().x(), Catch::Matchers::WithinAbs(0.0f, 1.0e-6));
+    REQUIRE_THAT(atom.pos().y(), Catch::Matchers::WithinAbs(0.0f, 1.0e-6));
+    REQUIRE_THAT(atom.pos().z(), Catch::Matchers::WithinAbs(0.0f, 1.0e-6));
 
     REQUIRE(atom.optional_cols() == "");
     REQUIRE(atom.symbol() == "C");
@@ -37,10 +37,11 @@ TEST_CASE("mesaac::Atom", "[mesaac]") {
     REQUIRE(!oxy.is_hydrogen());
     REQUIRE(oxy.optional_cols() == "bar");
 
-    atom.set_pos(Position(10, 11, -200.5));
-    REQUIRE(atom.x() == 10.0f);
-    REQUIRE(atom.y() == 11.0f);
-    REQUIRE(atom.z() == -200.5f);
+    const Position expected(10, 11, -200.5);
+    atom.set_pos(expected);
+    REQUIRE(atom.pos().x() == expected.x());
+    REQUIRE(atom.pos().y() == expected.y());
+    REQUIRE(atom.pos().z() == expected.z());
   }
 
   SECTION("Invalid atomic number") {

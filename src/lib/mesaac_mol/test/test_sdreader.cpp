@@ -8,7 +8,6 @@
 
 #include "mesaac_mol.hpp"
 
-
 namespace mesaac::mol {
 namespace {
 using namespace std;
@@ -87,9 +86,9 @@ TEST_CASE("mesaac::mol::SDReader", "[mesaac]") {
       // 27.7051   22.0403   17.0243 C   0  0  0  0  0  0
 
       const Atom &atom(*m.atoms().begin());
-      REQUIRE(atom.x() == 27.7051f);
-      REQUIRE(atom.y() == 22.0403f);
-      REQUIRE(atom.z() == 17.0243f);
+      REQUIRE(atom.pos().x() == 27.7051f);
+      REQUIRE(atom.pos().y() == 22.0403f);
+      REQUIRE(atom.pos().z() == 17.0243f);
       REQUIRE(atom.symbol() == string("C"));
       REQUIRE(atom.optional_cols() == string(" 0  0  0  0  0  0"));
 

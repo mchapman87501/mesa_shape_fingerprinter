@@ -211,7 +211,8 @@ struct TestFixture {
       for (int i = count - 1; i >= 0; --i) {
         const mol::Atom &atom(atoms[i]);
         const Point &p(points[i]);
-        if ((atom.x() != p[0]) || (atom.y() != p[1]) || (atom.z() != p[2])) {
+        const mol::Position &pos(atom.pos());
+        if ((pos.x() != p[0]) || (pos.y() != p[1]) || (pos.z() != p[2])) {
           return false;
         }
       }
@@ -507,9 +508,10 @@ TEST_CASE("mesaac::shape_eigen::AxisAligner", "[mesaac]") {
     aligner->wb_update_atom_coords(atoms, points);
 
     for (const auto &atom : atoms) {
-      REQUIRE(atom.x() == offset[0]);
-      REQUIRE(atom.y() == offset[1]);
-      REQUIRE(atom.z() == offset[2]);
+      const auto &pos(atom.pos());
+      REQUIRE(pos.x() == offset[0]);
+      REQUIRE(pos.y() == offset[1]);
+      REQUIRE(pos.z() == offset[2]);
     }
   }
 
@@ -620,9 +622,9 @@ TEST_CASE("mesaac::shape_eigen::AxisAligner", "[mesaac]") {
         const mol::Atom &prev(*iprev);
         const mol::Atom &curr(*i);
         // Not the best test -- dunno the expected direction:
-        float dx = ::fabs(curr.x() - prev.x());
-        float dy = ::fabs(curr.y() - prev.y());
-        float dz = ::fabs(curr.z() - prev.z());
+        float dx = ::fabs(curr.pos().x() - prev.pos().x());
+        float dy = ::fabs(curr.pos().y() - prev.pos().y());
+        float dz = ::fabs(curr.pos().z() - prev.pos().z());
         REQUIRE_THAT(dx_dy, Catch::Matchers::WithinAbs(dx / dy, 0.00025));
         REQUIRE_THAT(dx_dz, Catch::Matchers::WithinAbs(dx / dz, 0.00025));
         REQUIRE_THAT(dy_dz, Catch::Matchers::WithinAbs(dy / dz, 0.00025));

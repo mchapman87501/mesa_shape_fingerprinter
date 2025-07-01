@@ -24,48 +24,42 @@ public:
     const std::string optional_cols;
   };
 
-  /// @brief Construct an 'null' atom with atomic number 0.
+  /// @brief Construct a "null" Atom with atomic number 0.
   Atom() {}
 
-  /// @brief Construct an atom.
+  /// @brief Construct an Atom.
   /// @param params properties of the atom - atomic weight, 3-space coordinates,
   /// etc.
   Atom(const AtomParams &&params)
       : m_atomic_num(params.atomic_num), m_pos(params.pos),
         m_optional_cols(params.optional_cols) {}
 
-  //   /// @brief Construct an atom positioned at the 3-space origin.
-  //   /// @param atomic_num The atomic number of the atom
-  //   Atom(unsigned int atomic_num) : m_atomic_num(atomic_num) {}
-
-  //   /// @brief Construct an atom, with coordinates.
-  //   /// @param atomic_num The atomic number of the atom
-  //   /// @param pos The location of the atom in 3-space
-  //   Atom(unsigned int atomic_num, const Position &pos)
-  //       : Atom(atomic_num, pos, "") {}
-
-  //   /// @brief Construct an atom, with coordinates and with optional columns
-  //   as
-  //   /// read from an SD file.
-  //   /// @param atomic_num The atomic number of the atom
-  //   /// @param pos The location of the atom in 3-space
-  //   /// @param optional_cols Any optional (SD file) columns associated w. the
-  //   atom Atom(unsigned int atomic_num, const Position &pos,
-  //        const std::string &optional_cols)
-  //       : m_atomic_num(atomic_num), m_pos(pos),
-  //       m_optional_cols(optional_cols) {}
-
+  /// @brief Change the position of an Atom.
+  /// @param new_value the new position
   void set_pos(const Position &new_value) { m_pos = new_value; }
 
+  /// @brief Get the atomic number of an Atom.
+  /// @return the Atom's atomic number
   unsigned int atomic_num() const { return m_atomic_num; };
 
-  float x() const { return m_pos.x(); }
-  float y() const { return m_pos.y(); }
-  float z() const { return m_pos.z(); }
+  /// @brief Get the position of an Atom.
+  /// @return the Atom's position
+  Position pos() const { return m_pos; }
+
+  /// @brief Get any optional columns of an Atom, as read from an SD file.
+  /// @return The option columns
   std::string optional_cols() const { return m_optional_cols; }
 
+  /// @brief Get the atomic symbol of an Atom.
+  /// @return the atomic symbol
   std::string symbol() const;
+
+  /// @brief Get the radius of an Atom, in Ångstroms.
+  /// @return the radius of the Atom
   float radius() const;
+
+  /// @brief Find out whether an Atom is a hydrogen.
+  /// @return whether the Atom is a hydrogen atom
   bool is_hydrogen() const;
 
 private:
