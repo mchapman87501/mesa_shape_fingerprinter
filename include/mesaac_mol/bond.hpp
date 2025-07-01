@@ -7,24 +7,41 @@
 #include <string>
 #include <vector>
 
+/// @brief Namespace for molecular structures
 namespace mesaac::mol {
+
+/// @enum BondType
+/// @brief Valid Bond types
 enum class BondType : unsigned int {
-  bt_single = 1,
-  bt_double = 2,
-  bt_triple = 3,
-  bt_aromatic = 4,
-  bt_single_or_double = 5,
-  bt_single_or_aromatic = 6,
-  bt_double_or_aromatic = 7,
-  bt_any = 8
+  bt_single = 1,             ///< single bond
+  bt_double = 2,             ///< double bond
+  bt_triple = 3,             ///< triple bond
+  bt_aromatic = 4,           ///< aromatic bond
+  bt_single_or_double = 5,   ///< single or double bond
+  bt_single_or_aromatic = 6, ///< single or aromatic bond
+  bt_double_or_aromatic = 7, ///< double or aromatic bond
+  bt_any = 8                 ///< any bond type
 };
 
+/// @enum BondStereo
+/// @brief Valid bond stereo values
 enum class BondStereo : unsigned int {
+  /// For single bonds, not stereo
+  /// For double bonds, use atom coordinates to determine whether
+  /// the bond is cis or trans
   bs_not_stereo = 0,
+
+  /// For single bonds, stereo up (wedge)
   bs_up = 1,
+
+  /// For double bonds, stereochemistry is not specified
+  bs_cis_trans_double = 3,
+
+  /// For single bonds, unspecified - either cis or trans
   bs_either = 4,
-  bs_down_double = 6, // ?
-  bs_cis_trans_double = 3
+
+  /// Down (hashed wedge)
+  bs_down_double = 6
 };
 
 class Bond {
