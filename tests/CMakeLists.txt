@@ -1,1 +1,1 @@
-#  STUB
+add_subdirectory(src)

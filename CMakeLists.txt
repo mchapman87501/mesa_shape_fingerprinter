@@ -60,9 +60,9 @@ FetchContent_MakeAvailable(Catch2)
 # Some executable tests are driven by Python.
 find_package(Python3 COMPONENTS Interpreter)
 
-include(add_mesaac_test)
 
 if(SHAPE_FINGERPRINTS_BUILD_TESTS)
+    include(add_mesaac_test)
     include(simple_code_coverage)
     enable_testing()
 
@@ -73,6 +73,9 @@ if(SHAPE_FINGERPRINTS_BUILD_TESTS)
 endif()
 
 add_subdirectory(src)
+
+add_subdirectory(dependencies)
+
 
 if (SHAPE_FINGERPRINTS_BUILD_DOCS)
     add_subdirectory(doc)

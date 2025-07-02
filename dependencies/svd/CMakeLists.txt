@@ -15,4 +15,6 @@ target_include_directories(${TARGET} PUBLIC libs)
 
 add_subdirectory(libs)
 
+if(SHAPE_FINGERPRINTS_BUILD_TESTS)
 add_subdirectory(tests)
+endif()

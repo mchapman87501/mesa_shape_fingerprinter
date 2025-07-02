@@ -1,4 +1,4 @@
 add_subdirectory(mesaac_common)
 add_subdirectory(mesaac_mol)
-add_subdirectory(mesaac_shape_eigen)
 add_subdirectory(mesaac_shape)
+add_subdirectory(mesaac_shape_eigen)

@@ -38,5 +38,3 @@ install(
     TARGETS ${TARGET}
     FILE_SET HEADERS DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${TARGET}
 )
-
-add_subdirectory(test)
