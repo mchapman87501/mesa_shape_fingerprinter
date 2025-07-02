@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-#include "position.hpp"
+#include "mesaac_mol/position.hpp"
 
 namespace mesaac::mol {
 

@@ -17,8 +17,8 @@ const static float C_FlipMatrix[4][3] = {{1.0, 1.0, 1.0}, // Unflipped
 const static unsigned int C_FlipMatrixSize =
     sizeof(C_FlipMatrix) / sizeof(C_FlipMatrix[0]);
 
-MolFingerprinter::MolFingerprinter(PointList &hammsEllipsoidCoords,
-                                   PointList &hammsSphereCoords,
+MolFingerprinter::MolFingerprinter(shape::PointList &hammsEllipsoidCoords,
+                                   shape::PointList &hammsSphereCoords,
                                    float epsilonSqr, unsigned int numFolds)
     : m_axis_aligner(hammsSphereCoords, epsilonSqr, true),
       m_volbox(hammsEllipsoidCoords, epsilonSqr), m_num_folds(numFolds),
@@ -43,12 +43,13 @@ bool MolFingerprinter::get_next_fp(shape_defs::BitVector &fp) {
   return result;
 }
 
-static inline void getFlippedPoints(const PointList &points, const float *flip,
-                                    PointList &flippedPoints) {
+static inline void getFlippedPoints(const shape::PointList &points,
+                                    const float *flip,
+                                    shape::PointList &flippedPoints) {
   flippedPoints = points;
 
-  PointList::iterator iEnd(flippedPoints.end());
-  PointList::iterator i;
+  shape::PointList::iterator iEnd(flippedPoints.end());
+  shape::PointList::iterator i;
   for (i = flippedPoints.begin(); i != iEnd; ++i) {
     shape::Point &p(*i);
     p[0] *= flip[0];
@@ -58,9 +59,9 @@ static inline void getFlippedPoints(const PointList &points, const float *flip,
 }
 
 void MolFingerprinter::compute_curr_flip_fingerprint(
-    const PointList &points, shape_defs::BitVector &result) {
+    const shape::PointList &points, shape_defs::BitVector &result) {
   const float *flip = C_FlipMatrix[m_i_flip];
-  PointList flippedPoints;
+  shape::PointList flippedPoints;
   getFlippedPoints(points, flip, flippedPoints);
 
   result.resize(m_volbox.size() / (1 << m_num_folds));

@@ -7,15 +7,15 @@
 // Singular value decomposition, for PCA -- this defines ap::real_2d_array
 #include "svd.h"
 
-#include "mesaac_mol.hpp"
-#include "mesaac_shape.hpp"
-#include "shared_types.hpp"
+#include "mesaac_mol/mol.hpp"
+#include "mesaac_shape/axis_aligner.hpp"
+#include "mesaac_shape/shared_types.hpp"
 
 namespace mesaac::shape_fingerprinter {
 class MolFingerprinter {
 public:
-  MolFingerprinter(PointList &hamms_ellipsoid_coords,
-                   PointList &hamms_sphere_coords, float epsilon_sqr,
+  MolFingerprinter(shape::PointList &hamms_ellipsoid_coords,
+                   shape::PointList &hamms_sphere_coords, float epsilon_sqr,
                    unsigned int numFolds);
 
   /// @brief Set the molecule for which to compute fingerprints.
@@ -38,9 +38,9 @@ protected:
 
   mol::Mol m_mol;
   unsigned int m_i_flip;
-  PointList m_heavies;
+  shape::PointList m_heavies;
 
-  void compute_curr_flip_fingerprint(const PointList &points,
+  void compute_curr_flip_fingerprint(const shape::PointList &points,
                                      shape_defs::BitVector &result);
 };
 } // namespace mesaac::shape_fingerprinter

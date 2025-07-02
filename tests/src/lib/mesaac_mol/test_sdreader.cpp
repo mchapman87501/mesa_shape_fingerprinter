@@ -6,7 +6,8 @@
 
 #include <fstream>
 
-#include "mesaac_mol.hpp"
+#include "mesaac_mol/io/sdreader.hpp"
+#include "mesaac_mol/mol.hpp"
 
 namespace mesaac::mol {
 namespace {

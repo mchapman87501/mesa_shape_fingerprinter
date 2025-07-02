@@ -4,9 +4,9 @@
 
 #pragma once
 
-#include "atom.hpp"
-#include "bond.hpp"
-#include "sd_tag_map.hpp"
+#include "mesaac_mol/atom.hpp"
+#include "mesaac_mol/bond.hpp"
+#include "mesaac_mol/sd_tag_map.hpp"
 
 #include <map>
 #include <sstream>

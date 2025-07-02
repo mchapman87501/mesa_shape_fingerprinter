@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "mesaac_mol.hpp"
+#include "mesaac_mol/mol.hpp"
 #include <iostream>
 #include <sstream>
 

@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "mesaac_mol.hpp"
+#include "mesaac_mol/mol.hpp"
 #include "mesaac_shape/shared_types.hpp"
 #include "mesaac_shape/vol_box.hpp"
 // Singular value decomposition, for PCA -- this defines ap::real_2d_array

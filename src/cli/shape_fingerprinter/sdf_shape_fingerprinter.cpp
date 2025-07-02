@@ -6,6 +6,8 @@
 
 #include "mesaac_common/b64.hpp"
 #include "mesaac_common/gzip.hpp"
+#include "mesaac_mol/io/sdreader.hpp"
+
 #include <fstream>
 #include <iostream>
 #include <sstream>

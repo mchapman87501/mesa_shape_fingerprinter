@@ -3,7 +3,7 @@
 //
 
 #include "mesaac_shape/axis_aligner.hpp"
-#include "mesaac_mol.hpp"
+#include "mesaac_mol/mol.hpp"
 
 #include <sstream>
 #include <stdexcept>

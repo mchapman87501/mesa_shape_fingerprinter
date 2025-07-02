@@ -3,7 +3,7 @@
 //
 
 #include "mesaac_shape_eigen/axis_aligner.hpp"
-#include "mesaac_mol.hpp"
+#include "mesaac_mol/mol.hpp"
 
 #include <Eigen/Geometry>
 #include <Eigen/SVD>

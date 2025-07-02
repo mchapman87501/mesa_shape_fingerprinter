@@ -5,9 +5,9 @@
 
 #pragma once
 
+#include "mesaac_common/shape_defs.hpp"
 #include "mesaac_mol/atom.hpp"
 #include "mesaac_shape/vol_box.hpp"
-#include "shape_defs.hpp"
 
 namespace mesaac {
 namespace shape {
