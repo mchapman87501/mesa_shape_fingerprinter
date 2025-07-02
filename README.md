@@ -49,6 +49,12 @@ open build/coverage/report/index.html
 firefox build/coverage/report/index.html &
 ```
 
+## Executables
+
+Here's some basic info about the executables provided by this repository.
+
+- [shape_fingerprinter](src/cli/shape_fingerprinter/doc/shape_fingerprinter.md)
+
 ## Issues
 
 ### Lots of 3rd Party Tests

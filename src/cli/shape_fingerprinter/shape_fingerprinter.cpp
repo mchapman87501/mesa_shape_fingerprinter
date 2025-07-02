@@ -163,34 +163,34 @@ protected:
          << " [options] sd_file hamms_sphere_file atom_scale\n\
 Generate shape fingerprints for 3D conformers.\n\
 \n\
-sd_file              = a file of conformers in SD format, with 3D coordinates\n\
-hamms_sphere_file    = a file containing 3D Hammersley sphere points, one point \n\
+sd_file              - a file of conformers in SD format, with 3D coordinates\n\
+hamms_sphere_file    - a file containing 3D Hammersley sphere points, one point \n\
                        per line with space-separated coordinates, for principal \n\
                        axes generation via SVD and fingerprint generation\n\
-atom_scale           = the amount, in the range [1.0 .. 2.0], by which to \n\
+atom_scale           - the amount, in the range [1.0 .. 2.0], by which to \n\
                        increase atom radii for alignment\n\
 \n\
 Options:\n\
--i | --id            = if specified, include the name of each SD conformer \n\
+-i | --id            - if specified, include the name of each SD conformer \n\
                        after each fingerprint, separated by a space\n\
 -f fmt | --format fmt\n\
-                     = write fingerprints in the specified format: \n\
+                     - write fingerprints in the specified format: \n\
                        A - ascii (default)\n\
                        C - compressed ascii\n\
                        B - binary\n\
 -n folds | --num_folds folds\n\
-                     = fold fingerprints the specified number of times,\n\
+                     - fold fingerprints the specified number of times,\n\
                        to save space on output.  The default is zero\n\
                        (unfolded).\n\
 -e | --ellipsoid ELLIPSOID_FILE\n\
-                     = use points from ELLIPSOID_FILE, a file containing 3D\n\
+                     - use points from ELLIPSOID_FILE, a file containing 3D\n\
                        Hammersley ellipsoid points, one point per line with \n\
                        space-separated coords, for fingerprint generation\n\
 -r | --records START END\n\
-                     = process records START..(END - 1), inclusive, of the\n\
+                     - process records START..(END - 1), inclusive, of the\n\
                        sd_file.  By default all records, \n\
                        0..(# fingerprints - 1), are processed.\n\
--h | --help          = print this help message and exit\n"
+-h | --help          - print this help message and exit\n"
          << endl;
 
     if (err_msg.size()) {
