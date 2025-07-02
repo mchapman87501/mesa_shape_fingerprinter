@@ -10,12 +10,15 @@
 using namespace std;
 
 namespace mesaac::shape_fingerprinter {
+namespace {
 const static float C_FlipMatrix[4][3] = {{1.0, 1.0, 1.0}, // Unflipped
                                          {1.0, -1.0, -1.0},
                                          {-1.0, 1.0, -1.0},
                                          {-1.0, -1.0, 1.0}};
 const static unsigned int C_FlipMatrixSize =
     sizeof(C_FlipMatrix) / sizeof(C_FlipMatrix[0]);
+
+} // namespace
 
 MolFingerprinter::MolFingerprinter(shape::PointList &hammsEllipsoidCoords,
                                    shape::PointList &hammsSphereCoords,
@@ -43,9 +46,9 @@ bool MolFingerprinter::get_next_fp(shape_defs::BitVector &fp) {
   return result;
 }
 
-static inline void getFlippedPoints(const shape::PointList &points,
-                                    const float *flip,
-                                    shape::PointList &flippedPoints) {
+namespace {
+inline void getFlippedPoints(const shape::PointList &points, const float *flip,
+                             shape::PointList &flippedPoints) {
   flippedPoints = points;
 
   shape::PointList::iterator iEnd(flippedPoints.end());
@@ -57,6 +60,8 @@ static inline void getFlippedPoints(const shape::PointList &points,
     p[2] *= flip[2];
   }
 }
+
+} // namespace
 
 void MolFingerprinter::compute_curr_flip_fingerprint(
     const shape::PointList &points, shape_defs::BitVector &result) {

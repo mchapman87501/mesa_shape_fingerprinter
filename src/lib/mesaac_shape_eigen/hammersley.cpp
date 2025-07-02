@@ -8,7 +8,21 @@ using namespace std;
 
 namespace mesaac::shape_eigen {
 
-typedef vector<int> DigitsVector;
+namespace {
+using DigitsVector = vector<int>;
+
+static const int num_dimensions = 3;
+static const float primes[num_dimensions - 1] = {2, 3};
+
+inline void get_radix_digits(int n, int radix, DigitsVector &result) {
+  result.clear();
+  while (n) {
+    result.push_back(n % radix);
+    n = n / radix;
+  }
+}
+
+} // namespace
 
 Hammersley::Hammersley() {
   m_num_points = 0;
@@ -61,17 +75,6 @@ void Hammersley::start(unsigned int num_points) {
   m_num_points = num_points;
   m_num_generated = 0;
 }
-
-static inline void get_radix_digits(int n, int radix, DigitsVector &result) {
-  result.clear();
-  while (n) {
-    result.push_back(n % radix);
-    n = n / radix;
-  }
-}
-
-static const int num_dimensions = 3;
-static const float primes[num_dimensions - 1] = {2, 3};
 
 bool Hammersley::next_point(Point &pnt) {
   if (m_num_generated >= m_num_points) {

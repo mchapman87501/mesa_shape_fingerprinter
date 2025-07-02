@@ -11,6 +11,88 @@
 using namespace std;
 
 namespace mesaac::shape {
+namespace {
+inline bool in_atom(const Point &point, const Point &atom, float eps_sqr) {
+  const float radius(atom.at(3));
+  const float max_bsqr(radius * radius * eps_sqr);
+  double dx(point[0] - atom[0]);
+  const double dx_sqr = dx * dx;
+  // Only bother to calc distance if inside boundary
+  if (dx_sqr <= max_bsqr) {
+    double dy(point[1] - atom[1]);
+    double dz(point[2] - atom[2]);
+    float dsqr = dx_sqr + (dy * dy) + (dz * dz);
+    return (dsqr <= max_bsqr);
+  }
+  return false;
+}
+
+inline void transform_point(Transform &vt, Point &p) {
+  Point untransformed(p);
+  for (unsigned int j = 0; j != 3; j++) {
+    p[j] = ((vt(j, 0) * untransformed[0]) + (vt(j, 1) * untransformed[1]) +
+            (vt(j, 2) * untransformed[2]));
+  }
+}
+
+inline void get_cross_prod(const Point &a, const Point &b, Point &xp) {
+  xp.clear();
+  xp.resize(3);
+  xp[0] = (a[1] * b[2] - a[2] * b[1]);
+  xp[1] = (-(a[0] * b[2] - a[2] * b[0]));
+  xp[2] = (a[0] * b[1] - a[1] * b[0]);
+}
+
+// rmatrixsvd may produce a transform matrix which mirrors one of
+// the coordinate axes.  Detect this, and fix it.
+inline bool approx(float a, float b) { return (::fabs(a - b) < 1.0e-6); }
+
+bool axis_is_mirrored(Transform &vt) {
+  // Transform 3 unit "vectors" such that the 3rd is the cross product
+  // of the first 2.  After transformation, confirm it is still the
+  // cross product.
+  Point a(3, 0.0), b(3, 0.0), c(3, 0.0);
+  a[0] = 1.0;
+  b[1] = 1.0;
+  c[2] = 1.0;
+  transform_point(vt, a);
+  transform_point(vt, b);
+  transform_point(vt, c);
+
+  Point xp;
+  get_cross_prod(a, b, xp);
+
+  bool result = false;
+  for (unsigned int i = 0; i != 3; i++) {
+    if (!approx(c[i], xp[i])) {
+      result = true;
+      break;
+    }
+  }
+  return result;
+}
+
+inline void unmirror_axis(Transform &vt, unsigned int i_axis) {
+  for (unsigned int i = 0; i != 3; i++) {
+    vt(i_axis, i) = -vt(i_axis, i);
+  }
+}
+
+void unmirror_axes(Transform &vt) {
+  for (unsigned int i = 0; i != 3; i++) {
+    if (!axis_is_mirrored(vt)) {
+      break;
+    }
+    unmirror_axis(vt, i);
+    if (axis_is_mirrored(vt)) {
+      // Still mirrored?  Back off and try again w. the next
+      // axis.
+      unmirror_axis(vt, i);
+    }
+  }
+}
+} // namespace
+
 AxisAligner::AxisAligner(const PointList &sphere, float atom_scale,
                          bool atom_centers_only)
     : m_volbox(sphere, atom_scale), m_atom_scale(atom_scale),
@@ -99,22 +181,6 @@ void AxisAligner::untranslate_points(PointList &points, const Point &offset) {
   }
 }
 
-static inline bool in_atom(const Point &point, const Point &atom,
-                           float eps_sqr) {
-  const float radius(atom.at(3));
-  const float max_bsqr(radius * radius * eps_sqr);
-  double dx(point[0] - atom[0]);
-  const double dx_sqr = dx * dx;
-  // Only bother to calc distance if inside boundary
-  if (dx_sqr <= max_bsqr) {
-    double dy(point[1] - atom[1]);
-    double dz(point[2] - atom[2]);
-    float dsqr = dx_sqr + (dy * dy) + (dz * dz);
-    return (dsqr <= max_bsqr);
-  }
-  return false;
-}
-
 void AxisAligner::get_mean_centered_cloud(const PointList &centers,
                                           PointList &cloud) {
   cloud.clear();
@@ -153,75 +219,10 @@ void AxisAligner::update_atom_coords(mol::AtomVector &atoms,
   }
 }
 
-static inline void transform_point(Transform &vt, Point &p) {
-  Point untransformed(p);
-  for (unsigned int j = 0; j != 3; j++) {
-    p[j] = ((vt(j, 0) * untransformed[0]) + (vt(j, 1) * untransformed[1]) +
-            (vt(j, 2) * untransformed[2]));
-  }
-}
-
 void AxisAligner::transform_points(PointList &points, Transform &vt) {
   PointList::iterator i;
   for (i = points.begin(); i != points.end(); ++i) {
     transform_point(vt, *i);
-  }
-}
-
-static inline void get_cross_prod(const Point &a, const Point &b, Point &xp) {
-  xp.clear();
-  xp.resize(3);
-  xp[0] = (a[1] * b[2] - a[2] * b[1]);
-  xp[1] = (-(a[0] * b[2] - a[2] * b[0]));
-  xp[2] = (a[0] * b[1] - a[1] * b[0]);
-}
-
-// rmatrixsvd may produce a transform matrix which mirrors one of
-// the coordinate axes.  Detect this, and fix it.
-static inline bool approx(float a, float b) { return (::fabs(a - b) < 1.0e-6); }
-
-static bool axis_is_mirrored(Transform &vt) {
-  // Transform 3 unit "vectors" such that the 3rd is the cross product
-  // of the first 2.  After transformation, confirm it is still the
-  // cross product.
-  Point a(3, 0.0), b(3, 0.0), c(3, 0.0);
-  a[0] = 1.0;
-  b[1] = 1.0;
-  c[2] = 1.0;
-  transform_point(vt, a);
-  transform_point(vt, b);
-  transform_point(vt, c);
-
-  Point xp;
-  get_cross_prod(a, b, xp);
-
-  bool result = false;
-  for (unsigned int i = 0; i != 3; i++) {
-    if (!approx(c[i], xp[i])) {
-      result = true;
-      break;
-    }
-  }
-  return result;
-}
-
-static inline void unmirror_axis(Transform &vt, unsigned int i_axis) {
-  for (unsigned int i = 0; i != 3; i++) {
-    vt(i_axis, i) = -vt(i_axis, i);
-  }
-}
-
-static void unmirror_axes(Transform &vt) {
-  for (unsigned int i = 0; i != 3; i++) {
-    if (!axis_is_mirrored(vt)) {
-      break;
-    }
-    unmirror_axis(vt, i);
-    if (axis_is_mirrored(vt)) {
-      // Still mirrored?  Back off and try again w. the next
-      // axis.
-      unmirror_axis(vt, i);
-    }
   }
 }
 

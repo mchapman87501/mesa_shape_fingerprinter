@@ -32,6 +32,10 @@ bool uint_field(const string &line, unsigned int i_start, unsigned int i_len,
   }
 }
 
+bool is_blank(string &line) {
+  return (line.find_first_not_of(" \t") == string::npos);
+}
+
 } // namespace
 
 SDReader::SDReader(istream &inf, const string &pathname)
@@ -169,10 +173,6 @@ bool SDReader::read_properties_block(string &properties_block) {
   properties_block = blockf.str();
 
   return result;
-}
-
-static bool is_blank(string &line) {
-  return (line.find_first_not_of(" \t") == string::npos);
 }
 
 bool SDReader::read_one_tag(SDTagMap &tags, string &line) {

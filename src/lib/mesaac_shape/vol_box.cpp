@@ -12,6 +12,22 @@ using namespace std;
 
 namespace mesaac::shape {
 
+namespace {
+inline void validate_bits(shape_defs::BitVector &bits, unsigned int size) {
+  if (bits.size() < size) {
+    ostringstream outs;
+    outs << "set_bits_for_sphere:  not enough bits (" << bits.size()
+         << ").  Need at least " << size << " bits.";
+    throw std::invalid_argument(outs.str());
+  }
+}
+
+inline int bounded(int index, int max_index) {
+  return ((index < 0) ? 0 : (index > max_index) ? max_index : index);
+}
+
+} // namespace
+
 VolBox::VolBox(const PointList &points, const float sphere_scale) {
   m_units_per_side = 8;
   m_sphere_scale = sphere_scale;
@@ -85,16 +101,6 @@ void VolBox::add_points(const PointList &points) {
 
 // Get the number of points within this VolBox.
 unsigned int VolBox::size() { return m_bucket_points.size(); }
-
-inline static void validate_bits(shape_defs::BitVector &bits,
-                                 unsigned int size) {
-  if (bits.size() < size) {
-    ostringstream outs;
-    outs << "set_bits_for_sphere:  not enough bits (" << bits.size()
-         << ").  Need at least " << size << " bits.";
-    throw std::invalid_argument(outs.str());
-  }
-}
 
 void VolBox::get_points_within_spheres(const PointList &spheres,
                                        PointList &contained_points,
@@ -196,10 +202,6 @@ void VolBox::set_folded_bits_for_one_sphere_unchecked(
       }
     }
   }
-}
-
-static inline int bounded(int index, int max_index) {
-  return ((index < 0) ? 0 : (index > max_index) ? max_index : index);
 }
 
 void VolBox::get_points_in_cube(float x, float y, float z, float radius,

@@ -52,9 +52,7 @@ string stereo_type_str(BondStereo value) {
   return uint_str(ivalue);
 }
 
-} // namespace
-
-static inline string molfile_timestamp() {
+inline string molfile_timestamp() {
   string result = "0000000000";
   // MMDDYYHHmm -- from ctfile specification.
   const size_t length(11);
@@ -70,6 +68,8 @@ static inline string molfile_timestamp() {
   }
   return result;
 }
+
+} // namespace
 
 bool SDWriter::write(Mol &mol) {
   bool result = true;

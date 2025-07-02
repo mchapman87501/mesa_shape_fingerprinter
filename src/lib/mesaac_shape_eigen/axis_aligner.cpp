@@ -12,8 +12,60 @@
 
 using namespace std;
 
-namespace mesaac {
-namespace shape_eigen {
+namespace mesaac::shape_eigen {
+namespace {
+inline bool in_atom(const Point &point, const Point &atom, float eps_sqr) {
+  const float radius(atom.at(3));
+  const float max_bsqr(radius * radius * eps_sqr);
+  double dx(point[0] - atom[0]);
+  const double dx_sqr = dx * dx;
+  // Only bother to calc distance if inside boundary
+  if (dx_sqr <= max_bsqr) {
+    double dy(point[1] - atom[1]);
+    double dz(point[2] - atom[2]);
+    float dsqr = dx_sqr + (dy * dy) + (dz * dz);
+    return (dsqr <= max_bsqr);
+  }
+  return false;
+}
+
+bool axis_is_mirrored(Transform &vt) {
+  // Transform 3 unit "vectors" such that the 3rd is the cross product
+  // of the first 2.  After transformation, confirm it is still the
+  // cross product.
+
+  // TODO:  Figure out how to use Vector4f and a 4x4 transform
+  // matrix.  Eigen may be able to perform better this way because
+  // of auto-vectorization packet sizes.
+  typedef Eigen::Vector3f EPoint;
+  EPoint a, b, c;
+  // Why is this epsilon faster than EPoint(1.0, 0.0, 0.0) etc.?
+  a << 1.0, 0.0, 0.0;
+  b << 0.0, 1.0, 0.0;
+  c << 0.0, 0.0, 1.0;
+  a = vt * a;
+  b = vt * b;
+  c = vt * c;
+  EPoint xp(a.cross(b));
+  return !(c - xp).isZero();
+}
+
+void unmirror_axes(Transform &vt) {
+  for (unsigned int i = 0; i != 3; i++) {
+    if (!axis_is_mirrored(vt)) {
+      break;
+    }
+    vt(i) *= -1;
+    if (axis_is_mirrored(vt)) {
+      // Still mirrored?  Back off and try again w. the next
+      // axis.
+      vt(i) *= -1;
+    }
+  }
+}
+
+} // namespace
+
 void AxisAligner::align_to_axes(mol::Mol &m) {
   align_to_axes(m.mutable_atoms());
 }
@@ -89,22 +141,6 @@ void AxisAligner::untranslate_points(PointList &points, const Point &offset) {
   }
 }
 
-static inline bool in_atom(const Point &point, const Point &atom,
-                           float eps_sqr) {
-  const float radius(atom.at(3));
-  const float max_bsqr(radius * radius * eps_sqr);
-  double dx(point[0] - atom[0]);
-  const double dx_sqr = dx * dx;
-  // Only bother to calc distance if inside boundary
-  if (dx_sqr <= max_bsqr) {
-    double dy(point[1] - atom[1]);
-    double dz(point[2] - atom[2]);
-    float dsqr = dx_sqr + (dy * dy) + (dz * dz);
-    return (dsqr <= max_bsqr);
-  }
-  return false;
-}
-
 void AxisAligner::get_mean_centered_cloud(const PointList &centers,
                                           PointList &cloud) {
   cloud.clear();
@@ -149,41 +185,6 @@ void AxisAligner::transform_points(PointList &points, Transform &vt) {
   }
 }
 
-static bool axis_is_mirrored(Transform &vt) {
-  // Transform 3 unit "vectors" such that the 3rd is the cross product
-  // of the first 2.  After transformation, confirm it is still the
-  // cross product.
-
-  // TODO:  Figure out how to use Vector4f and a 4x4 transform
-  // matrix.  Eigen may be able to perform better this way because
-  // of auto-vectorization packet sizes.
-  typedef Eigen::Vector3f EPoint;
-  EPoint a, b, c;
-  // Why is this epsilon faster than EPoint(1.0, 0.0, 0.0) etc.?
-  a << 1.0, 0.0, 0.0;
-  b << 0.0, 1.0, 0.0;
-  c << 0.0, 0.0, 1.0;
-  a = vt * a;
-  b = vt * b;
-  c = vt * c;
-  EPoint xp(a.cross(b));
-  return !(c - xp).isZero();
-}
-
-static void unmirror_axes(Transform &vt) {
-  for (unsigned int i = 0; i != 3; i++) {
-    if (!axis_is_mirrored(vt)) {
-      break;
-    }
-    vt(i) *= -1;
-    if (axis_is_mirrored(vt)) {
-      // Still mirrored?  Back off and try again w. the next
-      // axis.
-      vt(i) *= -1;
-    }
-  }
-}
-
 void AxisAligner::find_axis_align_transform(const PointList &cloud,
                                             Transform &transform) {
   if (cloud.size() <= 0) {
@@ -206,5 +207,4 @@ void AxisAligner::find_axis_align_transform(const PointList &cloud,
                   .transpose();
   unmirror_axes(transform);
 }
-} // namespace shape_eigen
-} // namespace mesaac
+} // namespace mesaac::shape_eigen
