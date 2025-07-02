@@ -6,8 +6,7 @@
 
 #include "mesaac_shape_eigen/shared_types.hpp"
 
-namespace mesaac {
-namespace shape_eigen {
+namespace mesaac::shape_eigen {
 
 class Hammersley {
 public:
@@ -16,7 +15,6 @@ public:
                         PointList &result);
 
   Hammersley();
-  virtual ~Hammersley();
 
   void start(unsigned int num_points);
   bool next_point(Point &p);
@@ -30,5 +28,4 @@ private:
   Hammersley &operator=(const Hammersley &src);
 };
 
-} // namespace shape_eigen
-} // namespace mesaac
+} // namespace mesaac::shape_eigen

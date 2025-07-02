@@ -10,8 +10,7 @@
 
 using namespace std;
 
-namespace mesaac {
-namespace shape_eigen {
+namespace mesaac::shape_eigen {
 
 VolBox::VolBox(const PointList &points, const float sphere_scale) {
   m_units_per_side = 8;
@@ -191,5 +190,4 @@ void VolBox::get_points_in_cube(float x, float y, float z, float radius,
     }
   }
 }
-} // namespace shape_eigen
-} // namespace mesaac
+} // namespace mesaac::shape_eigen

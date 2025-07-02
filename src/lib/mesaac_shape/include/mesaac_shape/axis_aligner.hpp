@@ -10,8 +10,10 @@
 // Singular value decomposition, for PCA -- this defines ap::real_2d_array
 #include "svd.h"
 
-namespace mesaac {
-namespace shape {
+/**
+ * @brief Namespace for shape computations using alglib svd.
+ */
+namespace mesaac::shape {
 typedef ap::real_2d_array Transform;
 
 class AxisAligner {
@@ -41,5 +43,4 @@ protected:
   void update_atom_coords(mesaac::mol::AtomVector &atoms,
                           const PointList &all_centers);
 };
-} // namespace shape
-} // namespace mesaac
+} // namespace mesaac::shape

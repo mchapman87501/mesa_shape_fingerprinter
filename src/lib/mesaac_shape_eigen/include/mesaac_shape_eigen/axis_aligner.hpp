@@ -10,8 +10,10 @@
 
 #include <Eigen/Core>
 
-namespace mesaac {
-namespace shape_eigen {
+/**
+ * @brief Namespace for shape computations using Eigen.
+ */
+namespace mesaac::shape_eigen {
 typedef Eigen::Matrix3f Transform;
 
 class AxisAligner {
@@ -42,5 +44,4 @@ protected:
   void update_atom_coords(mesaac::mol::AtomVector &atoms,
                           const PointList &all_centers);
 };
-} // namespace shape_eigen
-} // namespace mesaac
+} // namespace mesaac::shape_eigen

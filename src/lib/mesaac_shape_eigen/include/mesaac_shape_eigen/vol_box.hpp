@@ -5,8 +5,7 @@
 #include <memory>
 #include <vector>
 
-namespace mesaac {
-namespace shape_eigen {
+namespace mesaac::shape_eigen {
 // Vector of indices, i.e. indices of points which lie within a volume.
 using IndexList = std::vector<unsigned int>;
 struct IndexedPoint {
@@ -60,5 +59,4 @@ protected:
   void get_points_in_cube(float x, float y, float z, float radius,
                           IndexList &result) const;
 };
-} // namespace shape_eigen
-} // namespace mesaac
+} // namespace mesaac::shape_eigen

@@ -8,8 +8,7 @@
 using namespace std;
 using namespace mesaac::mol;
 
-namespace mesaac {
-namespace shape {
+namespace mesaac::shape {
 // Implementation is derived from ShapeFingerprint's mol_fingerprinter.
 
 const static float C_FlipMatrix[4][3] = {{1.0, 1.0, 1.0}, // Unflipped
@@ -20,8 +19,6 @@ const static unsigned int C_FlipMatrixSize =
     sizeof(C_FlipMatrix) / sizeof(C_FlipMatrix[0]);
 
 Fingerprinter::Fingerprinter(const VolBox &volbox) : m_volbox(volbox) {}
-
-Fingerprinter::~Fingerprinter() {}
 
 static inline void get_point_list(const AtomVector &atoms, PointList &result) {
   result.clear();
@@ -66,5 +63,4 @@ void Fingerprinter::compute_for_flip(const PointList &points,
   m_volbox.set_bits_for_spheres(flipped, result, true, 0);
 }
 
-} // namespace shape
-} // namespace mesaac
+} // namespace mesaac::shape

@@ -10,8 +10,7 @@
 
 using namespace std;
 
-namespace mesaac {
-namespace shape {
+namespace mesaac::shape {
 AxisAligner::AxisAligner(const PointList &sphere, float atom_scale,
                          bool atom_centers_only)
     : m_volbox(sphere, atom_scale), m_atom_scale(atom_scale),
@@ -252,5 +251,4 @@ void AxisAligner::find_axis_align_transform(const PointList &cloud,
 
   unmirror_axes(transform);
 }
-} // namespace shape
-} // namespace mesaac
+} // namespace mesaac::shape

@@ -9,13 +9,11 @@
 #include "mesaac_mol/atom.hpp"
 #include "mesaac_shape/vol_box.hpp"
 
-namespace mesaac {
-namespace shape {
+namespace mesaac::shape {
 
 class Fingerprinter {
 public:
   Fingerprinter(const VolBox &volbox);
-  virtual ~Fingerprinter();
 
   void compute(const mol::AtomVector &atoms, ShapeFingerprint &result);
 
@@ -30,5 +28,4 @@ private:
   Fingerprinter &operator=(const Fingerprinter &src);
 };
 
-} // namespace shape
-} // namespace mesaac
+} // namespace mesaac::shape

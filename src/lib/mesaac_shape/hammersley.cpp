@@ -6,8 +6,7 @@
 
 using namespace std;
 
-namespace mesaac {
-namespace shape {
+namespace mesaac::shape {
 
 typedef vector<int> DigitsVector;
 
@@ -15,8 +14,6 @@ Hammersley::Hammersley() {
   m_num_points = 0;
   m_num_generated = 0;
 }
-
-Hammersley::~Hammersley() {}
 
 void Hammersley::get_cubic(float xmin, float xmax, float ymin, float ymax,
                            float zmin, float zmax, unsigned int num_points,
@@ -103,5 +100,4 @@ bool Hammersley::next_point(Point &pnt) {
   }
   return true;
 }
-} // namespace shape
-} // namespace mesaac
+} // namespace mesaac::shape
