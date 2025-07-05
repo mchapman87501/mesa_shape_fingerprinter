@@ -1,10 +1,10 @@
 set(TARGET mesaac_shape_eigen)
 
 set(SRC
-    axis_aligner.cpp
-    fingerprinter.cpp
-    hammersley.cpp
-    vol_box.cpp
+    src/axis_aligner.cpp
+    src/fingerprinter.cpp
+    src/hammersley.cpp
+    src/vol_box.cpp
 )
 set(HEADER_DIR include)
 set(HEADERS

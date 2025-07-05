@@ -6,6 +6,7 @@
 
 #include <cstdio>
 #include <ctime>
+#include <format>
 #include <iomanip>
 #include <sstream>
 #include <type_traits>
@@ -19,26 +20,13 @@ SDWriter::SDWriter(ostream &outf) : m_outf(outf) {}
 namespace {
 string f_str(float f, const unsigned int field_width = 10,
              unsigned int decimals = 4) {
-  // Bah!  C++ stream operators make it very difficult to
-  // achieve strict formatting such as %10.4f.
-  // It would be great to move on to C++23 and std::format.
-  ostringstream fmt;
-  fmt.imbue(locale("C"));
-  char buffer[field_width + 1];
-  fmt.str("");
-  fmt << "%" << field_width << "." << decimals << "f";
-  snprintf(buffer, field_width + 1, fmt.str().c_str(), f);
-  return string(buffer);
+  std::string fmt(std::format("{{:{:d}.{:d}f}}", field_width, decimals));
+  return std::vformat(fmt, std::make_format_args(f));
 }
 
 string uint_str(unsigned int u, const unsigned int field_width = 3) {
-  ostringstream fmt;
-  fmt.imbue(locale("C"));
-  char buffer[field_width + 1];
-  fmt.str("");
-  fmt << "%" << field_width << "u";
-  snprintf(buffer, field_width + 1, fmt.str().c_str(), u);
-  return string(buffer);
+  std::string fmt(std::format("{{:{}d}}", field_width));
+  return std::vformat(fmt, std::make_format_args(u));
 }
 
 string bond_type_str(BondType value) {

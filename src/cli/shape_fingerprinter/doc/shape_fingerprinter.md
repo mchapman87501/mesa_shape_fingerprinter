@@ -5,34 +5,32 @@
 ## Usage
 
 ```shell
-shape_fingerprinter [options] sd_file hamms_sphere_file atom_scale
 
-sd_file              - a file of conformers in SD format, with 3D coordinates
-hamms_sphere_file    - a file containing 3D Hammersley sphere points, one point
-                       per line with space-separated coordinates, for principal
-                       axes generation via SVD and fingerprint generation
-atom_scale           - the amount, in the range [1.0 .. 2.0], by which to
-                       increase atom radii for alignment
+shape_fingerprinter [-h | --help] [-i | --id] [-f FORMAT | --format FORMAT] [-n NUM_FOLDS | --num_folds NUM_FOLDS] [-e ELLIPSOID | --ellipsoid ELLIPSOID] [-r RECORDS | --records RECORDS] sd_file hamms_sphere_file atom_scale
 
-Options:
--i | --id            - if specified, include the name of each SD conformer
-                       after each fingerprint, separated by a space
--f fmt | --format fmt
-                     - write fingerprints in the specified format:
-                       A - ascii (default)
-                       C - compressed ascii
-                       B - binary
--n folds | --num_folds folds
-                     - fold fingerprints the specified number of times,
-                       to save space on output.  The default is zero
-                       (unfolded).
--e | --ellipsoid ELLIPSOID_FILE
-                     - use points from ELLIPSOID_FILE, a file containing 3D
-                       Hammersley ellipsoid points, one point per line with
-                       space-separated coords, for fingerprint generation
--r | --records START END
-                     - process records START..(END - 1), inclusive, of the
-                       sd_file.  By default all records,
-                       0..(# fingerprints - 1), are processed.
--h | --help          - print this help message and exit
+Generate shape fingerprints for 3D conformers.
+
+-h | --help
+        Show this help message and exit
+-i | --id
+        include the name of each SD conformer after each fingerprint
+-f FORMAT | --format FORMAT
+        write fingerprints in the specified format
+        valid values:
+            A - ASCII (default)
+            B - binary
+            C - compressed ASCII
+
+-n NUM_FOLDS | --num_folds NUM_FOLDS
+        fold fingerprints NUM_FOLDS times, to save space on output (default: 0 - not folded)
+-e ELLIPSOID | --ellipsoid ELLIPSOID
+        use points from the named file, containing 3D Hammersley ellipsoid points, one point per line with space-separated coords, for fingerprint generation
+-r RECORDS | --records RECORDS
+        indices of first and last SD file records to process (default: process all records)
+sd_file
+        file of conformers in SD format, with 3D coordinates
+hamms_sphere_file
+        file of 3D Hammersley sphere points, one point per line with space-separated coordinates, for principal axes generation via SVD and fingerprint generation
+atom_scale
+        amount (1.0...2.0) by which to increase atom radii for alignment
 ```

@@ -82,7 +82,12 @@
         "unordered_set": "cpp",
         "valarray": "cpp",
         "variant": "cpp",
-        "geometry": "cpp"
+        "geometry": "cpp",
+        "*.evaluator": "cpp",
+        "*.traits": "cpp",
+        "alignedvector3": "cpp",
+        "fft": "cpp",
+        "mprealsupport": "cpp"
     },
     "[cmake]": {
         "editor.wordBasedSuggestions": "off",

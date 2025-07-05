@@ -108,22 +108,8 @@
     },
     {
       "name": "coverage",
-      "configurePreset": "coverage",
-      "output": {
-        "outputOnFailure": true
-      },
-      "execution": {
-        "noTestsAction": "error",
-        "stopOnFailure": true
-      },
-      "filter": {
-        "include": {
-          "label": "mesaac"
-        },
-        "exclude": {
-          "label": "mesaac_benchmark"
-        }
-      }
+      "inherits": "default",
+      "configurePreset": "coverage"
     }
   ]
 }

@@ -1,12 +1,12 @@
 set(TARGET mesaac_mol)
 
 set(SRC 
-    atom.cpp
-    io/sdwriter.cpp
-    io/sdreader.cpp
-    mol.cpp
-    element_info.cpp
-    sd_tag_map.cpp
+    src/atom.cpp
+    src/io/sdwriter.cpp
+    src/io/sdreader.cpp
+    src/mol.cpp
+    src/element_info.cpp
+    src/sd_tag_map.cpp
 )
 
 set(HEADER_DIR include)

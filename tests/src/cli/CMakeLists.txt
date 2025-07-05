@@ -1,1 +1,3 @@
+add_subdirectory(hammersley_general)
+add_subdirectory(hammersley_spheroid)
 add_subdirectory(shape_fingerprinter)

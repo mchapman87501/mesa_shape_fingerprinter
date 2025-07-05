@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Basic tests for ShapeFingerprinter.
+"""Basic tests for shape_fingerprinter.
 Copyright (c) 2005-2009 Mesa Analytics & Computing, Inc.  All rights reserved
 """
 
@@ -12,13 +12,13 @@ import struct
 import subprocess
 import unittest
 
-import testsupport as tsupp
+import config
 
 # First conformers from the full cox2_3d:
-COX2_CONFS = tsupp.DATA_PATH / "cox2_3d_first_few.sd"
-COX2_FPS = tsupp.REF_PATH / "cox2_3d_first_few.fp.txt.gz"
-SPHERE = tsupp.SHARED_DATA_DIR / "hammersley" / "hamm_spheroid_10k_11rad.txt"
-ELLIPSE = tsupp.SHARED_DATA_DIR / "hammersley" / "hamm_ellipsoid_10k_11rad.txt"
+COX2_CONFS = config.SHAPE_FP_DATA_DIR / "input_cox2_3d_first_few.sd"
+COX2_FPS = config.SHAPE_FP_DATA_DIR / "ref_cox2_3d_first_few.fp.txt.gz"
+SPHERE = config.SHARED_DATA_DIR / "hammersley" / "hamm_spheroid_10k_11rad.txt"
+ELLIPSE = config.SHARED_DATA_DIR / "hammersley" / "hamm_ellipsoid_10k_11rad.txt"
 
 
 class TestCase(unittest.TestCase):
@@ -63,7 +63,7 @@ class TestCase(unittest.TestCase):
         for option in ["-j", "--junk"]:
             completion, _u1, _u2 = self._run_cox2([option])
             self.assertNotEqual(0, completion.returncode)
-            self.assertTrue("unsupported" in completion.stderr.lower())
+            self.assertTrue("unknown flag/option" in completion.stderr.lower())
 
     def test_invalid_atom_scale(self):
         """Test expected response to use of invalid atom_scale."""
@@ -124,7 +124,14 @@ class TestCase(unittest.TestCase):
             with self.subTest(options=options):
                 completion, _path, _sph = self._run_cox2(options)
                 self.assertNotEqual(0, completion.returncode)
-                self.assertTrue("Unsupported format" in completion.stderr)
+                # Error msg always uses the long name of the option.
+                has_expected_text = (
+                    "Invalid choice for '--format'" in completion.stderr
+                )
+                if not has_expected_text:
+                    print("DEBUG: test_invalid_format.  Actual stderr:")
+                    print(completion.stderr)
+                self.assertTrue(has_expected_text)
 
     def test_records_option(self):
         """Test processing of specific SD file records/structures."""
@@ -187,7 +194,7 @@ class TestCase(unittest.TestCase):
         options = ["-n"]
         completion = self._run(options)
         self.assertNotEqual(0, completion.returncode)
-        self.assertTrue("no value specified" in completion.stderr.lower())
+        self.assertTrue("requires 1" in completion.stderr.lower())
 
     def _get_ids_and_fps(self, fp_output: str) -> tuple[list, list]:
         ids = []
@@ -287,7 +294,7 @@ class TestCase(unittest.TestCase):
             return sum(1 for line in inf if line.strip() == "$$$$")
 
     def _run(self, args: list[str]):
-        args = [str(tsupp.SHAPE_FP_EXE)] + list(args)
+        args = [str(config.SHAPE_FP_EXE)] + [str(arg) for arg in args]
         return subprocess.run(args, capture_output=True, encoding="utf8")
 
     def _run_cox2(self, options=None):
@@ -331,7 +338,7 @@ class TestCase(unittest.TestCase):
         return result
 
     def _get_cox2_fps(self):
-        with gzip.open(tsupp.REF_PATH / "cox2_3d_first_few.fp.txt.gz") as inf:
+        with gzip.open(COX2_FPS) as inf:
             raw = inf.read()
             return [line for line in raw.decode("utf8").splitlines()]
 
@@ -361,7 +368,7 @@ class TestCase(unittest.TestCase):
 
         expected_ids = []
         with open(sd_pathname) as inf:
-            for eid in tsupp.gen_sd_names(inf):
+            for eid in config.gen_sd_names(inf):
                 expected_ids.extend([eid] * expected_copies)
 
         if expected_ids != actual_ids:
@@ -410,4 +417,5 @@ class TestCase(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    tsupp.testmain()
+    logging.basicConfig(level=logging.DEBUG)
+    unittest.main()

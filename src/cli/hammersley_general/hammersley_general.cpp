@@ -22,72 +22,18 @@
 #include <cstdio>
 #include <cstdlib>
 #include <filesystem>
+#include <format>
 #include <iostream>
 #include <string>
 #include <vector>
+
+#include "mesaac_arg_parser/arg_parser.hpp"
 
 using namespace std;
 
 const vector<unsigned int> primes{3,  5,  7,  11, 13,  17,  19,  23, 29, 31,
                                   37, 41, 43, 47, 53,  59,  61,  67, 71, 73,
                                   79, 83, 89, 97, 101, 103, 107, 109};
-
-bool str_to_unsigned_int(const string &sval, unsigned int &result,
-                         const string &result_name) {
-  // How to detect when sval is not even a valid integer, e.g., "foo"?
-  int signed_val = atoi(sval.c_str());
-  if (signed_val < 0) {
-    cerr << "Value for " << result_name << " (" << sval
-         << ") is not a valid unsigned integer." << endl;
-    return false;
-  }
-  result = signed_val;
-  return true;
-}
-
-void show_usage(const string &prog_name) {
-  cerr << "Usage: " << prog_name << " (-h|--help) dimension sample_size" << endl
-       << "    dimension - the dimensionality of generated points," << endl
-       << "                typically some positive int less than 40." << endl
-       << "    sample_size - the number of points to output." << endl
-       << endl
-       << "Options:" << endl
-       << "    -h|--help - show this help message and exit" << endl;
-}
-
-void parse_cmdline(int argc, char **argv, unsigned int &dimension,
-                   unsigned int &sample_size) {
-  const string prog_name = filesystem::path(argv[0]).filename().string();
-
-  if (argc >= 2 && (string(argv[1]) == "-h" || string(argv[1]) == "--help")) {
-    show_usage(prog_name);
-    exit(0);
-  }
-
-  if (argc != 3) {
-    show_usage(prog_name);
-    exit(1);
-  }
-
-  if (!str_to_unsigned_int(argv[1], dimension, "dimension")) {
-    exit(1);
-  }
-  if (dimension < 1) {
-    cerr << "dimension (" << dimension << ") must be greater than zero."
-         << endl;
-    exit(1);
-  }
-
-  if (dimension > primes.size() + 1) {
-    cerr << "dimension (" << dimension << ") must be less than or equal to "
-         << primes.size() + 1 << "." << endl;
-    exit(1);
-  }
-
-  if (!str_to_unsigned_int(argv[2], sample_size, "sample_size")) {
-    exit(1);
-  }
-}
 
 vector<unsigned int> base_function(unsigned int prime, unsigned int number) {
   vector<unsigned int> base_vector;
@@ -158,10 +104,8 @@ void generate_points(const unsigned int dimension,
   }
 }
 
-int main(int argc, char **argv) {
+int main(int argc, const char **const argv) {
 
-  unsigned int dimension;
-  unsigned int sample_size;
   vector<vector<float>> all_dimensions;
 
   // represent the integers i = 1,...,K as binary
@@ -170,13 +114,42 @@ int main(int argc, char **argv) {
   // take the floor of (N * x_i) = random index into the array of length N
   // Store indices in a k length vector of ints.
 
-  parse_cmdline(argc, argv, dimension, sample_size);
-  generate_points(dimension, sample_size, all_dimensions);
+  using namespace mesaac;
+
+  auto dimension = arg_parser::Argument<unsigned int>::create(
+      "dimension",
+      std::format(
+          "dimensionality of generated points, in the range 1..{} inclusive",
+          primes.size() + 1));
+  auto sample_size = arg_parser::Argument<unsigned int>::create(
+      "sample_size", "the number of points to output");
+  arg_parser::ArgParser args({}, {dimension, sample_size},
+                             "Print Hammersley points.");
+  int status = args.parse_args(argc, argv);
+  if (status != 0 || args.usage_requested()) {
+    return status;
+  }
+
+  // Additional validation:
+  if (dimension->value() < 1) {
+    args.show_usage("Dimension must be greater than zero.");
+    return 1;
+  }
+  if (dimension->value() > primes.size() + 1) {
+    ostringstream msg;
+    msg << "dimension (" << dimension->value()
+        << ") must be less than or equal to " << primes.size() + 1 << ".";
+
+    args.show_usage(msg.str());
+    return 1;
+  }
+
+  generate_points(dimension->value(), sample_size->value(), all_dimensions);
 
   // Output points
-  for (unsigned int i = 0; i < sample_size; i++) {
+  for (unsigned int i = 0; i < sample_size->value(); i++) {
     string sep("");
-    for (unsigned int j = 0; j < dimension; j++) {
+    for (unsigned int j = 0; j < dimension->value(); j++) {
       cout << sep << all_dimensions[j][i];
       sep = " ";
     }

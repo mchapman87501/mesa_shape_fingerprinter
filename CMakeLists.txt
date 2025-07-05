@@ -1,11 +1,15 @@
 cmake_minimum_required(VERSION 3.31)
 set(PROJECT shape_fingerprints)
 
-project(${PROJECT} VERSION 1.0.0 LANGUAGES C CXX)
+project(
+  ${PROJECT}
+  VERSION 1.0.0
+  LANGUAGES C CXX)
 
-# This default value presumes all tests are defined in the toplevel tests directory --
-# a presumption that is not true of this project.
-option(SHAPE_FINGERPRINTS_BUILD_TESTS "Build test targets" ${PROJECT_IS_TOP_LEVEL})
+# This default value presumes all tests are defined in the toplevel tests
+# directory -- a presumption that is not true of this project.
+option(SHAPE_FINGERPRINTS_BUILD_TESTS "Build test targets"
+       ${PROJECT_IS_TOP_LEVEL})
 
 option(SHAPE_FINGERPRINTS_BUILD_DOCS "Build documentation" OFF)
 
@@ -15,14 +19,19 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules")
 set(BOOST_INCLUDE_LIBRARIES dynamic_bitset)
 set(BOOST_ENABLE_CMAKE ON)
 include(FetchContent)
-Set(FETCHCONTENT_QUIET FALSE) # Needed to print downloading progress
+set(FETCHCONTENT_QUIET FALSE) # Needed to print downloading progress
 FetchContent_Declare(
-    Boost
-    URL https://github.com/boostorg/boost/releases/download/boost-1.88.0/boost-1.88.0-cmake.tar.gz # downloading a zip release speeds up the download
-    USES_TERMINAL_DOWNLOAD TRUE 
-    GIT_PROGRESS TRUE   
-    DOWNLOAD_EXTRACT_TIMESTAMP ON
-)
+  Boost
+  URL https://github.com/boostorg/boost/releases/download/boost-1.88.0/boost-1.88.0-cmake.tar.gz # downloading
+                                                                                                 # a zip
+                                                                                                 # release
+                                                                                                 # speeds up
+                                                                                                 # the
+                                                                                                 # download
+      USES_TERMINAL_DOWNLOAD
+      TRUE
+  GIT_PROGRESS TRUE
+  DOWNLOAD_EXTRACT_TIMESTAMP ON)
 FetchContent_MakeAvailable(Boost)
 
 # mesaac_shape_eigen depends on Eigen.
@@ -30,53 +39,54 @@ FetchContent_Declare(
   eigen
   GIT_REPOSITORY https://gitlab.com/libeigen/eigen.git
   GIT_TAG 3.4.0
-  GIT_SHALLOW TRUE
-)
+  GIT_SHALLOW TRUE)
 
 FetchContent_MakeAvailable(eigen)
 
-# shape_feature_fingerprinter depends on OpenBabel.
-# Alas, OpenBabel depends on CMake 3.5, which is not compatible with
-# CMake 4.0.  It may be necessary to use our own fork of OpenBabel,
-# one with a patched top-level CMakeLists.txt; or to require that
-# OpenBabel be installed separately before compiling.
-# FetchContent_Declare(
-#     OpenBabel
-#     GIT_REPOSITORY https://github.com/openbabel/openbabel.git
-#     GIT_TAG openbabel-3-1-1
-#     GIT_SHALLOW TRUE
-# )
-# FetchContent_MakeAvailable(OpenBabel)
+# shape_feature_fingerprinter depends on OpenBabel. Alas, OpenBabel depends on
+# CMake 3.5, which is not compatible with CMake 4.0.  It may be necessary to use
+# our own fork of OpenBabel, one with a patched top-level CMakeLists.txt; or to
+# require that OpenBabel be installed separately before compiling.
+# FetchContent_Declare( OpenBabel GIT_REPOSITORY
+# https://github.com/openbabel/openbabel.git GIT_TAG openbabel-3-1-1 GIT_SHALLOW
+# TRUE ) FetchContent_MakeAvailable(OpenBabel)
 
 FetchContent_Declare(
   Catch2
   GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-  GIT_TAG        v3.8.1 # or a later release
+  GIT_TAG v3.8.1 # or a later release
 )
 
 FetchContent_MakeAvailable(Catch2)
 
-# See note, above, about the arrangement of tests within this project.
-# Some executable tests are driven by Python.
+# See note, above, about the arrangement of tests within this project. Some
+# executable tests are driven by Python.
 find_package(Python3 COMPONENTS Interpreter)
 
+# Must include simple_code_coverage before defining any targets that depend on
+# C/C++ compiler flags.
+if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
+  include(simple_code_coverage)
+endif()
 
 if(SHAPE_FINGERPRINTS_BUILD_TESTS)
-    include(add_mesaac_test)
-    include(simple_code_coverage)
-    enable_testing()
+  include(add_mesaac_test)
+  enable_testing()
 
-    include(CTest)
-    include(Catch)
+  include(CTest)
+  include(Catch)
 
-    add_subdirectory(tests)
+  add_subdirectory(tests)
 endif()
 
 add_subdirectory(src)
 
 add_subdirectory(dependencies)
 
+if(SHAPE_FINGERPRINTS_BUILD_DOCS)
+  add_subdirectory(doc)
+endif()
 
-if (SHAPE_FINGERPRINTS_BUILD_DOCS)
-    add_subdirectory(doc)
+if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
+  add_subdirectory(coverage_reports)
 endif()

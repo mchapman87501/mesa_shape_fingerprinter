@@ -25,28 +25,43 @@ ctest --preset default
 
 To get a code coverage report for all tests, a similar set of cmake commands can be used.
 
-Start by configuring, building and running tests.
+First, configure and build.
 
 ```shell
 cmake --preset coverage
 cmake --build --preset coverage
-ctest --preset coverage
 ```
 
-Then generate the coverage report. This step requires `gcovr`. See below for installation suggestions for `gcovr`.
+If `gcovr` is installed on your system, you can build the `coverage_report_gcovr` target.
 
 ```shell
-cmake --build --preset coverage --target process_coverage
+cmake --build --preset coverage --target coverage_report_gcovr
 ```
 
-The HTML-formatted coverage reports can be viewed with your default web browser. For example:
+Similarly, if `lcov` and `genhtml` are installed, you can build the `coverage_report_lcov` target.
+
+```shell
+cmake --build --preset coverage --target coverage_report_lcov
+```
+
+Each of these targets starts by resetting code coverage counters. Then it re-runs `ctest`. Finally, it produces an HTML coverage report. If all steps succeed, the coverage reports can be viewed with your default web browser.
+
+For `coverage_report_gcovr`:
 
 ```shell
 # macOS
-open build/coverage/report/index.html
-
+open build/coverage/coverage_reports/gcovr/index.html
 # Ubuntu
-firefox build/coverage/report/index.html &
+firefox build/coverage/coverage_reports/gcovr/index.html &
+```
+
+For `coverage_report_lcov`:
+
+```shell
+# macOS
+open build/coverage/coverage_reports/lcov/index.html
+# Ubuntu
+firefox build/coverage/coverage_reports/lcov/index.html &
 ```
 
 ## Executables
@@ -94,3 +109,7 @@ sudo apt install gcovr
 ### Re-use `ArgParser`
 
 The `shape_filter_by_radius` source code defines an `ArgParser` for parsing command-line options. It should be factored out to its own library for use in all of the user-facing executables.
+
+### Simplify Code Coverage
+
+A "second-party" :smile: project, [mchapman87501/arg_parse](https://github.com/mchapman87501/arg_parse), supports creating test code coverage reports using lcov and a "Profile" build type. That system for generating coverage reports appears to be more straightforward than what is used in this repository. (I have no memory of the inspiration for that "Profile" code -- Mitch) Considering incorporating the "Profile" approach into this repository.

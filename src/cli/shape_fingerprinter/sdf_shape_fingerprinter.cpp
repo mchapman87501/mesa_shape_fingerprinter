@@ -18,18 +18,13 @@ using namespace std;
 
 namespace mesaac::shape_fingerprinter {
 namespace {
-void open_input(ifstream &inf, string &pathname, string description) {
-  inf.open(pathname.c_str());
+void read_points(string &pathname, string description, PointList &points) {
+  ifstream inf(pathname.c_str());
   if (!inf) {
     cerr << "Cannot open " << description << " '" << pathname
          << "' for reading." << endl;
     exit(1);
   }
-}
-
-void read_points(string &pathname, string description, PointList &points) {
-  ifstream inf;
-  open_input(inf, pathname, description);
 
   float coord;
   while (inf >> coord) {

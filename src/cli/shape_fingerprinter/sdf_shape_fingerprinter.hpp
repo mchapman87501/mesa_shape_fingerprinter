@@ -12,7 +12,12 @@
 namespace mesaac::shape_fingerprinter {
 class SDFShapeFingerprinter {
 public:
-  typedef enum { FMT_ASCII, FMT_COMPRESSED_ASCII, FMT_BINARY } FormatEnum;
+  typedef enum {
+    FMT_ASCII,
+    FMT_COMPRESSED_ASCII,
+    FMT_BINARY,
+    FMT_INVALID
+  } FormatEnum;
 
   SDFShapeFingerprinter(std::string sd_pathname,
                         std::string hamms_ellipsoid_pathname,

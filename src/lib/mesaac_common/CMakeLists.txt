@@ -3,9 +3,9 @@ set(TARGET mesaac_common)
 find_package(ZLIB)
 
 set(SRC
-    gzip.cpp
-    b32.cpp
-    b64.cpp
+    src/gzip.cpp
+    src/b32.cpp
+    src/b64.cpp
 )
 # TODO move the header files into this directory, to ease
 # their installation...
