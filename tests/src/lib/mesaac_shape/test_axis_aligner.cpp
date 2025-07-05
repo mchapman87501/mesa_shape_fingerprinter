@@ -9,6 +9,7 @@
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 
 #include <fstream>
+#include <iostream>
 
 #include "mesaac_mol/element_info.hpp"
 #include "mesaac_shape/axis_aligner.hpp"
@@ -232,23 +233,26 @@ public:
     if (points.size()) {
       float xmin, ymin, zmin, xmax, ymax, zmax;
       float xsum = 0, ysum = 0, zsum = 0;
-      PointList::const_iterator i = points.begin();
-      const Point p(*i);
-      xmin = xmax = p[0];
-      ymin = ymax = p[1];
-      zmin = zmax = p[2];
-      for (; i != points.end(); ++i) {
-        const Point p(*i);
-        float x(p[0]), y(p[1]), z(p[2]);
+      bool first = true;
+      for (const auto &point : points) {
+        const float x(point[0]), y(point[1]), z(point[2]);
         xsum += x;
         ysum += y;
         zsum += z;
-        xmin = min(xmin, x);
-        xmax = max(xmax, x);
-        ymin = min(ymin, y);
-        ymax = max(ymax, y);
-        zmin = min(zmin, z);
-        zmax = max(zmax, z);
+
+        if (first) {
+          xmin = xmax = x;
+          ymin = ymax = y;
+          zmin = zmax = z;
+          first = false;
+        } else {
+          xmin = min(xmin, x);
+          xmax = max(xmax, x);
+          ymin = min(ymin, y);
+          ymax = max(ymax, y);
+          zmin = min(zmin, z);
+          zmax = max(zmax, z);
+        }
       }
 
       xmid = xsum / points.size();
@@ -263,6 +267,8 @@ public:
   bool is_mean_centered(const PointList &points) {
     float xmid, ymid, zmid, w, h, d;
     get_pointlist_info(points, xmid, ymid, zmid, w, h, d);
+    std::cerr << "DEBUG: is_mean_centered midpoint: " << xmid << ", " << ymid
+              << ", " << zmid << std::endl;
     auto matcher = Catch::Matchers::WithinAbs(0.0, 0.0001);
     return matcher.match(xmid) && matcher.match(ymid) && matcher.match(zmid);
   }
@@ -529,12 +535,10 @@ TEST_CASE("mesaac::shape::AxisAligner", "[mesaac]") {
     // Moronic, but maybe adequate, test: superpose all atoms.
     aligner->wb_get_atom_points(atoms, points, true);
     Point offset{10.0, -50.0, 0.0};
-    PointList::iterator i;
-    for (i = points.begin(); i != points.end(); ++i) {
-      Point &p(*i);
-      p.at(0) = offset[0];
-      p.at(1) = offset[1];
-      p.at(2) = offset[2];
+    for (auto &point : points) {
+      point.at(0) = offset[0];
+      point.at(1) = offset[1];
+      point.at(2) = offset[2];
     }
     aligner->wb_update_atom_coords(atoms, points);
 

@@ -100,15 +100,13 @@ TEST_CASE("mesaac::shape_eigen::Hammersley", "[mesaac]") {
                           points);
 
     REQUIRE(points.size() == num_points);
-    PointList::iterator i;
-    for (i = points.begin(); i != points.end(); ++i) {
-      Point &p(*i);
-      REQUIRE(xmin <= p[0]);
-      REQUIRE(p[0] <= xmax);
-      REQUIRE(ymin <= p[1]);
-      REQUIRE(p[1] <= ymax);
-      REQUIRE(zmin <= p[2]);
-      REQUIRE(p[2] <= zmax);
+    for (const auto &point : points) {
+      REQUIRE(xmin <= point[0]);
+      REQUIRE(point[0] <= xmax);
+      REQUIRE(ymin <= point[1]);
+      REQUIRE(point[1] <= ymax);
+      REQUIRE(zmin <= point[2]);
+      REQUIRE(point[2] <= zmax);
     }
     // Ensure the points fill the volume.
     fixture.check_max_extents(points, xmin, xmax, ymin, ymax, zmin, zmax);

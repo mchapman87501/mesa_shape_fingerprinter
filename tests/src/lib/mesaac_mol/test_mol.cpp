@@ -87,7 +87,7 @@ TEST_CASE("mesaac::mol::Mol", "[mesaac]") {
 
     // XXX FIX THIS:  you can't retrieve a tag using the
     // same syntax as you used to set it...
-    SDTagMap::const_iterator it = mol2.tags().find(">  <t3>");
+    auto it = mol2.tags().find(">  <t3>");
     REQUIRE(it != mol2.tags().end());
     REQUIRE(it->second == first_value);
 

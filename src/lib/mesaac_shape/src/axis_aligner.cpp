@@ -158,12 +158,10 @@ void AxisAligner::get_mean_center(const PointList &points, Point &mean) {
     mean.push_back(0);
   } else {
     float xsum = 0, ysum = 0, zsum = 0;
-    PointList::const_iterator i;
-    for (i = points.begin(); i != points.end(); ++i) {
-      const Point &p(*i);
-      xsum += p[0];
-      ysum += p[1];
-      zsum += p[2];
+    for (const auto &point : points) {
+      xsum += point[0];
+      ysum += point[1];
+      zsum += point[2];
     }
     mean.push_back(xsum / points.size());
     mean.push_back(ysum / points.size());
@@ -172,12 +170,10 @@ void AxisAligner::get_mean_center(const PointList &points, Point &mean) {
 }
 
 void AxisAligner::untranslate_points(PointList &points, const Point &offset) {
-  PointList::iterator i;
-  for (i = points.begin(); i != points.end(); ++i) {
-    Point &p(*i);
-    p[0] -= offset[0];
-    p[1] -= offset[1];
-    p[2] -= offset[2];
+  for (auto &point : points) {
+    point[0] -= offset[0];
+    point[1] -= offset[1];
+    point[2] -= offset[2];
   }
 }
 
@@ -185,14 +181,8 @@ void AxisAligner::get_mean_centered_cloud(const PointList &centers,
                                           PointList &cloud) {
   cloud.clear();
   if (m_atom_centers_only) {
-    PointList::const_iterator i;
-    for (i = centers.begin(); i != centers.end(); i++) {
-      const Point &c(*i);
-      Point p_cloud;
-      p_cloud.push_back(c[0]);
-      p_cloud.push_back(c[1]);
-      p_cloud.push_back(c[2]);
-      cloud.push_back(p_cloud);
+    for (const auto &center : centers) {
+      cloud.push_back({center[0], center[1], center[2]});
     }
     // Atom centers should already be mean-centered
   } else {
@@ -210,6 +200,7 @@ void AxisAligner::update_atom_coords(mol::AtomVector &atoms,
     throw length_error(msg.str());
   }
 
+  // Consider C++23 std::ranges::views:zip.
   mol::AtomVector::iterator atom_iter(atoms.begin());
   PointList::const_iterator center_iter(atom_centers.begin());
   for (; atom_iter != atoms.end(); ++atom_iter, ++center_iter) {
@@ -220,9 +211,8 @@ void AxisAligner::update_atom_coords(mol::AtomVector &atoms,
 }
 
 void AxisAligner::transform_points(PointList &points, Transform &vt) {
-  PointList::iterator i;
-  for (i = points.begin(); i != points.end(); ++i) {
-    transform_point(vt, *i);
+  for (auto &point : points) {
+    transform_point(vt, point);
   }
 }
 

@@ -127,9 +127,8 @@ void VolBox::set_bits_for_spheres(const PointList &spheres,
     validate_bits(bits, m_bucket_points.size() + offset);
   }
 
-  PointList::const_iterator i;
-  for (i = spheres.begin(); i != spheres.end(); ++i) {
-    set_bits_for_one_sphere_unchecked(*i, bits, offset);
+  for (const auto &sphere : spheres) {
+    set_bits_for_one_sphere_unchecked(sphere, bits, offset);
   }
 }
 
@@ -148,15 +147,11 @@ void VolBox::set_bits_for_one_sphere_unchecked(const Point &sphere,
               radius = sphere.at(3) * m_sphere_scale, rsqr = radius * radius;
   IndexList pic; // (indices of) points in cube
   get_points_in_cube(x, y, z, radius, pic);
-  IndexList::iterator i;
-  IndexList::iterator i_end(pic.end());
-  for (i = pic.begin(); i != i_end; i++) {
-    unsigned int point_index(*i);
-
+  for (const auto &point_index : pic) {
     if (!bits.test(point_index + offset)) {
       const Point &p(m_bucket_points[point_index]);
-      float dx = p[0] - x, dy = p[1] - y, dz = p[2] - z,
-            ds = (dx * dx + dy * dy + dz * dz);
+      const float dx = p[0] - x, dy = p[1] - y, dz = p[2] - z,
+                  ds = (dx * dx + dy * dy + dz * dz);
       if (ds <= rsqr) {
         bits.set(point_index + offset);
       }

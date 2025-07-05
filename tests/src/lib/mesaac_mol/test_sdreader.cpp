@@ -46,7 +46,6 @@ public:
 
   string tagstr() {
     ostringstream resultf;
-    SDTagMap::iterator i;
     // Maps are supposed to keep their keys in sorted order.
     for (const auto &entry : m_tags) {
       resultf << "'" << entry.first << "' = '" << entry.second << "'" << endl;

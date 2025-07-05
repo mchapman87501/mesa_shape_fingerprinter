@@ -9,6 +9,7 @@
 //
 
 #include "mesaac_mol/element_info.hpp"
+#include <algorithm>
 #include <iostream>
 #include <locale>
 #include <map>
@@ -476,18 +477,13 @@ bool init_radii() {
 }
 
 string strip(const string &src) {
-  string::const_iterator i_start, i_end;
-  i_start = src.begin();
-  while ((i_start != src.end()) && isspace(*i_start)) {
-    i_start++;
+  const auto not_space = [](unsigned char c) { return !std::isspace(c); };
+  auto first = std::find_if(src.begin(), src.end(), not_space);
+  auto last = std::find_if(src.rbegin(), src.rend(), not_space).base();
+  if (first >= last) {
+    return "";
   }
-  i_end = i_start;
-  while ((i_end != src.end()) && !isspace(*i_end)) {
-    i_end++;
-  }
-  string result =
-      src.substr(distance(src.begin(), i_start), distance(i_start, i_end));
-  return result;
+  return std::string(first, last);
 }
 
 bool inited = init_radii();

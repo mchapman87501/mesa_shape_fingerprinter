@@ -87,15 +87,13 @@ bool Hammersley::next_point(Point &pnt) {
   pnt.clear();
   pnt.reserve(num_dimensions);
   pnt.push_back(m_num_generated / float(m_num_points));
-  for (int k = 0; k < num_dimensions - 1; ++k) {
-    float prime = primes[k];
+  for (const auto &prime : primes) {
     float count = 1.0;
     float total = 0.0;
     DigitsVector rd;
     get_radix_digits(m_num_generated, prime, rd);
-    DigitsVector::iterator di;
-    for (di = rd.begin(); di != rd.end(); ++di) {
-      int digit(*di);
+
+    for (const auto &digit : rd) {
       count *= prime;
       total += digit / count;
     }

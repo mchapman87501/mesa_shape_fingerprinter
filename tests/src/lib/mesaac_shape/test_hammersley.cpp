@@ -20,16 +20,14 @@ struct TestFixture {
       axmin = axmax = points[0][0];
       aymin = aymax = points[0][1];
       azmin = azmax = points[0][2];
-      PointList::const_iterator i;
-      for (i = points.begin(); i != points.end(); ++i) {
-        const Point &p(*i);
-        float x(p[0]), y(p[1]), z(p[2]);
-        axmin = (axmin < x) ? axmin : x;
-        axmax = (axmax > x) ? axmax : x;
-        aymin = (aymin < y) ? aymin : y;
-        aymax = (aymax > y) ? aymax : y;
-        azmin = (azmin < z) ? azmin : z;
-        azmax = (azmax > z) ? azmax : z;
+      for (const auto &point : points) {
+        float x(point[0]), y(point[1]), z(point[2]);
+        axmin = min(axmin, x);
+        axmax = max(axmax, x);
+        aymin = min(aymin, y);
+        aymax = max(aymax, y);
+        azmin = min(azmin, z);
+        azmax = max(azmax, z);
       }
 
       const float err = 1.25e-3;
@@ -49,7 +47,7 @@ struct TestFixture {
   }
 
   void spot_check(Point &p, int index, int num_points) {
-    // Spot-check a few points against expted values generated
+    // Spot-check a few points against expected values generated
     // via a Python Hammersley implementation.
     if (0 == index) {
       check_point(p, 1.0 / num_points, 0.5, 1.0 / 3);
@@ -99,15 +97,13 @@ TEST_CASE("mesaac::shape::Hammersley", "[mesaac]") {
                           points);
 
     REQUIRE(points.size() == num_points);
-    PointList::iterator i;
-    for (i = points.begin(); i != points.end(); ++i) {
-      Point &p(*i);
-      REQUIRE(xmin <= p[0]);
-      REQUIRE(p[0] <= xmax);
-      REQUIRE(ymin <= p[1]);
-      REQUIRE(p[1] <= ymax);
-      REQUIRE(zmin <= p[2]);
-      REQUIRE(p[2] <= zmax);
+    for (const auto &point : points) {
+      REQUIRE(xmin <= point[0]);
+      REQUIRE(point[0] <= xmax);
+      REQUIRE(ymin <= point[1]);
+      REQUIRE(point[1] <= ymax);
+      REQUIRE(zmin <= point[2]);
+      REQUIRE(point[2] <= zmax);
     }
     // Ensure the points fill the volume.
     fixture.check_max_extents(points, xmin, xmax, ymin, ymax, zmin, zmax);

@@ -32,14 +32,10 @@ inline void get_point_list(const AtomVector &atoms, PointList &result) {
 inline void get_flipped_points(const PointList &points, const float *flip,
                                PointList &flipped) {
   flipped = points;
-
-  PointList::iterator iEnd(flipped.end());
-  PointList::iterator i;
-  for (i = flipped.begin(); i != iEnd; ++i) {
-    Point &p(*i);
-    p[0] *= flip[0];
-    p[1] *= flip[1];
-    p[2] *= flip[2];
+  for (auto &point : flipped) {
+    point[0] *= flip[0];
+    point[1] *= flip[1];
+    point[2] *= flip[2];
   }
 }
 } // namespace

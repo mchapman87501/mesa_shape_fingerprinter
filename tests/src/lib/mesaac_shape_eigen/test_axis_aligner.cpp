@@ -60,13 +60,11 @@ struct TestFixture {
   void get_point_means(const PointList &points, float &x, float &y, float &z) {
     x = y = z = 0.0;
     if (points.size()) {
-      PointList::const_iterator i;
       float xsum = 0, ysum = 0, zsum = 0;
-      for (i = points.begin(); i != points.end(); ++i) {
-        const Point &p(*i);
-        xsum += p[0];
-        ysum += p[1];
-        zsum += p[2];
+      for (const auto &point : points) {
+        xsum += point[0];
+        ysum += point[1];
+        zsum += point[2];
       }
       x = xsum / points.size();
       y = ysum / points.size();
@@ -79,21 +77,21 @@ struct TestFixture {
                          float &dz) {
     dx = dy = dz = 0.0;
     if (points.size()) {
-      PointList::const_iterator i;
       float xmin = 0, ymin = 0, zmin = 0, xmax = 0, ymax = 0, zmax = 0;
-      for (i = points.begin(); i != points.end(); ++i) {
-        const Point &p(*i);
-        if (i == points.begin()) {
-          xmin = xmax = p[0];
-          ymin = ymax = p[1];
-          zmin = zmax = p[2];
+      bool first = true;
+      for (const auto &point : points) {
+        if (first) {
+          xmin = xmax = point[0];
+          ymin = ymax = point[1];
+          zmin = zmax = point[2];
+          first = false;
         } else {
-          xmin = (xmin < p[0]) ? xmin : p[0];
-          xmax = (xmax > p[0]) ? xmax : p[0];
-          ymin = (ymin < p[1]) ? ymin : p[1];
-          ymax = (ymax > p[1]) ? ymax : p[1];
-          zmin = (zmin < p[2]) ? zmin : p[2];
-          zmax = (zmax > p[2]) ? zmax : p[2];
+          xmin = min(xmin, point[0]);
+          xmax = max(xmax, point[0]);
+          ymin = min(ymin, point[1]);
+          ymax = max(ymax, point[1]);
+          zmin = min(zmin, point[2]);
+          zmax = max(zmax, point[2]);
         }
       }
       dx = xmax - xmin;
@@ -228,23 +226,26 @@ struct TestFixture {
     if (points.size()) {
       float xmin, ymin, zmin, xmax, ymax, zmax;
       float xsum = 0, ysum = 0, zsum = 0;
-      PointList::const_iterator i = points.begin();
-      const Point p(*i);
-      xmin = xmax = p[0];
-      ymin = ymax = p[1];
-      zmin = zmax = p[2];
-      for (; i != points.end(); ++i) {
-        const Point p(*i);
-        float x(p[0]), y(p[1]), z(p[2]);
+      bool first = true;
+      for (const auto &point : points) {
+        const float x(point[0]), y(point[1]), z(point[2]);
         xsum += x;
         ysum += y;
         zsum += z;
-        xmin = min(xmin, x);
-        xmax = max(xmax, x);
-        ymin = min(ymin, y);
-        ymax = max(ymax, y);
-        zmin = min(zmin, z);
-        zmax = max(zmax, z);
+
+        if (first) {
+          xmin = xmax = x;
+          ymin = ymax = y;
+          zmin = zmax = z;
+          first = false;
+        } else {
+          xmin = min(xmin, x);
+          xmax = max(xmax, x);
+          ymin = min(ymin, y);
+          ymax = max(ymax, y);
+          zmin = min(zmin, z);
+          zmax = max(zmax, z);
+        }
       }
 
       xmid = xsum / points.size();

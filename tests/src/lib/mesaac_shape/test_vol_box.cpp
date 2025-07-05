@@ -75,17 +75,17 @@ struct TestFixture {
   float get_max_extent(PointList &points, bool verbose = false) {
     // Get the maximum distance of any point from the origin.
     float rsqr_max = 0.0;
-    PointList::const_iterator i;
     if (verbose) {
       cout << "get_max_extent:" << endl;
     }
-    for (i = points.begin(); i != points.end(); ++i) {
-      const Point &p(*i);
+    for (const auto &point : points) {
       if (verbose) {
-        cout << "    " << p[0] << ", " << p[1] << ", " << p[2] << endl;
+        cout << "    " << point[0] << ", " << point[1] << ", " << point[2]
+             << endl;
       }
-      float magsqr = (p[0] * p[0] + p[1] * p[1] + p[2] * p[2]);
-      rsqr_max = (rsqr_max > magsqr) ? rsqr_max : magsqr;
+      const float magsqr =
+          (point[0] * point[0] + point[1] * point[1] + point[2] * point[2]);
+      rsqr_max = max(rsqr_max, magsqr);
     }
     if (verbose) {
       cout << "Result: " << ::sqrtf(rsqr_max) << endl;
@@ -332,8 +332,7 @@ TEST_CASE("mesaac::shape::VolBox", "[mesaac]") {
     const unsigned int max_folds = 5;
     unsigned int num_folds;
     unsigned int folded_size = vb.size();
-    for (num_folds = 0; num_folds != max_folds;
-         ++num_folds, folded_size /= 2) {
+    for (num_folds = 0; num_folds != max_folds; ++num_folds, folded_size /= 2) {
       shape_defs::BitVector folded;
       folded.resize(folded_size);
       folded.reset();
