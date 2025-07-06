@@ -1,5 +1,5 @@
 {
-  "version": 3,
+  "version": 6,
   "configurePresets": [
     {
       "name": "default",
@@ -60,6 +60,11 @@
       "targets": ["all"]
     },
     {
+      "name": "coverage-report",
+      "configurePreset": "coverage",
+      "targets": ["coverage_report_lcov"]
+    },
+    {
       "name": "ubuntu-clang-tidy",
       "configurePreset": "ubuntu-clang-tidy",
       "targets": ["all"]
@@ -110,6 +115,38 @@
       "name": "coverage",
       "inherits": "default",
       "configurePreset": "coverage"
+    }
+  ],
+  "workflowPresets": [
+    {
+      "name": "coverage-report",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "coverage"
+        },
+        {
+          "type": "build",
+          "name": "coverage"
+        },
+        {
+          "type": "build",
+          "name": "coverage-report"
+        }
+      ]
+    },
+    {
+      "name": "release",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "release"
+        },
+        {
+          "type": "build",
+          "name": "release"
+        }
+      ]
     }
   ]
 }
