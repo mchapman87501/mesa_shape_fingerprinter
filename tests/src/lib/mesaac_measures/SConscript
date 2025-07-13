@@ -1,0 +1,13 @@
+Import("*")
+import os
+
+env = env.Clone()
+env.Prepend(
+    CPPPATH=[".."]
+)
+env.Append(
+    LIBS=["cppunit", measures_lib]
+)
+
+env.AddUnitTestProg("test_measurer_factory")
+    

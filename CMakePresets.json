@@ -115,6 +115,22 @@
       "name": "coverage",
       "inherits": "default",
       "configurePreset": "coverage"
+    },
+    {
+      "name": "coverage-report",
+      "configurePreset": "coverage",
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error",
+        "stopOnFailure": true
+      },
+      "filter": {
+        "include": {
+          "label": "mesaac"
+        }
+      }
     }
   ],
   "workflowPresets": [

@@ -714,7 +714,7 @@ int benchmark_align_to_axes(const TestFixture &fixture,
   return 0;
 }
 
-TEST_CASE("Benchmark mesaac::shape::AxisAligner",
+TEST_CASE("mesaac::shape::AxisAligner Benchmarks",
           "[mesaac][mesaac_benchmark]") {
   TestFixture fixture;
 

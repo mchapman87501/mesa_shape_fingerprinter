@@ -56,6 +56,7 @@ public:
 
   std::string properties_block() const { return m_properties_block; }
   const SDTagMap &tags() const { return m_tags; }
+  SDTagMap &mutable_tags() { return m_tags; }
 
 protected:
   AtomVector m_atoms;

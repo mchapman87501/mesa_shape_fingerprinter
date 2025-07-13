@@ -1,0 +1,7 @@
+Import("*")
+
+def addPyTest(path, exeNode):
+    t = env.AddPythonTest(path, EXE=exeNode[0].abspath)
+    env.Depends(t, [exeNode] + Glob("data/in/*"))
+
+addPyTest("test_find_diverse.py", find_diverse_exe)

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <filesystem>
 #include <optional>
 #include <string>
 
@@ -13,4 +14,6 @@ void convert(const std::string &value, std::optional<unsigned int> &result);
 void convert(const std::string &value, std::optional<float> &result);
 void convert(const std::string &value, std::optional<double> &result);
 void convert(const std::string &value, std::optional<std::string> &result);
+void convert(const std::string &value,
+             std::optional<std::filesystem::path> &result);
 } // namespace mesaac::arg_parser::value_converter

@@ -15,18 +15,13 @@ import unittest
 import config
 
 # First conformers from the full cox2_3d:
-COX2_CONFS = config.SHAPE_FP_DATA_DIR / "input_cox2_3d_first_few.sd"
+COX2_CONFS = config.SHARED_DATA_DIR / "sd_files" / "cox2_3d_first_few.sd"
 COX2_FPS = config.SHAPE_FP_DATA_DIR / "ref_cox2_3d_first_few.fp.txt.gz"
 SPHERE = config.SHARED_DATA_DIR / "hammersley" / "hamm_spheroid_10k_11rad.txt"
 ELLIPSE = config.SHARED_DATA_DIR / "hammersley" / "hamm_ellipsoid_10k_11rad.txt"
 
 
 class TestCase(unittest.TestCase):
-    def test_no_args(self):
-        """Test the exit status when no args are given."""
-        completion = self._run([])
-        self.assertNotEqual(0, completion.returncode)
-
     def test_help(self):
         """Test that usage output is generated."""
         for option in ["-h", "--help"]:

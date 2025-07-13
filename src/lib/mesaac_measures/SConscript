@@ -1,0 +1,24 @@
+# SConscript for measures
+Import("*")
+import logging
+
+env = env.Clone()
+env.Prepend(
+    CPPPATH=["#include/mesaac_measures"]
+)
+
+measures_modules = "measures tversky euclidean hamann cosine bub measurer_factory"
+measures_objs = [env.Object("%s.cpp" % name) 
+                 for name in measures_modules.split()]
+measures_lib = env.StaticLibrary("mesaac_measures", measures_objs)
+
+env.Default(measures_lib)
+Alias("binaries", measures_lib)
+Alias("libs", measures_lib)
+
+installer = env.Install(env["libDir"], measures_lib)
+Alias("install", installer)
+
+SConscript("test/SConscript", exports="env mesaacLibs measures_lib")
+
+Return("measures_lib")

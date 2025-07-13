@@ -11,12 +11,12 @@ using namespace std;
 
 namespace mesaac::shape_fingerprinter {
 namespace {
-const static float C_FlipMatrix[4][3] = {{1.0, 1.0, 1.0}, // Unflipped
-                                         {1.0, -1.0, -1.0},
-                                         {-1.0, 1.0, -1.0},
-                                         {-1.0, -1.0, 1.0}};
-const static unsigned int C_FlipMatrixSize =
-    sizeof(C_FlipMatrix) / sizeof(C_FlipMatrix[0]);
+const static float c_flip_matrix[4][3] = {{1.0, 1.0, 1.0}, // Unflipped
+                                          {1.0, -1.0, -1.0},
+                                          {-1.0, 1.0, -1.0},
+                                          {-1.0, -1.0, 1.0}};
+const static unsigned int c_flip_matrix_size =
+    sizeof(c_flip_matrix) / sizeof(c_flip_matrix[0]);
 
 } // namespace
 
@@ -38,7 +38,7 @@ void MolFingerprinter::set_molecule(mol::Mol &mol) {
 bool MolFingerprinter::get_next_fp(shape_defs::BitVector &fp) {
   bool result(false);
 
-  if (m_i_flip != C_FlipMatrixSize) {
+  if (m_i_flip != c_flip_matrix_size) {
     compute_curr_flip_fingerprint(m_heavies, fp);
     m_i_flip++;
     result = true;
@@ -47,8 +47,9 @@ bool MolFingerprinter::get_next_fp(shape_defs::BitVector &fp) {
 }
 
 namespace {
-inline void getFlippedPoints(const shape::PointList &points, const float *flip,
-                             shape::PointList &flippedPoints) {
+inline void get_flipped_points(const shape::PointList &points,
+                               const float *flip,
+                               shape::PointList &flippedPoints) {
   flippedPoints = points;
 
   shape::PointList::iterator iEnd(flippedPoints.end());
@@ -65,9 +66,9 @@ inline void getFlippedPoints(const shape::PointList &points, const float *flip,
 
 void MolFingerprinter::compute_curr_flip_fingerprint(
     const shape::PointList &points, shape_defs::BitVector &result) {
-  const float *flip = C_FlipMatrix[m_i_flip];
+  const float *flip = c_flip_matrix[m_i_flip];
   shape::PointList flippedPoints;
-  getFlippedPoints(points, flip, flippedPoints);
+  get_flipped_points(points, flip, flippedPoints);
 
   result.resize(m_volbox.size() / (1 << m_num_folds));
   result.reset();

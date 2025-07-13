@@ -9,3 +9,6 @@ __pycache__/
 *.pyc
 *.pyo
 CMakeUserPresets.json
+
+# Docker output:
+/build_artifacts

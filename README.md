@@ -21,6 +21,39 @@ cmake --build --preset default
 ctest --preset default
 ```
 
+## Installing
+
+A release build can be created as follows:
+
+```shell
+cmake --preset release --fresh
+cmake --build --preset release --fresh
+```
+
+If the build succeeds, the build artifacts can be installed to the default location `/usr/local`:
+
+```shell
+sudo cmake --install build/release
+```
+
+Or, to install to an arbitrary `/directory/path`:
+
+```shell
+cmake --install build/release --prefix=/directory/path
+```
+
+### Using `--workflow`
+
+If you are using a version of CMake that supports the `--workflow` option, a slightly simpler sequence of commands can be used:
+
+```shell
+cmake --workflow release
+sudo cmake --install build/release
+
+# Or, to install to an arbitrary ${INSTALL_DIR}:
+cmake --install build/release --prefix=${INSTALL_DIR}
+```
+
 ## Running Tests With Code Coverage
 
 To get a code coverage report for all tests, a similar set of cmake commands can be used.
@@ -32,28 +65,13 @@ cmake --preset coverage
 cmake --build --preset coverage
 ```
 
-If `gcovr` is installed on your system, you can build the `coverage_report_gcovr` target.
-
-```shell
-cmake --build --preset coverage --target coverage_report_gcovr
-```
-
-Similarly, if `lcov` and `genhtml` are installed, you can build the `coverage_report_lcov` target.
+If `lcov` and `genhtml` are installed, you can build the `coverage_report_lcov` target.
 
 ```shell
 cmake --build --preset coverage --target coverage_report_lcov
 ```
 
-Each of these targets starts by resetting code coverage counters. Then it re-runs `ctest`. Finally, it produces an HTML coverage report. If all steps succeed, the coverage reports can be viewed with your default web browser.
-
-For `coverage_report_gcovr`:
-
-```shell
-# macOS
-open build/coverage/coverage_reports/gcovr/index.html
-# Ubuntu
-firefox build/coverage/coverage_reports/gcovr/index.html &
-```
+This target starts by resetting code coverage counters. Then it re-runs `ctest`. Finally, it produces an HTML coverage report. If all steps succeed, the coverage reports can be viewed with your default web browser.
 
 For `coverage_report_lcov`:
 
@@ -64,6 +82,19 @@ open build/coverage/coverage_reports/lcov/index.html
 firefox build/coverage/coverage_reports/lcov/index.html &
 ```
 
+### Using `--workflow`
+
+If your version of CMake supports `--workflow`, you can create an lcov coverage report as follows:
+
+```shell
+cmake --workflow coverage-report
+
+# macOS
+open build/coverage/coverage_reports/index.html
+# Ubuntu
+firefox build/coverage/coverage_reports/index.html &
+```
+
 ## Executables
 
 Here's some basic info about the executables provided by this repository.
@@ -71,6 +102,10 @@ Here's some basic info about the executables provided by this repository.
 - [shape_fingerprinter](src/cli/shape_fingerprinter/doc/shape_fingerprinter.md)
 
 ## Issues
+
+### Hamann Similarity Measure Needs Review
+
+The Hamann measure is unique in mesaac_measures in the sense that, unlike the others, it returns similarity values in range -1...1. According to Wikipedia the [Simple Matching Coefficient](https://en.wikipedia.org/wiki/Simple_matching_coefficient) is equivalent to normalizing Hamann to produce values in 0...1. After discussion, we've decided to incorporate Simple Matching into mesaac_measures.
 
 ### Lots of 3rd Party Tests
 
@@ -92,24 +127,24 @@ brew install open-babel
 sudo apt install libopenbabel-dev
 ```
 
-### gcovr
+### Performance of align_monte
 
-As mentioned above, `gcovr` is needed for `coverage` builds. It can be installed on macOS and linux as follows:
+On macOS, `align_monte` runs very quickly, even when compiled using the `coverage` preset. In docker (linux) and on native linux, the same preset runs very slowly, while consuming all CPU cores.
 
-```shell
-# macOS
-brew install gcovr
-
-# Ubuntu
-sudo apt install gcovr
-```
+I tried to use `perf` to understand why this is, but I found the results (which lacked symbolic names) not terribly useful. See [Notes on performance profiling](notes_on_performance_profiling.md). At the same time I discovered that `align_monte` compiled with the `release` preset runs about as quickly as on macOS.
 
 ## TODO
 
-### Re-use `ArgParser`
+### Simple Matching Measure
+
+As discussed above, introduce a "simple matching" similarity measure that has many of the same properties as Hamann but that produces similarity values in the range 0...1.
+
+### Consistent Argument Parsing
 
 The `shape_filter_by_radius` source code defines an `ArgParser` for parsing command-line options. It should be factored out to its own library for use in all of the user-facing executables.
 
-### Simplify Code Coverage
+Alternatively, a new `ArgumentParser` could be introduced that simplifies definition of command-line syntax.
 
-A "second-party" :smile: project, [mchapman87501/arg_parse](https://github.com/mchapman87501/arg_parse), supports creating test code coverage reports using lcov and a "Profile" build type. That system for generating coverage reports appears to be more straightforward than what is used in this repository. (I have no memory of the inspiration for that "Profile" code -- Mitch) Considering incorporating the "Profile" approach into this repository.
+### View Aligned Structures
+
+It would be good to have a way to view conformers after alignment. Visualization of conformers and their shape fingerprints would also be useful.

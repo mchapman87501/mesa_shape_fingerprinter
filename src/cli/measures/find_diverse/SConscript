@@ -1,0 +1,11 @@
+Import("*")
+
+env = env.Clone()
+env.Prepend(
+    CPPPATH=[".."]
+)
+
+srcs = "find_diverse.cpp fingerprint_reader.cpp".split()
+find_diverse_exe = env.Program("find_diverse", srcs + support_objs)
+
+SConscript(dirs=Split("test"), exports="find_diverse_exe")

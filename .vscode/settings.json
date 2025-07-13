@@ -87,7 +87,15 @@
         "*.traits": "cpp",
         "alignedvector3": "cpp",
         "fft": "cpp",
-        "mprealsupport": "cpp"
+        "mprealsupport": "cpp",
+        "atomic": "cpp",
+        "bit": "cpp",
+        "concepts": "cpp",
+        "iterator": "cpp",
+        "random": "cpp",
+        "type_traits": "cpp",
+        "utility": "cpp",
+        "ostream": "cpp"
     },
     "[cmake]": {
         "editor.wordBasedSuggestions": "off",

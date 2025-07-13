@@ -1,0 +1,45 @@
+Import("*")
+import os
+
+env = env.Clone()
+env.Prepend(
+    CPPPATH=[".."]
+)
+env.Append(
+    LIBS=["cppunit"]
+)
+
+def getExe(node):
+    return node[0].abspath
+    
+measuresTestingPkg = Glob("measures_testing/*.py")
+    
+def addPyTest(path, exeNode):
+    t = env.AddPythonTest(path, EXE=getExe(exeNode))
+    env.Depends(t, [exeNode])
+    env.Depends(t, measuresTestingPkg)
+    return t
+
+addPyTest("test_measures_all.py", measures_all_exe)
+addPyTest("test_measures_nxn.py", measures_nxn_exe)
+addPyTest("test_measures_sim.py", measures_sim_exe)
+
+# TODO:  Test measures_pvm
+
+addPyTest("test_measures_shape_fp.py", measures_shape_fp_exe)
+
+
+
+rico_input_data = env.File("data/in/in_count_order.txt")
+rico_ref_data = env.File("data/ref/run_in_count_order")
+gen_ref_files = env.File("gen_ref_in_count_order_files.py")
+# Lazy-generate the 'run_in_count_order' input and reference files:
+gen_rico_data = env.Command(
+    [rico_input_data, rico_ref_data],
+    gen_ref_files,
+    "python %s" % gen_ref_files.abspath)
+env.Clean(gen_rico_data, [rico_input_data, rico_ref_data])
+
+t = addPyTest("test_measures_sfp_band.py", measures_sfp_band_exe)
+env.Depends(t, [gen_rico_data, env.File("data/in/sample_shape_fps.txt")])
+

@@ -5,13 +5,16 @@
 #pragma once
 
 #include "mesaac_mol/mol.hpp"
-#include <iostream>
-#include <sstream>
 
+#include <iostream>
+#include <memory>
+#include <sstream>
 namespace mesaac::mol {
 /// @brief SDWriter writes molecules to an output stream, in SD format.
 class SDWriter {
 public:
+  using Ptr = std::shared_ptr<SDWriter>;
+
   /// @brief Create a new instance.
   /// @param outf stream to which to write molecules.
   SDWriter(std::ostream &outf);

@@ -1,5 +1,7 @@
+add_subdirectory(align_monte)
 add_subdirectory(hammersley_general)
 add_subdirectory(hammersley_spheroid)
+add_subdirectory(measures)
 add_subdirectory(shape_feature_fingerprinter)
 add_subdirectory(shape_filter_by_radius)
 add_subdirectory(shape_fingerprinter)

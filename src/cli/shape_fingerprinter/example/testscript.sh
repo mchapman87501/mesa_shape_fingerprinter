@@ -49,7 +49,7 @@ BASE=cox2.volume.10rad.1.4eps.txt
 ./ShapeVolume cox2_3d.sd hammersly16384Sphere.txt 10 1.4 > ${ACTUAL}/${BASE}
 verify ${BASE}
 
-#With 16384 points in a with a sphere radius of 10 angstroms and a space filing parameter
+#With 16384 points with a sphere radius of 10 angstroms and a space filling parameter
 #of 1.3 this takes 2 seconds on a single core of a 2.2 GHz Intel Core 2 Duo         
 
 #Align one conformer to the remaining in an sd file.

@@ -1,0 +1,7 @@
+from pathlib import Path
+
+WORKSPACE_ROOT = Path("@CMAKE_SOURCE_DIR@")
+TEST_DATA_DIR = WORKSPACE_ROOT / "tests" / "data" 
+MY_TEST_DATA_DIR = TEST_DATA_DIR / "shape_volume"
+HAMMS_DATA_DIR = TEST_DATA_DIR / "hammersley"
+EXE_PATH = Path("$<TARGET_FILE:shape_volume>")

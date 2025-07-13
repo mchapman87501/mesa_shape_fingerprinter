@@ -1,7 +1,9 @@
 #include "mesaac_arg_parser/value_converter.hpp"
+
 #include <algorithm>
 #include <cctype>
 #include <optional>
+#include <stdexcept>
 #include <string>
 
 namespace mesaac::arg_parser::value_converter {
@@ -51,6 +53,11 @@ void convert(const std::string &value, std::optional<double> &result) {
 
 void convert(const std::string &value, std::optional<std::string> &result) {
   result = value;
+}
+
+void convert(const std::string &value,
+             std::optional<std::filesystem::path> &result) {
+  result = std::filesystem::path(value);
 }
 
 } // namespace mesaac::arg_parser::value_converter

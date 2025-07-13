@@ -1,0 +1,53 @@
+# SConscript for measures
+Import("*")
+import logging
+
+env = env.Clone()
+env.Append(
+    LIBS=mesaacLibs['mesaac_measures'],
+)
+
+
+def srcs(modules):
+    return [("%s.cpp" % m) for m in modules.split()]
+
+support_modules = "fingerprint_reader"
+support_srcs = srcs(support_modules)
+support_objs = [env.Object(n) for n in support_srcs]
+
+mcnn_modules = srcs("MeasuresCountNXN TanimotoCounts TverskyCounts EuclideanCounts CosineCounts " + support_modules)
+env.Installable("MeasuresCountNXN", mcnn_modules)
+
+usrm_modules = srcs("USR_measures USR_Smeasure " + support_modules)
+env.Installable("USR_measures", usrm_modules)
+
+
+mnn_modules = srcs("measures_nxn " + support_modules)
+measures_nxn_exe = env.Installable("measures_nxn", mnn_modules)
+measuresNXNExe = env.Installable("MeasuresNXN", mnn_modules)
+
+measures_pvm_exe = env.Installable("MeasuresPVM")
+
+ms_modules = srcs("measures_sim " + support_modules)
+measures_sim_exe = env.Installable("measures_sim", ms_modules)
+measuresSimExe = env.Installable("MeasuresSim", ms_modules)
+
+ma_modules = srcs("measures_all " + support_modules)
+measures_all_exe = env.Installable("measures_all", ma_modules)
+measuresAllExe = env.Installable("MeasuresAll", ma_modules)
+
+msf_modules = srcs("measures_shape_fp " + support_modules)
+# TODO:  Learn how to build copies of executables as hard links.
+measures_shape_fp_exe = env.Installable("measures_shape_fp", msf_modules)
+measuresShapeFPExe = env.Installable("MeasuresShapeFP", msf_modules)
+shape_measures_exe = env.Installable("shape_measures", msf_modules)
+
+# Matrix band generators, suitable for distribution as MPI tasks:
+msfp_modules = srcs("measures_sfp_band " + support_modules)
+measures_sfp_band_exe = env.Installable("measures_sfp_band", msfp_modules)
+
+env.Alias("measures_binaries", [measures_all_exe, measures_nxn_exe, measures_pvm_exe, measures_sim_exe, measures_shape_fp_exe, measures_sfp_band_exe])
+exports = "env measures_all_exe measures_nxn_exe measures_pvm_exe measures_sim_exe measures_shape_fp_exe measures_sfp_band_exe support_objs"
+
+SConscript(dirs=Split("test find_diverse"), exports=exports)
+
