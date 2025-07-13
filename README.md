@@ -42,7 +42,7 @@ Or, to install to an arbitrary `/directory/path`:
 cmake --install build/release --prefix=/directory/path
 ```
 
-### Using `--workflow`
+<h3>Using `--workflow`</h3>
 
 If you are using a version of CMake that supports the `--workflow` option, a slightly simpler sequence of commands can be used:
 
@@ -82,7 +82,7 @@ open build/coverage/coverage_reports/lcov/index.html
 firefox build/coverage/coverage_reports/lcov/index.html &
 ```
 
-### Using `--workflow`
+<h3>Using `--workflow`</h3>
 
 If your version of CMake supports `--workflow`, you can create an lcov coverage report as follows:
 
