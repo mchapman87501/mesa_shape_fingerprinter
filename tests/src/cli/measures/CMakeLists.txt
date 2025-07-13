@@ -1,3 +1,16 @@
+# Compiled tests:
+
+add_mesaac_test(
+  TEST_NAME
+  test_measure_type_converter
+  SOURCES
+  test_measure_type_converter.cpp
+  LIBS
+  cli_measures_lib
+  mesaac_common
+  mesaac_measures)
+
+# Python test drivers:
 configure_file(config.py.in config.py.gen.in @ONLY)
 file(
   GENERATE
