@@ -12,8 +12,6 @@ using namespace std;
 
 namespace mesaac::mol {
 
-unsigned int Mol::num_atoms() const { return m_atoms.size(); }
-
 unsigned int Mol::num_heavy_atoms() const {
   return std::ranges::count_if(
       m_atoms, [](const Atom &atom) { return !atom.is_hydrogen(); });

@@ -46,6 +46,13 @@ public:
   /// @return the Atom's position
   Position pos() const { return m_pos; }
 
+  /**
+   * @brief Copy the position of an Atom.
+   * @details This is a sop to C++-Swift language interoperability.
+   * @param result On return, holds the position of this Atom.
+   */
+  void get_pos(Position &result) const { result = m_pos; }
+
   /// @brief Get any optional columns of an Atom, as read from an SD file.
   /// @return The option columns
   std::string optional_cols() const { return m_optional_cols; }

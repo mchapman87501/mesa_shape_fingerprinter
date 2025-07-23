@@ -24,20 +24,35 @@ enum class BondType : unsigned int {
 };
 
 /// @enum BondStereo
-/// @brief Valid bond stereo values
+/// @brief Valid bond stereochemistry values
 enum class BondStereo : unsigned int {
-  /// For single bonds, not stereo
-  /// For double bonds, use atom coordinates to determine whether
-  /// the bond is cis or trans
+  /// NOTE: This does not match the 2010 CTfile format specification.
+  /// It refers to Bond configuration, not Bond stereo values, and it
+  /// lists the following values:
+  /// 0 = none (default)
+  /// 1 = up
+  /// 2 = either
+  /// 3 = down
+
+  /// These values are for V2000 and are from
+  /// https://en.wikipedia.org/wiki/Chemical_table_file
+  /// I took bad notes - not sure where "wedge" and "hashed wedge" info came
+  /// from.
+  /// See also
+  /// https://discover.3ds.com/sites/default/files/2020-08/biovia_ctfileformats_2020.pdf
+  /// and in particular Chapter 6: V2000 Connection Table [CTAB], "Meaning of
+  /// values in the bond block"
+
+  /// Not stereo.  For double bonds, use atom coords to determine cis or trans
   bs_not_stereo = 0,
 
-  /// For single bonds, stereo up (wedge)
+  /// stereo up (wedge)
   bs_up = 1,
 
-  /// For double bonds, stereochemistry is not specified
+  /// For double bonds: either cis or trans
   bs_cis_trans_double = 3,
 
-  /// For single bonds, unspecified - either cis or trans
+  /// For single bonds: either cis or trans
   bs_either = 4,
 
   /// Down (hashed wedge)

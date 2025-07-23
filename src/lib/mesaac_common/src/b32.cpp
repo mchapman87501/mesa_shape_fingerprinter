@@ -66,9 +66,11 @@ string from_chars(string chars) {
 
 } // namespace
 
-string B32::encode(string src) { return to_chars(transcode(src, 8, 5, true)); }
+string B32::encode(string src) const {
+  return to_chars(transcode(src, 8, 5, true));
+}
 
-string B32::decode(string src) {
+string B32::decode(string src) const {
   return transcode(from_chars(src), 5, 8, false);
 }
 

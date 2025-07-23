@@ -16,11 +16,11 @@ public:
   /// @brief Encode data as a B32 string.
   /// @param src data to encode
   /// @return The B32 representation of `src`
-  std::string encode(std::string src);
+  std::string encode(std::string src) const;
 
   /// @brief Decode a B32 string.
   /// @param src B32 string to decode
   /// @return The decoded representation of `src`
-  std::string decode(std::string src);
+  std::string decode(std::string src) const;
 };
 } // namespace mesaac::common

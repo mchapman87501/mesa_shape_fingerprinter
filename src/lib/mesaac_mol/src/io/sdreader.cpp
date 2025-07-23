@@ -86,22 +86,23 @@ std::optional<Atom> SDReader::read_next_atom() {
   // TODO: Enough w. the inline literal constants.
   if (line.size() < 34) {
     cerr << file_pos() << "Atom line is too short: '" << line << "'." << endl;
-  } else {
-    float x, y, z;
-    if (float_field(line, 0, 10, x) && float_field(line, 10, 10, y) &&
-        float_field(line, 20, 10, z)) {
-      return Atom({.atomic_num = get_atomic_num(line.substr(31, 3)),
-                   .pos = {x, y, z},
-                   .optional_cols = line.substr(34)});
-    } else {
-      cerr << file_pos() << "Could not parse coordinates from '" << line << "'."
-           << endl;
-    }
+    return std::nullopt;
   }
+
+  float x, y, z;
+  if (float_field(line, 0, 10, x) && float_field(line, 10, 10, y) &&
+      float_field(line, 20, 10, z)) {
+    return Atom({.atomic_num = get_atomic_num(line.substr(31, 3)),
+                 .pos = {x, y, z},
+                 .optional_cols = line.substr(34)});
+  }
+  cerr << file_pos() << "Could not parse coordinates from '" << line << "'."
+       << endl;
   return std::nullopt;
 }
 
 bool SDReader::read_atoms(AtomVector &atoms, unsigned int num_atoms) {
+  atoms.reserve(num_atoms);
   for (unsigned int i = 0; i != num_atoms; i++) {
     const auto atom = read_next_atom();
     if (atom.has_value()) {
@@ -124,29 +125,26 @@ std::optional<Bond> SDReader::read_next_bond() {
   }
 
   // Try to read anyway:
-  {
-    unsigned int a0, a1;
-    BondType bond_type;
-    unsigned int uint_bond_type;
-    BondStereo stereo;
-    unsigned int uint_stereo;
-    if (uint_field(line, 0, 3, a0) && uint_field(line, 3, 6, a1) &&
-        // So much for enum-driven value safety:
-        uint_field(line, 6, 9, uint_bond_type) &&
-        uint_field(line, 9, 12, uint_stereo)) {
-      string optional_cols(line.substr(12));
-      bond_type = static_cast<BondType>(uint_bond_type);
-      stereo = static_cast<BondStereo>(uint_stereo);
-      return Bond({a0, a1, bond_type, stereo, optional_cols});
-    } else {
-      cerr << file_pos() << "Could not parse bond from '" << line << "'."
-           << endl;
-    }
+  unsigned int a0, a1;
+  BondType bond_type;
+  unsigned int uint_bond_type;
+  BondStereo stereo;
+  unsigned int uint_stereo;
+  if (uint_field(line, 0, 3, a0) && uint_field(line, 3, 6, a1) &&
+      // So much for enum-driven value safety:
+      uint_field(line, 6, 9, uint_bond_type) &&
+      uint_field(line, 9, 12, uint_stereo)) {
+    string optional_cols(line.substr(12));
+    bond_type = static_cast<BondType>(uint_bond_type);
+    stereo = static_cast<BondStereo>(uint_stereo);
+    return Bond({a0, a1, bond_type, stereo, optional_cols});
   }
+  cerr << file_pos() << "Could not parse bond from '" << line << "'." << endl;
   return std::nullopt;
 }
 
 bool SDReader::read_bonds(BondVector &bonds, unsigned int num_bonds) {
+  bonds.reserve(num_bonds);
   for (unsigned int i = 0; i != num_bonds; i++) {
     const auto bond = read_next_bond();
     if (bond.has_value()) {

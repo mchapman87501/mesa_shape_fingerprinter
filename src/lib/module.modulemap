@@ -1,0 +1,18 @@
+module mesaac {
+    module common {
+        header "mesaac_common/include/mesaac_common/mesaac_common.hpp"
+        requires cplusplus
+        export *
+    }
+    module measures {
+        header "mesaac_measures/include/mesaac_measures/mesaac_measures.hpp"
+        requires cplusplus
+        export *
+    }
+    module mol {
+        header "mesaac_mol/include/mesaac_mol/mesaac_mol.hpp"
+        requires cplusplus
+        export *
+    }
+    export *
+}

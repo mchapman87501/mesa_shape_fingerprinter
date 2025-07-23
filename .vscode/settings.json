@@ -95,7 +95,13 @@
         "random": "cpp",
         "type_traits": "cpp",
         "utility": "cpp",
-        "ostream": "cpp"
+        "ostream": "cpp",
+        "compare": "cpp",
+        "cstddef": "cpp",
+        "exception": "cpp",
+        "functional": "cpp",
+        "memory_resource": "cpp",
+        "tuple": "cpp"
     },
     "[cmake]": {
         "editor.wordBasedSuggestions": "off",

@@ -1,17 +1,17 @@
 configure_file(config.py.in config.py.gen.in @ONLY)
-file(GENERATE
-OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/config.py"
-INPUT "${CMAKE_CURRENT_BINARY_DIR}/config.py.gen.in"
-)
+file(
+  GENERATE
+  OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>/config.py"
+  INPUT "${CMAKE_CURRENT_BINARY_DIR}/config.py.gen.in")
 
-# Copy all of the Python files to the binary directory...
-set(PYTHON_SRC test_basics.py)
-foreach(PYFILE ${PYTHON_SRC})
-configure_file(${PYFILE} ${PYFILE} COPYONLY)
+set(TEST_SCRIPTS test_basics)
+foreach(SCRIPT_NAME ${TEST_SCRIPTS})
+  set(TEST_NAME "hammersley_spheroid_${SCRIPT_NAME}")
+  add_test(NAME ${TEST_NAME}
+           COMMAND Python3::Interpreter
+                   ${CMAKE_CURRENT_SOURCE_DIR}/${SCRIPT_NAME}.py)
+  set_tests_properties(
+    ${TEST_NAME}
+    PROPERTIES ENVIRONMENT "PYTHONPATH=${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>"
+               LABELS "mesaac")
 endforeach()
-
-add_test(
-    NAME hammersley_spheroid_test_basics
-    COMMAND Python3::Interpreter test_basics.py
-    )
-set_tests_properties(hammersley_spheroid_test_basics PROPERTIES LABELS "mesaac")

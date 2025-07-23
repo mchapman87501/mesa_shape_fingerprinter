@@ -53,7 +53,7 @@ inline unsigned int from_char(char c) {
 }
 } // namespace
 
-string B64::encode(string src) {
+string B64::encode(string src) const {
   string result;
 
   unsigned int i_max = src.size();
@@ -84,7 +84,7 @@ string B64::encode(string src) {
   return result;
 }
 
-string B64::decode(string src) {
+string B64::decode(string src) const {
   string result("");
 
   size_t i_max = src.find_first_of(pad_char);

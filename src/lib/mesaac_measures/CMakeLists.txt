@@ -12,6 +12,7 @@ set(SRC
 
 set(HEADER_DIR include)
 set(HEADERS
+    ${HEADER_DIR}/mesaac_measures/mesaac_measures.hpp
     ${HEADER_DIR}/mesaac_measures/bub.hpp
     ${HEADER_DIR}/mesaac_measures/cosine.hpp
     ${HEADER_DIR}/mesaac_measures/euclidean.hpp

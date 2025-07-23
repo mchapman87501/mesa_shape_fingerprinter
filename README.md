@@ -148,3 +148,11 @@ Alternatively, a new `ArgumentParser` could be introduced that simplifies defini
 ### View Aligned Structures
 
 It would be good to have a way to view conformers after alignment. Visualization of conformers and their shape fingerprints would also be useful.
+
+### Support MDL Molfile V3000 Format
+
+The SDReader in this repository does not yet support V3000 format SD files.
+
+See https://en.wikipedia.org/wiki/Chemical_table_file
+
+Also see this [2010 CTfile Formats](ctfile_20100623.pdf) spec and this [2020 CTfile Formats](biovia_ctfileformats_2020.pdf). The latter was downloaded on 20250718 from https://discover.3ds.com/sites/default/files/2020-08/biovia_ctfileformats_2020.pdf.

@@ -41,7 +41,7 @@ public:
   std::string comments() const { return m_comments; }
   std::string counts_line() const { return m_counts_line; }
 
-  unsigned int num_atoms() const;
+  unsigned int num_atoms() const { return m_atoms.size(); }
   unsigned int num_heavy_atoms() const;
 
   // Dimensionality of the atom coordinate data.
@@ -50,9 +50,21 @@ public:
   unsigned int dimensionality() const;
 
   const AtomVector &atoms() const { return m_atoms; }
+
+  // A sop to C++-Swift interop:
+  void get_atom(unsigned int index, Atom &result) const {
+    result = m_atoms.at(index);
+  }
+
   AtomVector &mutable_atoms() { return m_atoms; }
 
+  unsigned int num_bonds() const { return m_bonds.size(); }
   const BondVector &bonds() const { return m_bonds; }
+
+  // Sop, continued:
+  void get_bond(unsigned int index, Bond &result) const {
+    result = m_bonds.at(index);
+  }
 
   std::string properties_block() const { return m_properties_block; }
   const SDTagMap &tags() const { return m_tags; }

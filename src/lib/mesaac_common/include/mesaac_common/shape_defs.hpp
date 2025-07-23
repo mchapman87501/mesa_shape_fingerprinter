@@ -25,4 +25,12 @@ using ArrayBitVectors = std::vector<BitVector>;
  */
 using ShapeFPBlocks = std::vector<ArrayBitVectors>;
 
+/**
+ * @brief Construct a BitVector from a string.
+ * @details This is mainly for interoperability with other programming
+ * languages.
+ * @param strval the string representation of the bitvector, e.g., "01011101"
+ * @return a BitVector with the given value
+ */
+BitVector bit_vector_from_str(const std::string &strval);
 } // namespace mesaac::shape_defs
