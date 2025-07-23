@@ -177,9 +177,7 @@ public struct V2000SDReader {
     var molIndex = 0
     while reader.read(&mesaMol) {
       molIndex += 1
-      var swiftMol = Mol(mol: mesaMol, id: "\(pathURL)-\(molIndex)")
-      // Mean-center the mol at the world origin.
-      swiftMol.meanCenter()
+      let swiftMol = Mol(mol: mesaMol, id: "\(pathURL)-\(molIndex)")
       result.append(swiftMol)
     }
     let dt = t0.distance(to: Date())
@@ -209,9 +207,7 @@ public struct V2000SDReader {
     var molIndex = 0
     while reader.read(&mesaMol) {
       molIndex += 1
-      var swiftMol = Mol(mol: mesaMol, id: "\(filename)-\(molIndex)")
-      // Mean-center the mol at the world origin.
-      swiftMol.meanCenter()
+      let swiftMol = Mol(mol: mesaMol, id: "\(filename)-\(molIndex)")
       result.append(swiftMol)
     }
     return result
