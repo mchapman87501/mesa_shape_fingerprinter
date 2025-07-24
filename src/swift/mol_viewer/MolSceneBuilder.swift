@@ -148,7 +148,7 @@ struct MolSceneBuilder {
 
   /// Build a SceneKit node depicting self's mol.
   func molEntity() -> Entity {
-    let result = AnchorEntity()
+    let result = Entity()
     addAllAtoms(root: result)
     addAllBonds(root: result)
     return result

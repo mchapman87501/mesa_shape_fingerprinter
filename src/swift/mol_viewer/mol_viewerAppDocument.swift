@@ -30,7 +30,6 @@ nonisolated struct mol_viewerAppDocument: FileDocument {
       throw CocoaError(.textReadInapplicableDocumentType)
     }
     mols = try molsFrom(fileWrapper: configuration.file)
-    print("Document # of mols: \(mols.count)")
   }
 
   func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper {

@@ -33,10 +33,11 @@ struct Lights {
   let entity: Entity
 
   init() {
-    let anchor = AnchorEntity(world: .zero)
-    anchor.addChild(Self.highlightSource())
-    anchor.addChild(Self.backlightSource())
-    // anchor.addChild(Self.ambientLight())
-    entity = anchor
+    let result = Entity()
+    result.addChild(Self.highlightSource())
+    result.addChild(Self.backlightSource())
+    // result.addChild(Self.ambientLight())
+    result.name = "My Lights"
+    entity = result
   }
 }

@@ -19,7 +19,6 @@ struct ContentView: View {
         .frame(minWidth: 320, minHeight: 240)
     }
     .onAppear {
-      print("Number of Mols: \(document.mols.count)")
       selectedItems.setMols(document.mols)
     }
     .padding()

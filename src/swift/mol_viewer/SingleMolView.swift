@@ -10,7 +10,7 @@ struct SingleMolView: View {
   private let height = 96.0
 
   private func renderImage(currMol: Mol) async throws {
-    let rootEntity = AnchorEntity(world: .zero)
+    let rootEntity = Entity()
     let lights = Lights()
     rootEntity.addChild(lights.entity)
     let molEntity = MolSceneBuilder(mol: currMol).molEntity()
