@@ -89,26 +89,41 @@ struct ViewTransform {
   }
 
   mutating func completeRotateDrag(from start: CGPoint, to end: CGPoint) {
-    moveIsInProgress()
-    updateEntityTransform()
+    rotateDrag(from: start, to: end)
     rotator.completeMove(from: start, to: end)
     completeMovement()
   }
 
-  private func calcOffset(from start: CGPoint, to end: CGPoint) -> Float {
-    Float(end.y - start.y) / 50.0
+  static let panZoomFactor = Float(50.0)
+
+  private func getZOffset(from start: CGPoint, to end: CGPoint) -> Float {
+    Float(end.y - start.y) / Self.panZoomFactor
   }
 
   mutating func zoomDrag(from start: CGPoint, to end: CGPoint) {
     moveIsInProgress()
-    currTranslation = RKPosition(0, 0, calcOffset(from: start, to: end))
+    currTranslation = RKPosition(0, 0, getZOffset(from: start, to: end))
     updateEntityTransform()
   }
 
   mutating func completeZoomDrag(from start: CGPoint, to end: CGPoint) {
+    zoomDrag(from: start, to: end)
+    completeMovement()
+  }
+
+  private func getPanOffset(from start: CGPoint, to end: CGPoint) -> RKPosition {
+    let ds = end - start
+    return RKPosition(Float(ds.x), Float(-ds.y), 0.0) / Self.panZoomFactor
+  }
+
+  mutating func panDrag(from start: CGPoint, to end: CGPoint) {
     moveIsInProgress()
-    currTranslation = RKPosition(0, 0, calcOffset(from: start, to: end))
+    currTranslation = getPanOffset(from: start, to: end)
     updateEntityTransform()
+  }
+
+  mutating func completePanDrag(from start: CGPoint, to end: CGPoint) {
+    panDrag(from: start, to: end)
     completeMovement()
   }
 }

@@ -86,6 +86,16 @@ struct MolOverlayView: View {
         )
         .gesture(
           DragGesture()
+            .modifiers(.shift)
+            .onChanged { value in
+              viewTransform.panDrag(from: value.startLocation, to: value.location)
+            }
+            .onEnded { value in
+              viewTransform.completePanDrag(from: value.startLocation, to: value.location)
+            }
+        )
+        .gesture(
+          DragGesture()
             .onChanged { value in
               viewTransform.rotateDrag(from: value.startLocation, to: value.location)
             }
