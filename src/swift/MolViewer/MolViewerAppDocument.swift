@@ -2,17 +2,14 @@ import MesaacSwift
 import SwiftUI
 import UniformTypeIdentifiers
 
-nonisolated struct mol_viewerAppDocument: FileDocument {
+nonisolated struct MolViewerAppDocument: FileDocument {
   var mols: [Mol] = []
 
   init() {
     mols = []
   }
 
-  static let readableContentTypes = [
-    SDFUTType
-  ]
-
+  static let readableContentTypes: [UTType] = [.SDFUTType]
   static let writableContentTypes: [UTType] = []
 
   private func molsFrom(fileWrapper: FileWrapper) throws -> [Mol] {

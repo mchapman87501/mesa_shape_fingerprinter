@@ -3,9 +3,9 @@
 import SwiftUI
 
 @main
-struct mol_viewerApp: App {
+struct MolViewerApp: App {
   var body: some Scene {
-    DocumentGroup(newDocument: mol_viewerAppDocument()) { file in
+    DocumentGroup(newDocument: MolViewerAppDocument()) { file in
       ContentView(document: file.$document)
     }
   }

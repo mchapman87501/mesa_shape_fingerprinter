@@ -6,7 +6,7 @@ import SwiftUI
 import simd
 
 struct ContentView: View {
-  @Binding var document: mol_viewerAppDocument
+  @Binding var document: MolViewerAppDocument
   @State private var selectedItems = MolSelectionMgr()
 
   private let gridColumns = [GridItem(.flexible())]

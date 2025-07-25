@@ -1,6 +1,6 @@
-set(TARGET mol_viewer)
+set(TARGET MolViewer)
 
-set(SRC
+set(LIB_SRC
     RealityKitTypeAliases.swift
     CGPoint+Extension.swift
     RKPosition+Extension.swift
@@ -16,8 +16,8 @@ set(SRC
     MolListView.swift
     MolSelectionMgr.swift
     SDFUTType.swift
-    mol_viewerAppDocument.swift
-    mol_viewerApp.swift)
+    MolViewerAppDocument.swift)
+set(SRC MolViewerApp.swift ${LIB_SRC})
 
 add_executable(${TARGET} MACOSX_BUNDLE ${SRC})
 

@@ -31,10 +31,10 @@ if(HAS_USABLE_SWIFT AND HAS_COMPATIBLE_CXX)
 
   add_subdirectory(MesaacSwift)
 
-  # mol_viewer depends on SwiftUI, which is mac operating system specific.
+  # MolViewer depends on SwiftUI, which is mac operating system specific.
   if(APPLE)
-    add_subdirectory(mol_viewer)
+    add_subdirectory(MolViewer)
   else()
-    message(STATUS "mol_viewer is for Apple platforms.  Skipping")
+    message(STATUS "MolViewer is for Apple platforms.  Skipping")
   endif()
 endif()
