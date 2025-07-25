@@ -29,15 +29,7 @@ struct ViewTransform {
     managedEntity = managing
     transform = managing.transform
 
-    centeredTranslation = {
-      if let managedEntity {
-        let bounds = managedEntity.visualBounds(relativeTo: nil)
-        if !bounds.isEmpty {
-          return bounds.center
-        }
-      }
-      return RKPosition(0, 0, 0)
-    }()
+    centeredTranslation = RKPosition(0, 0, 0)
 
     currTranslation = RKPosition(0, 0, 0)
     rotator.reset(surfacePatch: controlWindowSize)
@@ -49,6 +41,13 @@ struct ViewTransform {
       if let managedEntity {
         transform = managedEntity.transform
         currTranslation = RKPosition(0, 0, 0)
+        centeredTranslation = {
+          let bounds = managedEntity.visualBounds(relativeTo: nil)
+          if !bounds.isEmpty {
+            return bounds.center
+          }
+          return RKPosition(0, 0, 0)
+        }()
       } else {
         transform = Transform.identity
         currTranslation = RKPosition(0, 0, 0)
