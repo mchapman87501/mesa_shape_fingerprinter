@@ -1,7 +1,14 @@
 # Add wrappers around the mesa libraries of interest.
-
+set(SRC
+    TypeAliases.swift
+    Position.swift
+    Atom.swift
+    Bond.swift
+    Mol.swift
+    V2000SDReader.swift
+    mesaac_swift.swift)
 set(TARGET mesaac_swift)
-add_library(${TARGET} STATIC mesaac_swift.swift)
+add_library(${TARGET} STATIC ${SRC})
 set_target_properties(${TARGET} PROPERTIES Swift_MODULE_NAME "MesaacSwift")
 target_compile_options(
   ${TARGET}
