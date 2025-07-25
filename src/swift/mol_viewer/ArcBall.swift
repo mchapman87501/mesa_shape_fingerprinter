@@ -5,9 +5,8 @@ import simd
 enum ArcBallError: Error {
   case invalidRadius
 }
-/// ArcBall is for interpreting mouse movements as rotations, panz, zooms
-/// on a 3D scene.
-/// It's inspired by https://raw.org/code/trackball-rotation-using-quaternions/
+/// ArcBall is for interpreting mouse movements as rotations
+/// Its use of quaternions is inspired by https://raw.org/code/trackball-rotation-using-quaternions/
 struct ArcBall {
   /// Multiplicative identity quaternion:
   private static let quatOne = simd_quatf(ix: 0.0, iy: 0.0, iz: 0.0, r: 1.0)
@@ -21,13 +20,12 @@ struct ArcBall {
 
   mutating func reset(surfacePatch size: CGSize) {
     minExtent = min(size.width, size.height)
-
     last = Self.quatOne
     curr = Self.quatOne
   }
 
-  /// Get the quaternion representing the rotation between two points on the arcball surface.
-  /// This is for providing updates for an in-progress mouse move.
+  /// Update the quaternion representing the rotation between two points on the arcball surface.
+  /// This is for tracking rotation for an in-progress mouse move.
   /// - Parameters:
   ///   - from: starting point
   ///   - to: ending point
@@ -37,7 +35,6 @@ struct ArcBall {
     // thread from a spool.  The direction of the "pull" is ortho to the spool's
     // axis, so the axis always lies in the x-y plane.  The length of the unwound
     // thread is proportional to the "spin" of the spool:
-    // angle in revs = length / (π * diameter)
     // angle in rads = length / radius
     let ds = end - start
 
@@ -48,7 +45,7 @@ struct ArcBall {
     curr = simd_quatf(angle: quatAngle, axis: [Float(dsUnit.y), Float(dsUnit.x), 0])
   }
 
-  /// Get the quaternion representing the rotation between two points on the arcball surface.
+  /// Finalize the quaternion representing the rotation between two points on the arcball surface.
   /// This is for updating the ArcBall when the mouse move ends.
   /// - Parameters:
   ///   - from: starting point
@@ -64,10 +61,5 @@ struct ArcBall {
   /// - Returns: the current rotation quaternion, *normalized*
   func currRotation() -> simd_quatf {
     simd_normalize(curr)  // simd_mul(curr, last))
-  }
-
-  /// Get self's "total" rotation.
-  func completedRotation() -> simd_quatf {
-    simd_normalize(simd_mul(curr, last))
   }
 }
