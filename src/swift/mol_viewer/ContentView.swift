@@ -1,7 +1,6 @@
 // Copyright © 2025 Mitch Chapman.  All rights reserved.
 
 import MesaacSwift
-// NOTE: SceneKit is deprecated.  Use RealityKit instead.
 import RealityKit
 import SwiftUI
 import simd

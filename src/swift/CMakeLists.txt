@@ -29,7 +29,7 @@ if(HAS_USABLE_SWIFT AND HAS_COMPATIBLE_CXX)
   include(initialize_swift)
   include(add_swift)
 
-  add_subdirectory(mesaac_swift)
+  add_subdirectory(MesaacSwift)
 
   # mol_viewer depends on SwiftUI, which is mac operating system specific.
   if(APPLE)

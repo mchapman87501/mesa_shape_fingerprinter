@@ -146,7 +146,7 @@ struct MolSceneBuilder {
     }
   }
 
-  /// Build a SceneKit node depicting self's mol.
+  /// Build a RealityKit node depicting self's mol.
   func molEntity() -> Entity {
     let result = Entity()
     addAllAtoms(root: result)

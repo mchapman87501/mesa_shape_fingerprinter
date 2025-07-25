@@ -33,6 +33,6 @@ endif()
 set_target_properties(
   ${TARGET} PROPERTIES MACOSX_BUNDLE_INFO_PLIST
                        "${CMAKE_CURRENT_SOURCE_DIR}/mol-viewer-Info.plist.in")
-target_link_libraries(${TARGET} PRIVATE mesaac_swift)
+target_link_libraries(${TARGET} PRIVATE MesaacSwift)
 
 install(TARGETS ${TARGET} BUNDLE DESTINATION Applications)
