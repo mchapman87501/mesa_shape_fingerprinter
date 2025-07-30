@@ -22,6 +22,8 @@
 					<string>sd</string>
 					<string>sdf</string>
 				</array>
+                <key>public.mime-type</key>
+                <string>chemical/x-mdl-sdfile</string>
 			</dict>
 		</dict>
 	</array>

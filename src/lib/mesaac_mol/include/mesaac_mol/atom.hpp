@@ -28,7 +28,7 @@ public:
   Atom() {}
 
   /// @brief Construct an Atom.
-  /// @param params properties of the atom - atomic weight, 3-space coordinates,
+  /// @param params properties of the atom - atomic number, 3-space coordinates,
   /// etc.
   Atom(const AtomParams &&params)
       : m_atomic_num(params.atomic_num), m_pos(params.pos),

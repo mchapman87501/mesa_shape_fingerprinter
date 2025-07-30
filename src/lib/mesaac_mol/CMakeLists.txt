@@ -7,21 +7,27 @@ set(SRC
     src/io/path_sdreader.cpp
     src/mol.cpp
     src/element_info.cpp
-    src/sd_tag_map.cpp)
+    src/sd_tag_map.cpp
+    src/io/internal/line_reader.cpp
+    src/io/internal/sdtags_reader.cpp
+    src/io/internal/v2000_ctab_reader.cpp
+    src/io/internal/v3000_ctab_reader.cpp)
 
 set(HEADER_DIR include)
+set(MOL_HEADER_DIR ${HEADER_DIR}/mesaac_mol)
+
 set(HEADERS
-    ${HEADER_DIR}/mesaac_mol/mesaac_mol.hpp
-    ${HEADER_DIR}/mesaac_mol/io/path_sdreader.hpp
-    ${HEADER_DIR}/mesaac_mol/io/sdreader.hpp
-    ${HEADER_DIR}/mesaac_mol/io/sdwriter.hpp
-    ${HEADER_DIR}/mesaac_mol/atom.hpp
-    ${HEADER_DIR}/mesaac_mol/bond.hpp
-    ${HEADER_DIR}/mesaac_mol/element_info.hpp
-    ${HEADER_DIR}/mesaac_mol/io.hpp
-    ${HEADER_DIR}/mesaac_mol/mol.hpp
-    ${HEADER_DIR}/mesaac_mol/position.hpp
-    ${HEADER_DIR}/mesaac_mol/sd_tag_map.hpp)
+    ${MOL_HEADER_DIR}/mesaac_mol.hpp
+    ${MOL_HEADER_DIR}/io/path_sdreader.hpp
+    ${MOL_HEADER_DIR}/io/sdreader.hpp
+    ${MOL_HEADER_DIR}/io/sdwriter.hpp
+    ${MOL_HEADER_DIR}/atom.hpp
+    ${MOL_HEADER_DIR}/bond.hpp
+    ${MOL_HEADER_DIR}/element_info.hpp
+    ${MOL_HEADER_DIR}/io.hpp
+    ${MOL_HEADER_DIR}/mol.hpp
+    ${MOL_HEADER_DIR}/position.hpp
+    ${MOL_HEADER_DIR}/sd_tag_map.hpp)
 
 add_library(${TARGET} STATIC ${SRC})
 target_compile_features(${TARGET} PUBLIC cxx_std_20)
