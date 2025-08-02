@@ -3,6 +3,8 @@
 // Copyright (c) 2025 Mesa Analytics & Computing, LLC
 //
 
+#include <optional>
+
 #include "ctab.hpp"
 #include "line_reader.hpp"
 #include "mol_header_block.hpp"

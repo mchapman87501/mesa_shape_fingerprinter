@@ -7,7 +7,7 @@
 namespace mesaac::mol::internal {
 
 namespace {
-static constexpr std::string v3000_prefix = "M  V30 ";
+static const std::string v3000_prefix = "M  V30 ";
 
 // Read a V3000 atom type from a stream
 bool read_atom_type(std::istream &ins, std::string &atom_type) {
@@ -85,7 +85,7 @@ bool V3000CTabReader::read(const MolHeaderBlock &header_block, CTab &ctab) {
 
 bool V3000CTabReader::get_counts(const std::string &counts_line,
                                  size_t &num_atoms, size_t &num_bonds) {
-  constexpr std::string counts_prefix = "COUNTS";
+  const std::string counts_prefix = "COUNTS";
 
   if (!counts_line.starts_with(counts_prefix)) {
     return print_parse_error(counts_prefix, counts_line);
