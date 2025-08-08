@@ -6,17 +6,31 @@
 #include <string>
 
 #include "line_reader.hpp"
+#include "mesaac_mol/result.hpp"
 
 namespace mesaac::mol::internal {
 
 struct MolHeaderBlock {
 
-  MolHeaderBlock()
-      : m_name(""), m_metadata(""), m_comments(""), m_counts_line("") {}
+  using Result = mesaac::mol::Result<MolHeaderBlock>;
 
-  bool read(LineReader &lines) {
-    return (lines.next(m_name) && lines.next(m_metadata) &&
-            lines.next(m_comments) && lines.next(m_counts_line));
+  MolHeaderBlock(const std::string &name, const std::string &metadata,
+                 const std::string comments, const std::string counts_line)
+      : m_name(name), m_metadata(metadata), m_comments(comments),
+        m_counts_line(counts_line) {}
+
+  static Result read(LineReader &lines) {
+    try {
+      const std::string name = lines.next().value();
+      const std::string metadata = lines.next().value();
+      const std::string comments = lines.next().value();
+      const std::string counts_line = lines.next().value();
+      return Result::Ok(MolHeaderBlock(name, metadata, comments, counts_line));
+    } catch (std::bad_optional_access &e) {
+      return Result::Err(lines.message("Could not read MolHeaderBlock: " +
+                                       std::string(e.what())));
+    }
+    return Result::Err(lines.message("Could not read MolHeaderBlock"));
   }
 
   const std::string &name() const { return m_name; }
@@ -30,11 +44,11 @@ struct MolHeaderBlock {
   }
 
 private:
-  std::string m_name;
-  std::string m_metadata;
-  std::string m_comments;
+  const std::string m_name;
+  const std::string m_metadata;
+  const std::string m_comments;
   // The counts line isn't really part of the header block, but it is
   // included here for convenience.
-  std::string m_counts_line;
+  const std::string m_counts_line;
 };
 } // namespace mesaac::mol::internal

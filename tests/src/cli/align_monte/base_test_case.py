@@ -2,12 +2,13 @@
 Copyright (c) 2005-2009 Mesa Analytics & Computing, Inc.  All rights reserved
 """
 
-import unittest
-import subprocess
-import re
 import math
-from pathlib import Path
+import re
+import subprocess
+import sys
 import typing as tp
+import unittest
+from pathlib import Path
 
 import config
 
@@ -39,7 +40,11 @@ def get_max_tani_stats(sd_pathname: Path) -> tuple[float, float]:
 class TestCaseBase(unittest.TestCase):
     def _run(self, *args: tp.Any) -> subprocess.CompletedProcess:
         args = [str(config.EXE)] + [str(arg) for arg in args]
-        return subprocess.run(args, capture_output=True, encoding="utf8")
+        try:
+            return subprocess.run(args, capture_output=True, encoding="utf8")
+        except UnicodeDecodeError as info:
+            print(f"_run failed for {' '.join(args)}: {info}", file=sys.stderr)
+            raise
 
     def _align(self, *args: tp.Any) -> None:
         completion = self._run(*args)

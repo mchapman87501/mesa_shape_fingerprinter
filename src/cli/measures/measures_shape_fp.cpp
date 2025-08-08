@@ -200,7 +200,7 @@ void read_fingerprint_blocks(const string pathname,
   if (pathname == "-") {
     read_fpblocks_from_stream("standard input", cin, fingerprints);
   } else {
-    ifstream inf(pathname.c_str());
+    ifstream inf(pathname);
     if (!inf) {
       // TODO:  Use exceptions, or an error return
       cerr << "Cannot open fingerprint file " << pathname << "." << endl;

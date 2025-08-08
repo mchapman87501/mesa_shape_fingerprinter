@@ -8,6 +8,7 @@ namespace mesaac::mol {
 
 struct ISDReader {
   virtual SDReader &reader() = 0;
+  virtual std::string pathname() const = 0;
 };
 
 struct PathSDReaderImpl : public ISDReader {
@@ -15,6 +16,8 @@ struct PathSDReaderImpl : public ISDReader {
       : m_pathname(pathname), m_inf(pathname), m_reader(m_inf, m_pathname) {}
 
   SDReader &reader() override { return m_reader; }
+
+  std::string pathname() const override { return m_pathname; }
 
   std::string m_pathname;
   std::ifstream m_inf;
@@ -27,6 +30,8 @@ struct StringSDReaderImpl : public ISDReader {
     m_inf.str(sd_content);
   }
   SDReader &reader() override { return m_reader; }
+
+  std::string pathname() const override { return m_pathname; }
 
   std::string m_pathname;
   std::istringstream m_inf;
@@ -52,7 +57,11 @@ PathSDReader &PathSDReader::operator=(PathSDReader &&src) {
   return *this;
 }
 
-bool PathSDReader::read(Mol &mol) { return m_impl->reader().read(mol); }
-bool PathSDReader::skip() { return m_impl->reader().skip(); }
+Result<Mol> PathSDReader::read() { return m_impl->reader().read(); }
+Result<bool> PathSDReader::skip() { return m_impl->reader().skip(); }
+
+bool PathSDReader::eof() const { return m_impl->reader().eof(); }
+
+std::string PathSDReader::pathname() const { return m_impl->pathname(); }
 
 } // namespace mesaac::mol

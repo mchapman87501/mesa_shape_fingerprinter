@@ -16,15 +16,21 @@ bool is_blank(std::string &line) {
 }
 
 bool read_one_tag(LineReader &lines, SDTagMap &tags, std::string &line) {
-  if (lines.eof()) {
+  const auto result = lines.next();
+  if (!result.is_ok()) {
+    std::cerr << result.error() << std::endl;
     return false;
   }
-
-  lines.next(line);
+  line = result.value();
   if (line.substr(0, 1) == ">") {
     std::string tag = line;
     std::ostringstream value;
-    while (lines.next(line)) {
+    for (;;) {
+      const auto result = lines.next();
+      if (!result.is_ok()) {
+        break;
+      }
+      line = result.value();
       if (is_blank(line)) {
         break;
       } else {
@@ -41,19 +47,17 @@ bool read_one_tag(LineReader &lines, SDTagMap &tags, std::string &line) {
 
 } // namespace
 
-bool SDTagsReader::read(SDTagMap &tags) {
-  bool result = true;
+SDTagsReader::Result SDTagsReader::read() {
+  SDTagMap tags;
   std::string line;
   while (read_one_tag(m_lines, tags, line)) {
     // loop
   }
   if (line != "$$$$") {
-    // TODO:  Exceptions
-    std::cerr << m_lines.file_pos() << "Did not find SD $$$$ delimiter."
-              << std::endl;
-    result = false;
+    return SDTagsReader::Result::Err(
+        m_lines.message("Did not find $$$$ delimiter."));
   }
-  return result;
+  return SDTagsReader::Result::Ok(tags);
 }
 
 } // namespace mesaac::mol::internal

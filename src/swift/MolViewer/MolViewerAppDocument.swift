@@ -3,30 +3,36 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 nonisolated struct MolViewerAppDocument: FileDocument {
+  var filename = "Unnamed"
   var mols: [Mol] = []
+  var errorMsgs: [String] = []
 
   init() {
+    filename = "Unnamed"
     mols = []
+    errorMsgs = []
   }
 
   static let readableContentTypes: [UTType] = [.SDFUTType]
   static let writableContentTypes: [UTType] = []
 
-  private func molsFrom(fileWrapper: FileWrapper) throws -> [Mol] {
+  private func molsFrom(fileWrapper: FileWrapper) throws -> ReadAllResult {
     if fileWrapper.isRegularFile {
-      let filename = fileWrapper.filename ?? "<unnamed file>"
-      return try V2000SDReader.readMols(
+      let filename = fileWrapper.filename ?? "Unnamed"
+      return try SDReader.readMols(
         regularFileContents: fileWrapper.regularFileContents, filename: filename)
     }
-    print("fileWrapper has no filename.")
-    return []
+    return ReadAllResult(mols: [], errorMsgs: ["fileWrapper is not a regular file"])
   }
 
   init(configuration: ReadConfiguration) throws {
     guard configuration.file.isRegularFile else {
       throw CocoaError(.textReadInapplicableDocumentType)
     }
-    mols = try molsFrom(fileWrapper: configuration.file)
+    let readResult = try molsFrom(fileWrapper: configuration.file)
+    filename = configuration.file.filename ?? "Unnamed"
+    mols = readResult.mols
+    errorMsgs = readResult.errorMsgs
   }
 
   func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper {

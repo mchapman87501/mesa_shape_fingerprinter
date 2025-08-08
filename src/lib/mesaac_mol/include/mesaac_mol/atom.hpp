@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "mesaac_mol/atom_props.hpp"
 #include "mesaac_mol/position.hpp"
 
 namespace mesaac::mol {
@@ -20,6 +21,8 @@ public:
     const unsigned int atomic_num;
     /// @brief Position in 3-space
     const Position pos;
+    /// @brief Optional properties, as read from (for example) an SD file
+    const AtomProps props;
     /// @brief Any optional columns, as read from (for example) an SD file
     const std::string optional_cols;
   };
@@ -32,7 +35,7 @@ public:
   /// etc.
   Atom(const AtomParams &&params)
       : m_atomic_num(params.atomic_num), m_pos(params.pos),
-        m_optional_cols(params.optional_cols) {}
+        m_props(params.props), m_optional_cols(params.optional_cols) {}
 
   /// @brief Change the position of an Atom.
   /// @param new_value the new position
@@ -53,6 +56,10 @@ public:
    */
   void get_pos(Position &result) const { result = m_pos; }
 
+  const AtomProps &props() const { return m_props; }
+
+  AtomProps &mutable_props() { return m_props; }
+
   /// @brief Get any optional columns of an Atom, as read from an SD file.
   /// @return The option columns
   std::string optional_cols() const { return m_optional_cols; }
@@ -72,6 +79,7 @@ public:
 private:
   unsigned int m_atomic_num;
   Position m_pos;
+  AtomProps m_props;
   std::string m_optional_cols;
 };
 

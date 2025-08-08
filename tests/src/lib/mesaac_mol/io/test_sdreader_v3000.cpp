@@ -76,8 +76,14 @@ $$$$
 )LINES");
 
   SDReader reader(ins, "<from a string>");
-  Mol mol;
-  REQUIRE(reader.read(mol));
+  const auto read_result = reader.read();
+
+  if (!read_result.is_ok()) {
+    std::cerr << read_result.error() << std::endl;
+    FAIL();
+  }
+
+  const auto mol = read_result.value();
   REQUIRE(mol.num_atoms() == 11);
   REQUIRE(mol.num_bonds() == 11);
   // Spot-check the tags.
@@ -97,10 +103,39 @@ TEST_CASE("mesaac::mol::SDReader - read all DrugCentral V3000 structures",
 
   const size_t expected_count = 4278;
   size_t actual_count = 0;
-  while (reader.read(mol)) {
+  for (;;) {
+    const auto read_result = reader.read();
+    if (!read_result.is_ok()) {
+      // Is it just end of file, or is something wrong?
+      break;
+    }
     actual_count += 1;
   }
   REQUIRE(actual_count == expected_count);
 }
+
+TEST_CASE("mesaac::mol::SDReader - V3000 no-structure", "[mesaac]") {
+  // Ensure ability to read "no-structure" molfiles.
+  const auto no_structure_sd = R"LINES(No structure
+
+This is a no-structure as documented in CTfile Formats, ch. 3.
+  0  0  0  0  0  0  0  0  0  0999 V2000
+M  V30 BEGIN CTAB
+M  V30 COUNTS 0 0 0 0 0
+M  V30 END CTAB
+M  END
+$$$$)LINES";
+  std::istringstream ins(no_structure_sd);
+  SDReader reader(ins, "<no-structure - see CTfile Formats chapter 3.>");
+
+  const auto read_result = reader.read();
+  REQUIRE(read_result.is_ok());
+
+  const auto mol = read_result.value();
+  REQUIRE(mol.name() == "No structure");
+  REQUIRE(mol.num_atoms() == 0);
+  REQUIRE(mol.num_bonds() == 0);
+}
+
 } // namespace
 } // namespace mesaac::mol

@@ -11,12 +11,15 @@ namespace mesaac::mol::internal {
 LineReader::LineReader(std::istream &inf, const std::string &description)
     : m_inf(inf), m_description(description), m_line_num(0) {}
 
-bool LineReader::next(std::string &line) {
-  if (std::getline(m_inf, line)) {
-    m_line_num += 1;
-    return true;
+RWResult LineReader::next() {
+  if (m_inf.good() && !m_inf.eof()) {
+    std::string line;
+    if (std::getline(m_inf, line)) {
+      m_line_num += 1;
+      return RWResult::Ok(line);
+    }
   }
-  return false;
+  return RWResult::Err({"Could not read"});
 }
 
 std::string LineReader::file_pos() const {

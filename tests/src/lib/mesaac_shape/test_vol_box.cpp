@@ -24,7 +24,7 @@ struct TestFixture {
     const string data_dir(test_data_dir + "/hammersley/");
     pathname = data_dir + pathname;
     points.clear();
-    ifstream inf(pathname.c_str());
+    ifstream inf(pathname);
     if (!inf) {
       ostringstream msg;
       msg << "Could not open " << pathname << " for reading." << endl;

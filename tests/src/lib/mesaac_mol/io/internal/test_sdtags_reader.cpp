@@ -23,9 +23,9 @@ $$$$)LINES");
 
   LineReader reader(ins, "<from a string>");
   SDTagsReader tags_reader(reader);
-  SDTagMap actual;
+  const auto reader_result = tags_reader.read();
 
-  REQUIRE(tags_reader.read(actual));
+  REQUIRE(reader_result.is_ok());
 
   const std::map<std::string, std::string> expected{
       {">  <Name>", "A Chemical Structure\n"},
@@ -33,7 +33,7 @@ $$$$)LINES");
       {">  <IC50_uM>", "0.06\n"},
       {">  <set>", "1\n"},
   };
-
+  const auto &actual = reader_result.value();
   REQUIRE(actual == expected);
 }
 
@@ -49,19 +49,10 @@ anon
 
   LineReader reader(ins, "<from a string>");
   SDTagsReader tags_reader(reader);
-  SDTagMap actual;
 
+  const auto reader_result = tags_reader.read();
   // TODO capture cerr from .read.
-  REQUIRE(!tags_reader.read(actual));
-
-  // The false return value indicates the missing '$$$$'.
-  // But the map should still have parsed the content.
-  const std::map<std::string, std::string> expected{
-      {">  <Name>", "anon\n"},
-      {">  <IC50_uM>", "0.06\n"},
-  };
-
-  REQUIRE(actual == expected);
+  REQUIRE(!reader_result.is_ok());
 }
 } // namespace
 } // namespace mesaac::mol::internal

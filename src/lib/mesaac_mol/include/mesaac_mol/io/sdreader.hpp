@@ -5,6 +5,7 @@
 #pragma once
 
 #include "mesaac_mol/mol.hpp"
+#include "mesaac_mol/result.hpp"
 #include <iostream>
 #include <memory>
 #include <optional>
@@ -15,11 +16,12 @@ namespace mesaac::mol {
 
 class SDReaderImpl;
 
+using BoolResult = Result<bool>;
+using MolResult = Result<Mol>;
 /**
  * @brief SDReader reads Mol instances from an SD file.
  */
-class SDReader {
-public:
+struct SDReader {
   /**
    * @brief Create an SD file reader.
    * @param inf stream from which to read SD structures
@@ -31,18 +33,21 @@ public:
 
   /**
    * @brief Skip the next molecule.
-   * @return true if the reader was able to skip ahead
+   * @return true if the reader was able to skip ahead, else an error msg
    */
-  bool skip();
+  BoolResult skip();
 
   /**
    * @brief Read the next molecule/structure.
-   * @param mol on successful return, the next read molecule
-   * @return whether or not a molecule could be read into `mol`
-   *
-   * @note If the return value is `false`, then `mol` will be an empty molecule.
+   * @return a Mol, or an error msg
    */
-  bool read(Mol &mol);
+  MolResult read();
+
+  /**
+   * @brief Find out whether the reader has reached the end of its input.
+   * @return true if the reader has nothing more to read
+   */
+  bool eof() const;
 
 private:
   std::unique_ptr<SDReaderImpl> m_impl;

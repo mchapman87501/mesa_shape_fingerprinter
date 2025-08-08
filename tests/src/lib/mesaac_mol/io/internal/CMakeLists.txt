@@ -26,7 +26,11 @@ add_io_internal_test(TEST_NAME test_mol_header_block SOURCES
 add_io_internal_test(TEST_NAME test_sdtags_reader SOURCES
                      test_sdtags_reader.cpp LIBS mesaac_mol)
 
+add_io_internal_test(TEST_NAME test_v2000_prop_block_reader SOURCES
+                     test_v2000_prop_block_reader.cpp LIBS mesaac_mol)
 add_io_internal_test(TEST_NAME test_v2000_ctab_reader SOURCES
                      test_v2000_ctab_reader.cpp LIBS mesaac_mol)
+add_io_internal_test(TEST_NAME test_v3000_atom_prop_reader SOURCES
+                     test_v3000_atom_prop_reader.cpp LIBS mesaac_mol)
 add_io_internal_test(TEST_NAME test_v3000_ctab_reader SOURCES
                      test_v3000_ctab_reader.cpp LIBS mesaac_mol)

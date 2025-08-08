@@ -6,6 +6,8 @@
 
 #include <format>
 #include <sstream>
+#include <string>
+#include <vector>
 
 #include "mesaac_mol/element_info.hpp"
 
@@ -23,60 +25,73 @@ struct SDReaderImpl {
   SDReaderImpl(std::istream &inf, const std::string &description)
       : m_lines(inf, description), m_v2000(m_lines), m_v3000(m_lines) {}
 
-  bool read(Mol &next) {
-    internal::MolHeaderBlock header;
-    internal::CTab ctab;
-    if (read_molfile(ctab)) {
-      SDTagMap tags;
-      if (read_tags(tags)) {
-        next = Mol({
-            .atoms = ctab.atoms,
-            .bonds = ctab.bonds,
-            .tags = tags,
-            .name = ctab.name,
-            .metadata = ctab.metadata,
-            .comments = ctab.comments,
-            .counts_line = ctab.counts_line,
-            .properties_block = ctab.raw_properties_block,
-        });
-        return true;
-      }
-    }
-    return false;
-  }
+  using CTabResult = mesaac::mol::Result<internal::CTab>;
 
-  bool read_molfile(internal::CTab &ctab) {
-    internal::MolHeaderBlock header;
-    if (header.read(m_lines)) {
-      return header.is_v3000() ? m_v3000.read(header, ctab)
-                               : m_v2000.read(header, ctab);
+  MolResult read() {
+    const auto ctab_result = read_molfile();
+    if (!ctab_result.is_ok()) {
+      return MolResult::Err(ctab_result.error());
     }
-    return false;
-  }
 
-  bool read_tags(SDTagMap &tags) {
-    internal::SDTagsReader tags_reader(m_lines);
-    return tags_reader.read(tags);
+    const auto ctab = ctab_result.value();
+    const auto tags_result = read_tags();
+    if (tags_result.is_ok()) {
+      const auto tags = tags_result.value();
+      return MolResult::Ok(Mol({
+          .atoms = ctab.atoms,
+          .bonds = ctab.bonds,
+          .tags = tags,
+          .name = ctab.name,
+          .metadata = ctab.metadata,
+          .comments = ctab.comments,
+          .counts_line = ctab.counts_line,
+          .properties_block = ctab.raw_properties_block,
+      }));
+    }
+    return MolResult::Err(tags_result.error());
   }
 
   // Skip the next mol.
-  bool skip() {
+  BoolResult skip() {
     if (m_lines.eof()) {
-      return false;
+      return BoolResult::Ok(true);
     }
-    skip_to_end();
-    return true;
+    return skip_to_end();
   }
 
+  bool eof() const { return m_lines.eof(); }
+
 private:
+  CTabResult read_molfile() {
+    const auto header_result = internal::MolHeaderBlock::read(m_lines);
+    if (!header_result.is_ok()) {
+      if (m_lines.eof()) {
+        return CTabResult::Err("End of file");
+      }
+      return CTabResult::Err(header_result.error());
+    }
+    const auto header = header_result.value();
+    return header.is_v3000() ? m_v3000.read(header) : m_v2000.read(header);
+  }
+
+  internal::SDTagsReader::Result read_tags() {
+    internal::SDTagsReader tags_reader(m_lines);
+    return tags_reader.read();
+  }
+
   // Skip to the end of the current mol.
-  void skip_to_end() {
-    std::string line;
-    while (m_lines.next(line)) {
-      if (line == "$$$$") {
-        return;
+  BoolResult skip_to_end() {
+    while (!m_lines.eof()) {
+      const auto result = m_lines.next();
+      if (result.is_ok()) {
+        if (result.value() == "$$$$") {
+          return BoolResult::Ok(true);
+        }
+      } else {
+        return BoolResult::Err(result.error());
       }
     }
+    return BoolResult::Ok(true);
   }
 
   internal::LineReader m_lines;
@@ -90,7 +105,10 @@ SDReader::SDReader(istream &inf, const string &pathname)
 
 SDReader::~SDReader() {}
 
-bool SDReader::skip() { return m_impl->skip(); }
+BoolResult SDReader::skip() { return m_impl->skip(); }
 
-bool SDReader::read(Mol &next) { return m_impl->read(next); }
+MolResult SDReader::read() { return m_impl->read(); }
+
+bool SDReader::eof() const { return m_impl->eof(); }
+
 } // namespace mesaac::mol

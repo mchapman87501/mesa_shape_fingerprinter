@@ -32,15 +32,12 @@ void open_input(ifstream &inf, string &pathname, const string &description) {
          << " for reading: it's not a regular file." << endl;
     exit(1);
   }
-  cerr << "Opening " << path.c_str() << endl;
-  inf.open(path.c_str());
+  inf.open(path);
   if (!inf) {
     cerr << "Cannot open " << description << " '" << path << "' for reading."
          << endl;
     exit(1);
   }
-  cerr << "DEBUG: Opened " << description << " '" << path << "' for reading."
-       << endl;
 }
 
 struct SortRecord {
@@ -105,7 +102,9 @@ void SDFMolAligner::process_molecules() {
 
   mol::Mol refmol;
   int i = 0;
-  if (reader.read(refmol)) {
+  const auto read_result = reader.read();
+  if (read_result.is_ok()) {
+    refmol = read_result.value();
     ma.process_ref_molecule(refmol, m_ref_fingerprint);
     writer.write(refmol);
     if (write_sorted) {
@@ -138,9 +137,11 @@ void SDFMolAligner::process_molecules() {
 #if HAVE_OPENMP
       int j;
       for (j = 0; j < queue_size; j++) {
-        if (!reader.read(mol_batch[j])) {
+        const auto read_result = reader.read();
+        if (!read_result.is_ok()) {
           break;
         }
+        mol_batch[j] = read_result.value();
       }
       int num_mols = j;
 #pragma omp parallel for
@@ -169,10 +170,12 @@ void SDFMolAligner::process_molecules() {
         break;
       }
 #else
-      mol::Mol mol;
-      if (!reader.read(mol)) {
+      const auto read_result = reader.read();
+      if (!read_result.is_ok()) {
+        std::cerr << read_result.error() << std::endl;
         break;
       }
+      auto mol = read_result.value();
       ma.process_one_molecule(mol);
       writer.write(mol);
       if (write_sorted) {
@@ -186,7 +189,7 @@ void SDFMolAligner::process_molecules() {
 
   if (write_sorted) {
     sort(sort_records.begin(), sort_records.end(), SortRecord::compare);
-    ofstream outf(m_sorted_pathname.c_str());
+    ofstream outf(m_sorted_pathname);
 
     outf << "Index\t" << last_measure << endl;
     SortRecordList::iterator i;

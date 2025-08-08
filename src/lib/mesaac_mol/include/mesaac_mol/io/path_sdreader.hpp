@@ -1,8 +1,10 @@
 #pragma once
 
-#include "mesaac_mol/mol.hpp"
 #include <memory>
 #include <string>
+
+#include "mesaac_mol/mol.hpp"
+#include "mesaac_mol/result.hpp"
 
 namespace mesaac::mol {
 
@@ -22,8 +24,10 @@ struct PathSDReader {
   PathSDReader &operator=(const PathSDReader &src);
   PathSDReader &operator=(PathSDReader &&src);
 
-  bool read(Mol &mol);
-  bool skip();
+  Result<Mol> read();
+  Result<bool> skip();
+  bool eof() const;
+  std::string pathname() const;
 
 private:
   std::shared_ptr<ISDReader> m_impl;

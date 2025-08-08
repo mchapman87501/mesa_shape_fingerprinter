@@ -23,12 +23,12 @@ TEST_CASE("mesaac::Atom", "[mesaac]") {
 
     REQUIRE(atom.optional_cols() == "");
     REQUIRE(atom.symbol() == "C");
-    REQUIRE(atom.radius() == 1.7f);
+    REQUIRE(atom.radius() == 1.70f);
     REQUIRE(!atom.is_hydrogen());
 
     Atom hyd({.atomic_num = 1, .pos = Position(), .optional_cols = "fooo"});
     REQUIRE(hyd.symbol() == "H");
-    REQUIRE(hyd.radius() == 1.09f);
+    REQUIRE(hyd.radius() == 1.20f);
     REQUIRE(hyd.is_hydrogen());
     REQUIRE(hyd.optional_cols() == "fooo");
 
@@ -46,7 +46,7 @@ TEST_CASE("mesaac::Atom", "[mesaac]") {
 
   SECTION("Invalid atomic number") {
     Atom atom({.atomic_num = 512});
-    REQUIRE_THROWS_AS(atom.symbol(), invalid_argument);
+    REQUIRE_THROWS_AS(atom.symbol(), std::out_of_range);
   }
 }
 } // namespace

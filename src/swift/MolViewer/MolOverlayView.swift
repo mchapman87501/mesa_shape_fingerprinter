@@ -36,6 +36,7 @@ struct MolOverlayView: View {
   }
 
   private func centerOnOrigin(entity: Entity) {
+    entity.transform = Transform.identity
     let bounds = entity.visualBounds(relativeTo: nil)
     guard !bounds.isEmpty else { return }
 
@@ -45,11 +46,9 @@ struct MolOverlayView: View {
 
   @MainActor
   private func recompose(controlWindowSize: CGSize) async {
-    let wasEmpty = molContainer.children.isEmpty
-
     await updateDisplayedEntities()
-
-    if wasEmpty && !molContainer.children.isEmpty {
+    // If displaying only one mol, reset to the "home" view.
+    if molContainer.children.count == 1 {
       centerOnOrigin(entity: molContainer)
       camera.reposition(toSee: molContainer)
       viewTransform.configure(managing: molContainer, controlWindowSize: controlWindowSize)

@@ -15,9 +15,10 @@ No comment
   0  0  0     0  0            999 V3000)LINES");
 
   LineReader reader(ins, "<from a string>");
-  MolHeaderBlock block;
+  const auto header_result = MolHeaderBlock::read(reader);
+  REQUIRE(header_result.is_ok());
+  MolHeaderBlock block = header_result.value();
 
-  REQUIRE(block.read(reader));
   REQUIRE(block.is_v3000());
   REQUIRE(block.name() == "Molecule Name");
   REQUIRE(block.metadata() == "metadata fields go here");
@@ -33,9 +34,10 @@ No comment
  20 40  0     0  0            999 V2000)LINES");
 
   LineReader reader(ins, "<from a string>");
-  MolHeaderBlock block;
+  const auto header_result = MolHeaderBlock::read(reader);
+  REQUIRE(header_result.is_ok());
+  MolHeaderBlock block = header_result.value();
 
-  REQUIRE(block.read(reader));
   REQUIRE(!block.is_v3000());
   REQUIRE(block.name() == "Molecule Name");
   REQUIRE(block.metadata() == "metadata fields go here");

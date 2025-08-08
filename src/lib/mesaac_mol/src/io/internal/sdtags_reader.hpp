@@ -5,15 +5,19 @@
 
 #include "line_reader.hpp"
 
+#include "mesaac_mol/result.hpp"
 #include "mesaac_mol/sd_tag_map.hpp"
+
 #include <string>
 
 namespace mesaac::mol::internal {
 
 struct SDTagsReader {
+  using Result = mesaac::mol::Result<SDTagMap>;
+
   SDTagsReader(LineReader &lines) : m_lines(lines) {}
 
-  [[nodiscard]] bool read(SDTagMap &tags);
+  [[nodiscard]] Result read();
 
 private:
   LineReader &m_lines;

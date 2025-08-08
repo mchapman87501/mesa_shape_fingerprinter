@@ -2,7 +2,7 @@
 set(TARGET MesaacSwift)
 
 set(SRC TypeAliases.swift Position.swift Atom.swift Bond.swift Mol.swift
-        V2000SDReader.swift)
+        SDReader.swift)
 
 add_library(${TARGET} STATIC ${SRC})
 set_target_properties(${TARGET} PROPERTIES Swift_MODULE_NAME "MesaacSwift")

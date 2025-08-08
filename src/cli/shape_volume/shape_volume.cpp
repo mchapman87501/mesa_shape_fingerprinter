@@ -71,7 +71,7 @@ typedef vector<FloatVector> CoordsList;
 
 void read_sphere_points(const string &sdf_pathname, CoordsList &sphere_points) {
   sphere_points.clear();
-  ifstream inf(sdf_pathname.c_str());
+  ifstream inf(sdf_pathname);
   if (!inf) {
     cerr << "Could not open sphere points file '" << sdf_pathname
          << "' for reading." << endl;
@@ -146,7 +146,7 @@ int main(int argc, const char **const argv) {
   const float volume =
       std::numbers::pi * (4.0 / 3.0) * radius * radius * radius;
 
-  ifstream sdf_inf(sdf_pathname.c_str());
+  ifstream sdf_inf(sdf_pathname);
   if (!sdf_inf) {
     cerr << "Could not open SD file " << sdf_pathname << " for reading."
          << endl;
@@ -154,11 +154,15 @@ int main(int argc, const char **const argv) {
   }
   mol::SDReader reader(sdf_inf);
 
-  mol::Mol mol;
-  while (reader.read(mol)) {
+  for (;;) {
+    const auto read_result = reader.read();
+    if (!read_result.is_ok()) {
+      break;
+    }
+
+    const auto mol = read_result.value();
     CoordsList compound_coords;
     float x_sum = 0.0, y_sum = 0.0, z_sum = 0.0;
-
     for (const auto &atom : mol.atoms()) {
       if (!atom.is_hydrogen()) {
         const auto &pos(atom.pos());

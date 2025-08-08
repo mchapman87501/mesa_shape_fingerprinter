@@ -11,6 +11,7 @@ import logging
 import struct
 import subprocess
 import unittest
+from pathlib import Path
 
 import config
 
@@ -279,6 +280,7 @@ class TestCase(unittest.TestCase):
         expected_count = end_index - start_index
         if expected_count != actual_count:
             logging.error(f"Wrong # records for {start_index}..{end_index}")
+            logging.error(f"stderr: {completion.stderr}")
         self.assertEqual(expected_count, actual_count)
 
         expected = self._get_cox2_fps()[start_index * 4 : end_index * 4]
@@ -344,13 +346,14 @@ class TestCase(unittest.TestCase):
             if not self._differences_acceptable(expected, actual, 1):
                 self.fail("Actual fingerprints had too many discrepancies")
 
-    def _verify_cox2_fps(self, lines, sd_pathname):
+    def _verify_cox2_fps(self, lines: list[str], sd_pathname: str | Path):
         self._verify_fp_basics(lines, sd_pathname)
 
-        # To generate new reference output:
-        # outf = gzip.open(COX2_FPS, "w")
-        # outf.write_lines(lines)
-        # outf.close()
+        # # To generate new reference output:
+        # with gzip.open(COX2_FPS, "w") as outf:
+        #     outf.write("\n".join(lines).encode())
+        # # Ensure the code above does not remain enabled.
+        # self.fail("New reference output should be disabled.")
 
         expected = self._get_cox2_fps()
         self._compare_fp_lines(expected, lines)

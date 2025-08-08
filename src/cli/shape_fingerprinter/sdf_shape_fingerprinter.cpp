@@ -19,7 +19,7 @@ using namespace std;
 namespace mesaac::shape_fingerprinter {
 namespace {
 void read_points(string &pathname, string description, PointList &points) {
-  ifstream inf(pathname.c_str());
+  ifstream inf(pathname);
   if (!inf) {
     cerr << "Cannot open " << description << " '" << pathname
          << "' for reading." << endl;
@@ -84,7 +84,7 @@ void SDFShapeFingerprinter::process_molecules(PointList &ellipsoid,
     cerr << "Invalid start index " << start_index << " -- must be >= 0" << endl;
     exit(1);
   }
-  ifstream inf(m_sd_pathname.c_str());
+  ifstream inf(m_sd_pathname);
   if (!inf) {
     // TODO: throw exception
     cerr << "Cannot open sd file '" << m_sd_pathname << "'" << endl;
@@ -94,13 +94,23 @@ void SDFShapeFingerprinter::process_molecules(PointList &ellipsoid,
   MolFingerprinter mfp(ellipsoid, sphere, m_epsilon_sqr, m_num_folds);
 
   int i = 0;
-  while (i < start_index && reader.skip()) {
+  while (i < start_index) {
+    const auto skip_result = reader.skip();
+    if (!skip_result.is_ok()) {
+      std::cerr << skip_result.error() << std::endl;
+      break;
+    }
     i += 1;
   }
 
   // If end_index < 0, just process everything.
-  mol::Mol mol;
-  while (((end_index < 0) || (i < end_index)) && reader.read(mol)) {
+  while (((end_index < 0) || (i < end_index))) {
+    const auto read_result = reader.read();
+    if (!read_result.is_ok()) {
+      std::cerr << read_result.error() << std::endl;
+      break;
+    }
+    auto mol = read_result.value();
     mfp.set_molecule(mol);
     shape_defs::BitVector fp;
     while (mfp.get_next_fp(fp)) {

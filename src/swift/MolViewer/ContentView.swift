@@ -7,7 +7,11 @@ import simd
 
 struct ContentView: View {
   @Binding var document: MolViewerAppDocument
+
+  @State var errorsData = ErrorsViewData(filename: "Unnamed", errors: [])
   @State private var selectedItems = MolSelectionMgr()
+
+  @Environment(\.openWindow) private var openWindow
 
   private let gridColumns = [GridItem(.flexible())]
 
@@ -19,6 +23,24 @@ struct ContentView: View {
     }
     .onAppear {
       selectedItems.setMols(document.mols)
+      errorsData = ErrorsViewData(filename: document.filename, errors: document.errorMsgs)
+    }
+    .toolbar {
+      ToolbarItem {
+        Button(
+          action: {
+            openWindow(value: errorsData)
+          },
+          label: {
+            Image(systemName: "exclamationmark.triangle")
+              .symbolRenderingMode(.palette)
+              .imageScale(.medium)
+          }
+        )
+        .help("^[\(document.errorMsgs.count) read error](inflect: true)")
+        .disabled(document.errorMsgs.isEmpty)
+        .opacity(document.errorMsgs.isEmpty ? 0.0 : 1.0)
+      }
     }
     .padding()
   }

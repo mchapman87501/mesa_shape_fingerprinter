@@ -5,6 +5,7 @@ set(LIB_SRC
     CGPoint+Extension.swift
     RKPosition+Extension.swift
     ContentView.swift
+    ErrorsView.swift
     MolSceneBuilder.swift
     Lights.swift
     Camera.swift

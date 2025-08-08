@@ -135,6 +135,25 @@ I tried to use `perf` to understand why this is, but I found the results (which 
 
 ## TODO
 
+### Document Use of clang-tidy
+
+The `clang-tidy` command can be used to lint the codebase.  Its use isn't entirely straightforward, so it should be documented.
+
+Until such documentation is written, here's an incomplete summary.
+
+First, build the code using a toolchain that's compatible with `clang-tidy`.
+
+```sh
+cmake --preset ubuntu-clang-tidy
+cmake --build --preset ubuntu-clang-tidy
+```
+
+Then run `clang-tidy` on the sources of interest, e.g.,
+
+```sh
+clang-tidy -p build/ubuntu-clang-tidy $(find src/lib/mesaac_mol -name '*.cpp')
+```
+
 ### Simple Matching Measure
 
 As discussed above, introduce a "simple matching" similarity measure that has many of the same properties as Hamann but that produces similarity values in the range 0...1.

@@ -2,6 +2,6 @@ from pathlib import Path
 
 WORKSPACE_ROOT = Path("@CMAKE_SOURCE_DIR@")
 SHARED_TEST_DATA_DIR = WORKSPACE_ROOT / "tests" / "data"
-TEST_DATA_DIR = SHARED_TEST_DATA_DIR / "align_monte"
+TEST_DATA_DIR = SHARED_TEST_DATA_DIR / "sd_files"
 OUT_DATA_DIR = Path("@CMAKE_CURRENT_BINARY_DIR@")
 EXE = Path("$<TARGET_FILE:align_monte>")
