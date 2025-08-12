@@ -49,8 +49,14 @@ struct TestFixture {
     get_av_bounds(atoms, bc);
     const unsigned int num_points(10240);
     PointList hamms;
-    Hammersley::get_cubic(bc.xmin, bc.xmax, bc.ymin, bc.ymax, bc.zmin, bc.zmax,
-                          num_points, hamms);
+    Hammersley::get_cuboid({.num_points = num_points,
+                            .xmin = bc.xmin,
+                            .xmax = bc.xmax,
+                            .ymin = bc.ymin,
+                            .ymax = bc.ymax,
+                            .zmin = bc.zmin,
+                            .zmax = bc.zmax},
+                           hamms);
     VolBox vb(hamms, 1.0);
 
     Fingerprinter fp(vb);
