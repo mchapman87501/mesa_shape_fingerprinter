@@ -11,6 +11,11 @@ set(HEADERS
     ${HEADER_DIR}/mesaac_shape/shared_types.hpp
     ${HEADER_DIR}/mesaac_shape/vol_box.hpp)
 
+if(PROVIDE_EIGEN)
+  set(SRC ${SRC} src/axis_aligner_eigen.cpp)
+  set(HEADERS ${HEADERS} ${HEADER_DIR}/mesaac_shape/axis_aligner_eigen.hpp)
+endif()
+
 add_library(${TARGET} STATIC ${SRC})
 target_compile_features(${TARGET} PUBLIC cxx_std_20)
 target_include_directories(${TARGET} PUBLIC ${HEADER_DIR})
@@ -18,6 +23,10 @@ target_include_directories(${TARGET} PUBLIC ${HEADER_DIR})
 # elsewhere?
 target_link_libraries(${TARGET} PUBLIC mesaac_common mesaac_mol svd ap
                                        Boost::dynamic_bitset)
+
+if(PROVIDE_EIGEN)
+  target_link_libraries(${TARGET} PUBLIC Eigen3::Eigen)
+endif()
 
 target_sources(${TARGET} PUBLIC FILE_SET HEADERS BASE_DIRS ${HEADER_DIR} FILES
                                 ${HEADERS})

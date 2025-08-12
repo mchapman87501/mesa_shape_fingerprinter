@@ -2,7 +2,7 @@
 // Copyright (c) 2005-2010 Mesa Analytics & Computing, Inc.  All rights reserved
 //
 
-#include "mesaac_shape_eigen/axis_aligner.hpp"
+#include "mesaac_shape/axis_aligner_eigen.hpp"
 #include "mesaac_mol/mol.hpp"
 
 #include <Eigen/Geometry>
@@ -12,7 +12,7 @@
 
 using namespace std;
 
-namespace mesaac::shape_eigen {
+namespace mesaac::shape {
 namespace {
 inline bool in_atom(const Point &point, const Point &atom, float eps_sqr) {
   const float radius(atom.at(3));
@@ -66,11 +66,11 @@ void unmirror_axes(Transform &vt) {
 
 } // namespace
 
-void AxisAligner::align_to_axes(mol::Mol &m) {
+void AxisAlignerEigen::align_to_axes(mol::Mol &m) {
   align_to_axes(m.mutable_atoms());
 }
 
-void AxisAligner::align_to_axes(mol::AtomVector &atoms) {
+void AxisAlignerEigen::align_to_axes(mol::AtomVector &atoms) {
   // Strategy:
   //   Get mean-centered heavy atom coordinates
   //   Get mean-centered cloud points
@@ -97,8 +97,9 @@ void AxisAligner::align_to_axes(mol::AtomVector &atoms) {
   }
 }
 
-void AxisAligner::get_atom_points(const mol::AtomVector &atoms,
-                                  PointList &centers, bool include_hydrogens) {
+void AxisAlignerEigen::get_atom_points(const mol::AtomVector &atoms,
+                                       PointList &centers,
+                                       bool include_hydrogens) {
   centers.clear();
   for (const auto &atom : atoms) {
     if (include_hydrogens || !atom.is_hydrogen()) {
@@ -108,13 +109,13 @@ void AxisAligner::get_atom_points(const mol::AtomVector &atoms,
   }
 }
 
-void AxisAligner::mean_center_points(PointList &points) {
+void AxisAlignerEigen::mean_center_points(PointList &points) {
   Point mean;
   get_mean_center(points, mean);
   untranslate_points(points, mean);
 }
 
-void AxisAligner::get_mean_center(const PointList &points, Point &mean) {
+void AxisAlignerEigen::get_mean_center(const PointList &points, Point &mean) {
   mean.clear();
   if (points.size() == 0) {
     mean.push_back(0);
@@ -133,7 +134,8 @@ void AxisAligner::get_mean_center(const PointList &points, Point &mean) {
   }
 }
 
-void AxisAligner::untranslate_points(PointList &points, const Point &offset) {
+void AxisAlignerEigen::untranslate_points(PointList &points,
+                                          const Point &offset) {
   for (auto &p : points) {
     p[0] -= offset[0];
     p[1] -= offset[1];
@@ -141,8 +143,8 @@ void AxisAligner::untranslate_points(PointList &points, const Point &offset) {
   }
 }
 
-void AxisAligner::get_mean_centered_cloud(const PointList &centers,
-                                          PointList &cloud) {
+void AxisAlignerEigen::get_mean_centered_cloud(const PointList &centers,
+                                               PointList &cloud) {
   cloud.clear();
   if (m_atom_centers_only) {
     for (const auto &center : centers) {
@@ -155,8 +157,8 @@ void AxisAligner::get_mean_centered_cloud(const PointList &centers,
   }
 }
 
-void AxisAligner::update_atom_coords(mol::AtomVector &atoms,
-                                     const PointList &atom_centers) {
+void AxisAlignerEigen::update_atom_coords(mol::AtomVector &atoms,
+                                          const PointList &atom_centers) {
   if (atoms.size() != atom_centers.size()) {
     ostringstream msg;
     msg << "Atom vector length " << atoms.size()
@@ -173,7 +175,7 @@ void AxisAligner::update_atom_coords(mol::AtomVector &atoms,
   }
 }
 
-void AxisAligner::transform_points(PointList &points, Transform &vt) {
+void AxisAlignerEigen::transform_points(PointList &points, Transform &vt) {
   typedef Eigen::Vector3f EPoint;
   for (auto &p : points) {
     EPoint untransformed;
@@ -185,8 +187,8 @@ void AxisAligner::transform_points(PointList &points, Transform &vt) {
   }
 }
 
-void AxisAligner::find_axis_align_transform(const PointList &cloud,
-                                            Transform &transform) {
+void AxisAlignerEigen::find_axis_align_transform(const PointList &cloud,
+                                                 Transform &transform) {
   if (cloud.size() <= 0) {
     // TODO: Instead of failing, just return the identity transform.
     throw invalid_argument("Can't find alignment for empty cloud");
@@ -207,4 +209,4 @@ void AxisAligner::find_axis_align_transform(const PointList &cloud,
                   .transpose();
   unmirror_axes(transform);
 }
-} // namespace mesaac::shape_eigen
+} // namespace mesaac::shape

@@ -10,17 +10,18 @@
 #include <fstream>
 
 #include "mesaac_mol/element_info.hpp"
-#include "mesaac_shape_eigen/axis_aligner.hpp"
+#include "mesaac_shape/axis_aligner_eigen.hpp"
 
 using namespace std;
 
-namespace mesaac::shape_eigen {
+namespace mesaac::shape {
 
 namespace {
-class TCAxisAligner : public AxisAligner {
+class TCAxisAlignerEigen : public AxisAlignerEigen {
 public:
-  TCAxisAligner(PointList &sphere, float atom_scale, bool atom_centers_only)
-      : AxisAligner(sphere, atom_scale, atom_centers_only) {}
+  TCAxisAlignerEigen(PointList &sphere, float atom_scale,
+                     bool atom_centers_only)
+      : AxisAlignerEigen(sphere, atom_scale, atom_centers_only) {}
 
   void tc_get_atom_points(const mol::AtomVector &atoms, PointList &centers,
                           bool include_hydrogens) {
@@ -119,21 +120,21 @@ struct TestFixture {
     inf.close();
   }
 
-  std::unique_ptr<TCAxisAligner> new_aligner() {
+  std::unique_ptr<TCAxisAlignerEigen> new_aligner() {
     PointList sphere;
     float atom_scale = 1.0;
 
     // Assume we will be run in a location fixed relative to
     // the data files.
     read_test_points("hamm_spheroid_10k_11rad.txt", sphere);
-    return std::make_unique<TCAxisAligner>(sphere, atom_scale, false);
+    return std::make_unique<TCAxisAlignerEigen>(sphere, atom_scale, false);
   }
 
-  std::unique_ptr<TCAxisAligner> new_aligner_ac_only() {
+  std::unique_ptr<TCAxisAlignerEigen> new_aligner_ac_only() {
     PointList sphere;
     float atom_scale = 1.0;
     read_test_points("hamm_spheroid_10k_11rad.txt", sphere);
-    return std::make_unique<TCAxisAligner>(sphere, atom_scale, true);
+    return std::make_unique<TCAxisAlignerEigen>(sphere, atom_scale, true);
   }
 
   mol::Atom atom(string symbol, float x, float y, float z) const {
@@ -283,9 +284,9 @@ struct TestFixture {
   bool is_non_null_transform(Transform &atom) { return !atom.isZero(); }
 };
 
-TEST_CASE("mesaac::shape_eigen::AxisAligner", "[mesaac]") {
+TEST_CASE("mesaac::shape::AxisAlignerEigen", "[mesaac]") {
   TestFixture fixture;
-  std::unique_ptr<TCAxisAligner> aligner(fixture.new_aligner());
+  std::unique_ptr<TCAxisAlignerEigen> aligner(fixture.new_aligner());
   mol::AtomVector atoms;
   PointList points;
 
@@ -664,7 +665,7 @@ TEST_CASE("mesaac::shape_eigen::AxisAligner", "[mesaac]") {
 
 namespace {
 int benchmark_align_to_axes(const TestFixture &fixture,
-                            std::shared_ptr<TCAxisAligner> aligner) {
+                            std::shared_ptr<TCAxisAlignerEigen> aligner) {
   mol::Mol mol;
   PointList points, cloud;
   unsigned int num_heavies;
@@ -680,13 +681,13 @@ int benchmark_align_to_axes(const TestFixture &fixture,
 
 } // namespace
 
-TEST_CASE("mesaac::shape_eigen::AxisAligner Benchmarks",
+TEST_CASE("mesaac::shape::AxisAlignerEigen Benchmarks",
           "[mesaac][mesaac_benchmark]") {
   TestFixture fixture;
 
   BENCHMARK_ADVANCED("Point cloud alignment")(
       Catch::Benchmark::Chronometer meter) {
-    std::shared_ptr<TCAxisAligner> aligner(fixture.new_aligner());
+    std::shared_ptr<TCAxisAlignerEigen> aligner(fixture.new_aligner());
     meter.measure([fixture, aligner] {
       return benchmark_align_to_axes(fixture, aligner);
     });
@@ -694,7 +695,8 @@ TEST_CASE("mesaac::shape_eigen::AxisAligner Benchmarks",
 
   BENCHMARK_ADVANCED("Atom center alignment")(
       Catch::Benchmark::Chronometer meter) {
-    std::shared_ptr<TCAxisAligner> ac_aligner(fixture.new_aligner_ac_only());
+    std::shared_ptr<TCAxisAlignerEigen> ac_aligner(
+        fixture.new_aligner_ac_only());
     meter.measure([fixture, ac_aligner] {
       return benchmark_align_to_axes(fixture, ac_aligner);
     });
@@ -702,4 +704,4 @@ TEST_CASE("mesaac::shape_eigen::AxisAligner Benchmarks",
 }
 
 } // namespace
-} // namespace mesaac::shape_eigen
+} // namespace mesaac::shape

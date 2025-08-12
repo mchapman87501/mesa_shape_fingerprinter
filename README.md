@@ -21,6 +21,10 @@ cmake --build --preset default
 ctest --preset default
 ```
 
+### AxisAlignment using Eigen3
+
+To build `mesaac::shape::AxisAlignerEigen`, which does alignment using the Eigen3 library, configure using `cmake --preset default -DPROVIDE_EIGEN=YES`.
+
 ## Installing
 
 A release build can be created as follows:
@@ -117,7 +121,7 @@ For this project, 3rd-party tests are distracting. That's why `CMakePresets.json
 
 [OpenBabel](https://github.com/openbabel/openbabel) is not compatible with the latest (at time of writing) CMake revisions, because of its requirement for an older version of CMake. It looks as though efforts are underway to address this problem: See [issue #2784](https://github.com/openbabel/openbabel/pull/2784).
 
-In the meantime, OpenBabel must be installed separately before building this project.
+AFAICT OpenBabel is needed only by `shape_feature_fingerprinter`, which, at present, is not included in the build.
 
 ```shell
 # macOS
@@ -137,7 +141,7 @@ I tried to use `perf` to understand why this is, but I found the results (which 
 
 ### Document Use of clang-tidy
 
-The `clang-tidy` command can be used to lint the codebase.  Its use isn't entirely straightforward, so it should be documented.
+The `clang-tidy` command can be used to lint the codebase. Its use isn't entirely straightforward, so it should be documented.
 
 Until such documentation is written, here's an incomplete summary.
 
