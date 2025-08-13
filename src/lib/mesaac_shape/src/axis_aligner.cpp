@@ -12,21 +12,6 @@ using namespace std;
 
 namespace mesaac::shape {
 namespace {
-inline bool in_atom(const Point &point, const Point &atom, float eps_sqr) {
-  const float radius(atom.at(3));
-  const float max_bsqr(radius * radius * eps_sqr);
-  double dx(point[0] - atom[0]);
-  const double dx_sqr = dx * dx;
-  // Only bother to calc distance if inside boundary
-  if (dx_sqr <= max_bsqr) {
-    double dy(point[1] - atom[1]);
-    double dz(point[2] - atom[2]);
-    float dsqr = dx_sqr + (dy * dy) + (dz * dz);
-    return (dsqr <= max_bsqr);
-  }
-  return false;
-}
-
 inline void transform_point(Transform &vt, Point &p) {
   Point untransformed(p);
   for (unsigned int j = 0; j != 3; j++) {
