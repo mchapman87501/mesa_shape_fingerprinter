@@ -5,7 +5,7 @@
 #include "mesaac_shape/axis_aligner.hpp"
 #include "mesaac_mol/mol.hpp"
 
-#include <sstream>
+#include <format>
 #include <stdexcept>
 
 using namespace std;
@@ -21,8 +21,7 @@ inline void transform_point(Transform &vt, Point &p) {
 }
 
 inline void get_cross_prod(const Point &a, const Point &b, Point &xp) {
-  xp.clear();
-  xp.resize(3);
+  xp = {0, 0, 0};
   xp[0] = (a[1] * b[2] - a[2] * b[1]);
   xp[1] = (-(a[0] * b[2] - a[2] * b[0]));
   xp[2] = (a[0] * b[1] - a[1] * b[0]);
@@ -36,7 +35,7 @@ bool axis_is_mirrored(Transform &vt) {
   // Transform 3 unit "vectors" such that the 3rd is the cross product
   // of the first 2.  After transformation, confirm it is still the
   // cross product.
-  Point a(3, 0.0), b(3, 0.0), c(3, 0.0);
+  Point a{0, 0, 0}, b{0, 0, 0}, c{0, 0, 0};
   a[0] = 1.0;
   b[1] = 1.0;
   c[2] = 1.0;
@@ -136,21 +135,16 @@ void AxisAligner::mean_center_points(PointList &points) {
 }
 
 void AxisAligner::get_mean_center(const PointList &points, Point &mean) {
-  mean.clear();
-  if (points.size() == 0) {
-    mean.push_back(0);
-    mean.push_back(0);
-    mean.push_back(0);
-  } else {
+  mean = {0, 0, 0};
+  if (points.size() > 0) {
     float xsum = 0, ysum = 0, zsum = 0;
     for (const auto &point : points) {
       xsum += point[0];
       ysum += point[1];
       zsum += point[2];
     }
-    mean.push_back(xsum / points.size());
-    mean.push_back(ysum / points.size());
-    mean.push_back(zsum / points.size());
+    const auto npts = points.size();
+    mean = {xsum / npts, ysum / npts, zsum / npts};
   }
 }
 
@@ -179,10 +173,9 @@ void AxisAligner::get_mean_centered_cloud(const PointList &centers,
 void AxisAligner::update_atom_coords(mol::AtomVector &atoms,
                                      const PointList &atom_centers) {
   if (atoms.size() != atom_centers.size()) {
-    ostringstream msg;
-    msg << "Atom vector length " << atoms.size()
-        << " must equal atom centers length " << atom_centers.size();
-    throw length_error(msg.str());
+    throw std::length_error(
+        std::format("Atom vector length {} must equal atom centers length {}",
+                    atoms.size(), atom_centers.size()));
   }
 
   // Consider C++23 std::ranges::views:zip.
@@ -203,7 +196,7 @@ void AxisAligner::transform_points(PointList &points, Transform &vt) {
 
 void AxisAligner::find_axis_align_transform(const PointList &cloud,
                                             Transform &transform) {
-  if (cloud.size() <= 0) {
+  if (cloud.empty()) {
     // TODO: Instead of failing, just return the identity transform.
     throw invalid_argument("Can't find alignment for empty cloud");
   }
