@@ -2,7 +2,7 @@
 
 ## Overview
 
-This repository will hold all open-source code for the Mesa Analytics shape fingerprinter ca. 2010-2011.
+This repository holds open-source code for the Mesa Analytics shape fingerprinter ca. 2010-2011.
 
 ## Building
 
