@@ -111,12 +111,6 @@ Here's some basic info about the executables provided by this repository.
 
 The Hamann measure is unique in mesaac_measures in the sense that, unlike the others, it returns similarity values in range -1...1. According to Wikipedia the [Simple Matching Coefficient](https://en.wikipedia.org/wiki/Simple_matching_coefficient) is equivalent to normalizing Hamann to produce values in 0...1. After discussion, we've decided to incorporate Simple Matching into mesaac_measures.
 
-### Lots of 3rd Party Tests
-
-The 3rd-party packages that are made available through CMake's `FetchContent_MakeAvailable` define time-consuming unit tests. Eigen defines the bulk of these tests.
-
-For this project, 3rd-party tests are distracting. That's why `CMakePresets.json` specifies to run only those tests that have the `mesaac` CMake test label.
-
 ### OpenBabel and FetchContent
 
 [OpenBabel](https://github.com/openbabel/openbabel) is not compatible with the latest (at time of writing) CMake revisions, because of its requirement for an older version of CMake. It looks as though efforts are underway to address this problem: See [issue #2784](https://github.com/openbabel/openbabel/pull/2784).
@@ -131,13 +125,7 @@ brew install open-babel
 sudo apt install libopenbabel-dev
 ```
 
-### Performance of align_monte
-
-On macOS, `align_monte` runs very quickly, even when compiled using the `coverage` preset. In docker (linux) and on native linux, the same preset runs very slowly, while consuming all CPU cores.
-
-I tried to use `perf` to understand why this is, but I found the results (which lacked symbolic names) not terribly useful. See [Notes on performance profiling](notes_on_performance_profiling.md). At the same time I discovered that `align_monte` compiled with the `release` preset runs about as quickly as on macOS.
-
-## TODO
+## TO DO
 
 ### Document Use of clang-tidy
 
@@ -168,14 +156,6 @@ The `shape_filter_by_radius` source code defines an `ArgParser` for parsing comm
 
 Alternatively, a new `ArgumentParser` could be introduced that simplifies definition of command-line syntax.
 
-### View Aligned Structures
-
-It would be good to have a way to view conformers after alignment. Visualization of conformers and their shape fingerprints would also be useful.
-
 ### Support MDL Molfile V3000 Format
 
-The SDReader in this repository does not yet support V3000 format SD files.
-
-See https://en.wikipedia.org/wiki/Chemical_table_file
-
-Also see this [2010 CTfile Formats](ctfile_20100623.pdf) spec and this [2020 CTfile Formats](biovia_ctfileformats_2020.pdf). The latter was downloaded on 20250718 from https://discover.3ds.com/sites/default/files/2020-08/biovia_ctfileformats_2020.pdf.
+`mesaac::mol::SDReader` provides limited support for reading V3000 SD files. At time of writing there is no support for writing V3000 SD files.
