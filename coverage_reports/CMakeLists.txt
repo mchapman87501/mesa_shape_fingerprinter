@@ -1,13 +1,16 @@
 # lcov behavior has changed from 1.x to 2.0, and from 2.0 to 2.3. Hence the
 # following.
-execute_process(COMMAND lcov "--version" OUTPUT_VARIABLE LCOV_VERSION_OUT)
-
+execute_process(
+  COMMAND lcov --version
+  OUTPUT_VARIABLE LCOV_VERSION_OUT
+  OUTPUT_STRIP_TRAILING_WHITESPACE)
+message(STATUS "Using lcov version '${LCOV_VERSION_OUT}'")
 # Update 20250704 attempt to address lcov 2.3.1-1 warning "WARNING:
 # (unsupported) Function begin/end line exclusions not supported..." and
 # subsequent genhtml errors:
 
 # Presume LCOV version 1.x
-set(LCOV_IGNORE_ARG "--ignore-errors=source")
+set(LCOV_IGNORE_ARG "--ignore-errors=source,unused")
 if(LCOV_VERSION_OUT MATCHES "LCOV version 2\.3")
   set(LCOV_IGNORE_ARG
       "--ignore-errors=format,source,unsupported,inconsistent,inconsistent,unused,negative"
@@ -20,7 +23,7 @@ endif()
 set(GENHTML_IGNORE_ARG "")
 if(LCOV_VERSION_OUT MATCHES "LCOV version 2\.3")
   set(GENHTML_IGNORE_ARG
-      "--ignore-errors=source,source,category,category,inconsistent,inconsistent,corrupt"
+      "--ignore-errors=source,source,category,category,inconsistent,inconsistent,corrupt,unused"
   )
 endif()
 

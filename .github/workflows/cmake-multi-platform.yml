@@ -1,0 +1,55 @@
+name: CMake on multiple platforms
+
+on:
+  push:
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      # Set fail-fast to false to ensure that feedback is delivered for all matrix combinations. Consider changing this to true when your workflow is stable.
+      fail-fast: false
+
+      # TODO add specs for building src/swift targets on macOS.
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set reusable strings
+      id: strings
+      shell: bash
+      run: |
+        echo "build-coverage-output-dir=${{ github.workspace }}/build/coverage" >> "$GITHUB_OUTPUT"
+
+    - name: Install lcov (Ubuntu)
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get update
+        sudo apt-get -y install lcov
+
+    - name: Install lcov (macOS)
+      if: runner.os == 'macOS'
+      run: brew install lcov
+
+    - name: Configure CMake for Code coverage builds
+      # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
+      # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
+      run: cmake --preset coverage
+
+    - name: Build for code coverage
+      run: cmake --build --preset coverage
+
+    - name: Run tests and generate coverage report
+      run: cmake --build --preset coverage-report
+
+    - name: Archive artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-report-${{ runner.os }}-${{ github.run_id }}-${{ github.job }}
+        path: build/coverage/coverage_reports

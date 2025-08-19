@@ -3,7 +3,8 @@
 if(PROJECT_IS_TOP_LEVEL AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
   set(CMAKE_CXX_FLAGS_COVERAGE "-g -O0 --coverage")
   if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    string(APPEND CMAKE_CXX_FLAGS_COVERAGE " -fprofile-abs-path")
+    string(APPEND CMAKE_CXX_FLAGS_COVERAGE
+           " -fprofile-abs-path -fprofile-update=atomic")
   endif()
   set(CMAKE_EXE_LINKER_FLAGS_COVERAGE "--coverage")
   set(CMAKE_SHARED_LINKER_FLAGS_COVERAGE "--coverage")
