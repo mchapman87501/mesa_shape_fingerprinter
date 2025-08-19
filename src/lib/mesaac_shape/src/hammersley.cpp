@@ -77,7 +77,7 @@ Point Hammersley::next_point() {
     if (m_point_index > m_num_points) {
       return {0, 0, 0};
     }
-    return Point{
+    return {
         hamm_dim_0(m_point_index, m_num_points),
         hamm_dim_1(m_point_index),
         hamm_dim_n(2, m_point_index),
@@ -111,6 +111,7 @@ void Hammersley::get_ellipsoid(const Hammersley::EllipsoidParams &params,
   }
   Hammersley gen(total_points);
   result.clear();
+  result.reserve(params.num_points);
   for (size_t num_generated = 0;; ++num_generated) {
     if (result.size() >= params.num_points) {
       // Enough points
