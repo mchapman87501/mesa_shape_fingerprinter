@@ -17,11 +17,11 @@ using namespace std;
 namespace mesaac::align_monte {
 namespace {
 // TODO extract to a shared header.
-static constexpr float c_flip_matrix[4][3] = {{1.0, 1.0, 1.0}, // Unflipped
-                                              {1.0, -1.0, -1.0},
-                                              {-1.0, 1.0, -1.0},
-                                              {-1.0, -1.0, 1.0}};
-static constexpr unsigned int c_flip_matrix_size =
+constexpr float c_flip_matrix[4][3] = {{1.0, 1.0, 1.0}, // Unflipped
+                                       {1.0, -1.0, -1.0},
+                                       {-1.0, 1.0, -1.0},
+                                       {-1.0, -1.0, 1.0}};
+constexpr unsigned int c_flip_matrix_size =
     sizeof(c_flip_matrix) / sizeof(c_flip_matrix[0]);
 
 void add_tag(mol::Mol &mol, string tag, string value) {
@@ -44,7 +44,6 @@ void add_best_flip_tag(mol::Mol &mol, string measure_name, unsigned int value) {
 
 void get_flipped_points(const shape::SphereList &points, const float *flip,
                         shape::SphereList &flipped_points) {
-  // How to obviate this copying?  It eats 10% of runtime.
   flipped_points = points;
   for (auto &p : flipped_points) {
     p[0] *= flip[0];
@@ -102,12 +101,12 @@ void MolAligner::compute_best_sphere_fingerprint(
     unsigned int &i_best, float &best_measure) {
   i_best = 0;
   best_measure = 0;
-  for (unsigned int iFlip = 0; iFlip != c_flip_matrix_size; iFlip++) {
-    const float *flip = c_flip_matrix[iFlip];
-    float currMeasure = compute_measure_for_flip(points, flip, measure);
-    if (currMeasure > best_measure) {
-      i_best = iFlip;
-      best_measure = currMeasure;
+  for (unsigned int i_flip = 0; i_flip != c_flip_matrix_size; i_flip++) {
+    const float *flip = c_flip_matrix[i_flip];
+    const float curr_measure = compute_measure_for_flip(points, flip, measure);
+    if (curr_measure > best_measure) {
+      i_best = i_flip;
+      best_measure = curr_measure;
     }
   }
 }
