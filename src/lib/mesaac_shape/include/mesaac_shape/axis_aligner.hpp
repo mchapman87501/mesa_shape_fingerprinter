@@ -7,8 +7,9 @@
 #include "mesaac_mol/mol.hpp"
 #include "mesaac_shape/shared_types.hpp"
 #include "mesaac_shape/vol_box.hpp"
-// Singular value decomposition, for PCA -- this defines ap::real_2d_array
-#include "svd.h"
+// Singular value decomposition, for PCA -- this, from dependencies/svd/libs,
+// defines ap::real_2d_array
+#include "ap.h"
 
 /**
  * @brief Namespace for shape computations using alglib svd.
