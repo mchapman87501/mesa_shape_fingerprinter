@@ -80,7 +80,7 @@ void unmirror_axes(Transform &vt) {
 template <typename PointListType, typename PointType>
 void get_mean_center_impl(const PointListType &points, PointType &mean) {
   mean = {0, 0, 0};
-  if (points.size() > 0) {
+  if (!points.empty()) {
     float xsum = 0, ysum = 0, zsum = 0;
     for (const auto &point : points) {
       xsum += point[0];
@@ -124,7 +124,7 @@ void AxisAligner::align_to_axes(mol::AtomVector &atoms) {
   //   Get mean-centered cloud points
   //   Find the axis-aligning rotation matrix using SVD
   //   Transform the original coordinates: mean center and rotate
-  if (atoms.size() > 0) {
+  if (!atoms.empty()) {
     SphereList centers;
     Point3DList cloud;
     Transform transform;

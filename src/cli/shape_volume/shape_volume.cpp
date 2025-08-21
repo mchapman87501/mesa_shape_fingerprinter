@@ -23,6 +23,7 @@
 // 1 or 2% In general, there is no need to calculate multiple conformers for a
 // single molecule.
 
+#include <array>
 #include <cmath>
 #include <filesystem>
 #include <fstream>
@@ -66,10 +67,13 @@ static void show_usage(const char *exename, string msg = "") {
   exit(1);
 }
 
-typedef vector<float> FloatVector;
-typedef vector<FloatVector> CoordsList;
+using Point3D = array<float, 3>;
+using Point3DList = vector<Point3D>;
+using Sphere = array<float, 4>;
+using SphereList = vector<Sphere>;
 
-void read_sphere_points(const string &sdf_pathname, CoordsList &sphere_points) {
+void read_sphere_points(const string &sdf_pathname,
+                        Point3DList &sphere_points) {
   sphere_points.clear();
   ifstream inf(sdf_pathname);
   if (!inf) {
@@ -78,21 +82,15 @@ void read_sphere_points(const string &sdf_pathname, CoordsList &sphere_points) {
     exit(1);
   }
 
-  float coord;
-  while (inf >> coord) {
-    FloatVector point;
-    point.push_back(coord);
-    inf >> coord;
-    point.push_back(coord);
-    inf >> coord;
-    point.push_back(coord);
-    sphere_points.push_back(point);
+  float x, y, z;
+  while (inf >> x >> y >> z) {
+    sphere_points.push_back(Point3D{x, y, z});
   }
   inf.close();
 }
 
-bool sphere_intersects_compound(const FloatVector &sphere_point,
-                                const CoordsList &compound_coords,
+bool sphere_intersects_compound(const Point3D &sphere_point,
+                                const SphereList &compound_coords,
                                 const float epsilon) {
   for (const auto &point : compound_coords) {
     // boundarizing limit
@@ -114,8 +112,8 @@ bool sphere_intersects_compound(const FloatVector &sphere_point,
   return false;
 }
 
-unsigned int count_mol_sphere_points(const CoordsList &hamms_sphere_coords,
-                                     const CoordsList &compound_coords,
+unsigned int count_mol_sphere_points(const Point3DList &hamms_sphere_coords,
+                                     const SphereList &compound_coords,
                                      const float epsilon) {
   // Calculate volume fraction that the conformer takes up inside the sphere
   unsigned int count = 0.0;
@@ -129,7 +127,7 @@ unsigned int count_mol_sphere_points(const CoordsList &hamms_sphere_coords,
 
 int main(int argc, const char **const argv) {
   // Point and coordinate variables and objects
-  CoordsList hamms_sphere_coords;
+  Point3DList hamms_sphere_coords;
 
   if (argc != 5) {
     show_usage(argv[0], "Wrong number of arguments.");
@@ -161,7 +159,7 @@ int main(int argc, const char **const argv) {
     }
 
     const auto mol = read_result.value();
-    CoordsList compound_coords;
+    SphereList compound_coords;
     float x_sum = 0.0, y_sum = 0.0, z_sum = 0.0;
     for (const auto &atom : mol.atoms()) {
       if (!atom.is_hydrogen()) {

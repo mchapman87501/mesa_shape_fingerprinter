@@ -27,11 +27,9 @@ void read_points(string &pathname, string description,
     exit(1);
   }
 
-  float coord;
-  while (inf >> coord) {
-    shape::Point3D p{coord, 0, 0};
-    inf >> p[1] >> p[2];
-    points.push_back(p);
+  float x, y, z;
+  while (inf >> x >> y >> z) {
+    points.emplace_back(shape::Point3D{x, y, z});
   }
   inf.close();
 }
