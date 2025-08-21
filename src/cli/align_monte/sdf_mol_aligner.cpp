@@ -75,11 +75,9 @@ void SDFMolAligner::read_sphere_points() {
   ifstream inf;
   open_input(inf, m_hamms_sphere_pathname, "Hamms Sphere Points file");
 
-  float coord;
-  while (inf >> coord) {
-    shape::Point3D point{coord, 0, 0};
-    inf >> point[1] >> point[2];
-    m_hamms_sphere_coords.push_back(point);
+  float x, y, z;
+  while (inf >> x >> y >> z) {
+    m_hamms_sphere_coords.emplace_back(shape::Point3D{x, y, z});
   }
   inf.close();
 }
