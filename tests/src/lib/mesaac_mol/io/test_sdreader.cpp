@@ -6,6 +6,7 @@
 
 #include <filesystem>
 #include <fstream>
+#include <vector>
 
 #include "mesaac_mol/io/sdreader.hpp"
 #include "mesaac_mol/mol.hpp"
@@ -14,25 +15,22 @@ namespace mesaac::mol {
 namespace {
 using namespace std;
 
-string strdiff_summary(const string &s1, const string &s2) {
-  unsigned int i;
-  unsigned int i_max = s1.size();
-  if (s2.size() > i_max) {
-    i_max = s2.size();
-  }
-  ostringstream outf;
-  for (i = 0; i != i_max; i++) {
-    if (i >= s1.size()) {
-      outf << "<";
-    } else if (i >= s2.size()) {
-      outf << ">";
-    } else if (s1[i] != s2[i]) {
-      outf << "X";
-    } else {
-      outf << ".";
+void require_tag_str_match(const string &expected, const string &actual) {
+  if (expected != actual) {
+    const unsigned int i_max = max(expected.size(), actual.size());
+    ostringstream outs;
+    outs << "Tag strings don't match:" << endl << "Diff: ";
+    for (unsigned int i = 0; i != i_max; i++) {
+      if (i >= expected.size()) {
+        outs << "<";
+      } else if (i >= actual.size()) {
+        outs << ">";
+      } else {
+        outs << (expected[i] != actual[i]) ? "X" : ".";
+      }
     }
+    FAIL(outs.str());
   }
-  return outf.str();
 }
 
 const std::filesystem::path test_sdf_path(const std::string &rel_path) {
@@ -48,6 +46,17 @@ string tagstr(const Mol &m) {
     resultf << "'" << key << "' = '" << value << "'" << endl;
   }
   return resultf.str();
+}
+
+unsigned int num_records(const std::filesystem::path &pathname) {
+  ifstream inf(pathname);
+  SDReader reader(inf, pathname);
+  unsigned int result = 0;
+  while (reader.read().is_ok()) {
+    result += 1;
+  }
+  inf.close();
+  return result;
 }
 
 TEST_CASE("mesaac::mol::SDReader - One structure", "[mesaac]") {
@@ -106,45 +115,48 @@ TEST_CASE("mesaac::mol::SDReader - Atom list block ignored", "[mesaac]") {
 TEST_CASE("mesaac::mol::SDReader - Multiple structures", "[mesaac]") {
   std::filesystem::path pathname(test_sdf_path("cox2_3d.sd"));
   // Spot-check some atom and bond counts.
-  unsigned int mol_check_indices[] = {0, 10, 456, 466};
-  const unsigned int num_to_check =
-      sizeof(mol_check_indices) / sizeof(mol_check_indices[0]);
+  struct SpotCheck {
+    const unsigned int index, num_atoms, num_bonds;
 
-  unsigned int expected_num_atoms[] = {39, 45, 55, 36};
-  unsigned int expected_num_bonds[] = {
-      41,
-      47,
-      58,
-      38,
+    bool has_expected_atom_count(const Mol &mol) const {
+      return mol.num_atoms() == num_atoms;
+    }
+
+    bool has_expected_bond_count(const Mol &mol) const {
+      return mol.num_bonds() == num_bonds;
+    }
+  };
+  vector<SpotCheck> spot_checks{
+      {0, 39, 41},
+      {10, 45, 47},
+      {456, 55, 58},
+      {466, 36, 38},
   };
 
   ifstream inf(pathname);
   SDReader reader(inf, pathname);
 
-  unsigned int num_found = 0;
-  unsigned int i_check = 0;
-  unsigned int *check_index = mol_check_indices;
-
+  // Read all structures, spot-checking the numbers of atoms and bonds.
+  auto curr_check = spot_checks.begin();
+  unsigned int mol_index = 0;
   for (;;) {
     const auto result = reader.read();
+    // Stop when no more structures can be read.
     if (!result.is_ok()) {
       break;
     }
-    const auto m = result.value();
+    const auto mol = result.value();
 
-    while ((i_check < num_to_check) && (num_found > *check_index)) {
-      i_check++;
-      check_index++;
+    // If this is one of the spot-check mols, do the spot check.
+    if (curr_check != spot_checks.end() && curr_check->index == mol_index) {
+      REQUIRE(curr_check->has_expected_atom_count(mol));
+      REQUIRE(curr_check->has_expected_bond_count(mol));
+      curr_check++;
     }
-    if ((i_check < num_to_check) && (num_found == *check_index)) {
-      REQUIRE(m.num_atoms() == expected_num_atoms[i_check]);
-      REQUIRE(m.num_bonds() == expected_num_bonds[i_check]);
-      i_check++;
-      check_index++;
-    }
-    num_found++;
+
+    mol_index += 1;
   }
-  REQUIRE(num_found == 467u);
+  REQUIRE(mol_index == 467u);
 }
 
 TEST_CASE("mesaac::mol::SDReader - Properties block", "[mesaac]") {
@@ -195,11 +207,7 @@ TEST_CASE("mesaac::mol::SDReader - Tags", "[mesaac]") {
   auto m = result.value();
   const string exp_first("");
   const string actual_first = tagstr(m);
-  if (exp_first != actual_first) {
-    cerr << "tag strings don't match:" << endl
-         << "Diff    : " << strdiff_summary(exp_first, actual_first) << endl;
-  }
-  REQUIRE(actual_first == exp_first);
+  require_tag_str_match(exp_first, actual_first);
 
   string prev(actual_first);
   for (;;) {
@@ -219,11 +227,7 @@ TEST_CASE("mesaac::mol::SDReader - Tags", "[mesaac]") {
       "sample\nwith multiline values.\n'\n'>55 (MD-08974)	"
       "<BOILING.POINT>	DT12' = 'This is a sample tag from the ctfile "
       "spec.\n'\n");
-  if (exp_last != prev) {
-    cerr << "tag strings don't match:" << endl
-         << "Diff    : " << strdiff_summary(exp_last, prev) << endl;
-  }
-  REQUIRE(prev == exp_last);
+  require_tag_str_match(exp_last, prev);
 }
 
 TEST_CASE("mesaac::mol::SDReader - Truncated counts line", "[mesaac]") {
@@ -232,22 +236,7 @@ TEST_CASE("mesaac::mol::SDReader - Truncated counts line", "[mesaac]") {
   // This should fail to read any atoms or bonds.
   // It should fail to read the one molecule in the file.
   std::filesystem::path pathname(test_sdf_path("truncated_count_line.sdf"));
-  ifstream inf(pathname);
-  SDReader reader(inf, pathname);
-  unsigned int num_mols_found = 0;
-
-  for (;;) {
-    const auto result = reader.read();
-    if (!result.is_ok()) {
-      break;
-    }
-    const auto m = result.value();
-    REQUIRE(m.num_atoms() > 0);
-    REQUIRE(m.num_bonds() > 0);
-    num_mols_found++;
-  }
-  inf.close();
-  REQUIRE(num_mols_found == 0u);
+  REQUIRE(num_records(pathname) == 0);
 }
 
 TEST_CASE("mesaac::mol::SDReader - Malformed atom counts", "[mesaac]") {
@@ -256,63 +245,23 @@ TEST_CASE("mesaac::mol::SDReader - Malformed atom counts", "[mesaac]") {
   // This should fail to read any atoms at all.
   // It should also fail to read the one molecule in the SD file.
   std::filesystem::path pathname(test_sdf_path("malformed_atom_count.sdf"));
-  ifstream inf(pathname);
-  SDReader reader(inf, pathname);
-  unsigned int num_mols_found = 0;
-  for (;;) {
-    const auto result = reader.read();
-    if (!result.is_ok()) {
-      break;
-    }
-    const auto m = result.value();
-    REQUIRE(m.num_atoms() > 0);
-    num_mols_found++;
-  }
-  inf.close();
-  REQUIRE(num_mols_found == 0u);
+  REQUIRE(num_records(pathname) == 0);
 }
 
 TEST_CASE("mesaac::mol::SDReader - Malformed bond counts", "[mesaac]") {
   // Try reading from a corrupt SD file, one in which the
   // count line has a malformed bond count.
   std::filesystem::path pathname(test_sdf_path("malformed_bond_count.sdf"));
-  ifstream inf(pathname);
-  SDReader reader(inf, pathname);
-  int num_mols_found = 0;
-  for (;;) {
-    const auto result = reader.read();
-    if (!result.is_ok()) {
-      break;
-    }
-    const auto m = result.value();
-    REQUIRE(m.num_atoms() > 0);
-    REQUIRE(m.num_bonds() == 0);
-    num_mols_found += 1;
-  }
-  inf.close();
-  REQUIRE(num_mols_found == 0u);
+  REQUIRE(num_records(pathname) == 0);
 }
 
 TEST_CASE("mesaac::mol::SDReader - Garbage input", "[mesaac]") {
   // Try reading from a corrupt SD file, one in which newlines
   // have been smooshed into spaces.
   std::filesystem::path pathname(test_sdf_path("corrupt.sdf"));
-  ifstream inf(pathname);
-  SDReader reader(inf, pathname);
-  unsigned int num_found = 0;
-
-  for (;;) {
-    const auto result = reader.read();
-    if (!result.is_ok()) {
-      break;
-    }
-    const auto m = result.value();
-    REQUIRE(m.num_atoms() > 0);
-    num_found++;
-  }
-  inf.close();
-  REQUIRE(num_found == 0u);
+  REQUIRE(num_records(pathname) == 0);
 }
+
 TEST_CASE("mesaac::mol::SDReader - V2000 no-structure", "[mesaac]") {
   // Ensure ability to read "no-structure" molfiles.
   const auto no_structure_sd = R"LINES(No structure

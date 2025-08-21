@@ -4,9 +4,9 @@
 
 #include <catch2/catch_test_macros.hpp>
 
+#include <filesystem>
 #include <format>
 #include <fstream>
-#include <filesystem>
 
 #include "mesaac_mol/io.hpp"
 
@@ -122,13 +122,8 @@ TEST_CASE("mesaac::mol::SDWriter - Basic writing", "[mesaac]") {
       i_mol_line = 0;
     }
   }
-  if (actualf) {
-    // Actual output has more lines than expected.
-    has_diffs = true;
-  } else if (expectedf) {
-    // Actual output has fewer lines than expected.
-    has_diffs = true;
-  }
+  // Does either of actual or expected have more lines than expected?
+  has_diffs |= (actualf || expectedf);
   // If there are diffs, write out the actual for manual comparison
   // against the expected.
   if (has_diffs) {
@@ -136,10 +131,8 @@ TEST_CASE("mesaac::mol::SDWriter - Basic writing", "[mesaac]") {
     ofstream actf(out_path);
     actf << outs.str();
     actf.close();
-    const string msg = std::format(
-        "Expected output {} does not match actual {}", std::string(in_path),
-        std::string(filesystem::absolute(out_path)));
-    FAIL(msg);
+    FAIL(format("Expected output {} does not match actual {}", string(in_path),
+                string(filesystem::absolute(out_path))));
   }
 }
 
@@ -176,9 +169,8 @@ TEST_CASE("mesaac::mol::SDWriter - Malformed empty tag", "[mesaac]") {
                 << endl
                 << ">  <non_empty>" << endl;
       if (string::npos == s.find(empty_tag.str())) {
-        cerr << "Did not find expected empty tag in '" << s << "'." << endl;
+        FAIL("Did not find expected empty tag in '" + s + "'.");
       }
-      REQUIRE(string::npos != s.find(empty_tag.str()));
       occurrences++;
     }
   }
