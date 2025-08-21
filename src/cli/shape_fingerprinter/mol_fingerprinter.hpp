@@ -14,8 +14,8 @@
 namespace mesaac::shape_fingerprinter {
 class MolFingerprinter {
 public:
-  MolFingerprinter(shape::PointList &hamms_ellipsoid_coords,
-                   shape::PointList &hamms_sphere_coords, float epsilon_sqr,
+  MolFingerprinter(shape::Point3DList &hamms_ellipsoid_coords,
+                   shape::Point3DList &hamms_sphere_coords, float epsilon_sqr,
                    unsigned int numFolds);
 
   /// @brief Set the molecule for which to compute fingerprints.
@@ -38,9 +38,9 @@ protected:
 
   mol::Mol m_mol;
   unsigned int m_i_flip;
-  shape::PointList m_heavies;
+  shape::SphereList m_heavies;
 
-  void compute_curr_flip_fingerprint(const shape::PointList &points,
+  void compute_curr_flip_fingerprint(const shape::SphereList &points,
                                      shape_defs::BitVector &result);
 };
 } // namespace mesaac::shape_fingerprinter

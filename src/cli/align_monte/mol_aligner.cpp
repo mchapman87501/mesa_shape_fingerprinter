@@ -42,13 +42,24 @@ void add_best_flip_tag(mol::Mol &mol, string measure_name, unsigned int value) {
   add_tag(mol, "BestFlip" + measure_name, value);
 }
 
+void get_flipped_points(const shape::SphereList &points, const float *flip,
+                        shape::SphereList &flipped_points) {
+  // How to obviate this copying?  It eats 10% of runtime.
+  flipped_points = points;
+  for (auto &p : flipped_points) {
+    p[0] *= flip[0];
+    p[1] *= flip[1];
+    p[2] *= flip[2];
+  }
+}
+
 } // namespace
 
 // Process a reference molecule, returning its fingerprint in ref_fp.
 void MolAligner::process_ref_molecule(mol::Mol &mol,
                                       shape_defs::BitVector &ref_fp) {
   // coords holds aligned coordinates for all heavy atoms.
-  PointList heavies;
+  shape::SphereList heavies;
 
   m_axisAligner.align_to_axes(mol);
   m_axisAligner.get_atom_points(mol.atoms(), heavies, false);
@@ -67,7 +78,7 @@ void MolAligner::process_ref_molecule(mol::Mol &mol,
 void MolAligner::process_one_molecule(mol::Mol &mol) {
   m_axisAligner.align_to_axes(mol);
 
-  PointList heavies;
+  shape::SphereList heavies;
   m_axisAligner.get_atom_points(mol.atoms(), heavies, false);
 
   // The last measure wins, flip-wise?
@@ -87,7 +98,7 @@ void MolAligner::process_one_molecule(mol::Mol &mol) {
 }
 
 void MolAligner::compute_best_sphere_fingerprint(
-    const PointList &points, measures::MeasuresBase::Ptr measure,
+    const shape::SphereList &points, measures::MeasuresBase::Ptr measure,
     unsigned int &i_best, float &best_measure) {
   i_best = 0;
   best_measure = 0;
@@ -101,26 +112,10 @@ void MolAligner::compute_best_sphere_fingerprint(
   }
 }
 
-static inline void get_flipped_points(const PointList &points,
-                                      const float *flip,
-                                      PointList &flipped_points) {
-  // How to obviate this copying?  It eats 10% of runtime.
-  flipped_points = points;
-
-  PointList::iterator iEnd(flipped_points.end());
-  PointList::iterator i;
-  for (i = flipped_points.begin(); i != iEnd; ++i) {
-    shape::Point &p(*i);
-    p[0] *= flip[0];
-    p[1] *= flip[1];
-    p[2] *= flip[2];
-  }
-}
-
 float MolAligner::compute_measure_for_flip(
-    const PointList &points, const float *flip,
+    const shape::SphereList &points, const float *flip,
     measures::MeasuresBase::Ptr measure) {
-  PointList flipped_points;
+  shape::SphereList flipped_points;
   get_flipped_points(points, flip, flipped_points);
 
   shape_defs::BitVector curr_fingerprint;

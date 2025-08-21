@@ -14,20 +14,6 @@ using namespace std;
 
 namespace mesaac::shape {
 namespace {
-inline bool in_atom(const Point &point, const Point &atom, float eps_sqr) {
-  const float radius(atom.at(3));
-  const float max_bsqr(radius * radius * eps_sqr);
-  double dx(point[0] - atom[0]);
-  const double dx_sqr = dx * dx;
-  // Only bother to calc distance if inside boundary
-  if (dx_sqr <= max_bsqr) {
-    double dy(point[1] - atom[1]);
-    double dz(point[2] - atom[2]);
-    float dsqr = dx_sqr + (dy * dy) + (dz * dz);
-    return (dsqr <= max_bsqr);
-  }
-  return false;
-}
 
 bool axis_is_mirrored(Transform &vt) {
   // Transform 3 unit "vectors" such that the 3rd is the cross product
@@ -64,6 +50,37 @@ void unmirror_axes(Transform &vt) {
   }
 }
 
+template <typename PointListType, typename PointType>
+void get_mean_center_impl(const PointListType &points, PointType &mean) {
+  mean = {0, 0, 0};
+  if (points.size() > 0) {
+    float xsum = 0, ysum = 0, zsum = 0;
+    for (const auto &point : points) {
+      xsum += point[0];
+      ysum += point[1];
+      zsum += point[2];
+    }
+    const auto npts = points.size();
+    mean = {xsum / npts, ysum / npts, zsum / npts};
+  }
+}
+
+template <typename PointListType, typename PointType>
+void untranslate_points_impl(PointListType &points, const PointType &offset) {
+  for (auto &point : points) {
+    point[0] -= offset[0];
+    point[1] -= offset[1];
+    point[2] -= offset[2];
+  }
+}
+
+template <typename PointType>
+void mean_center_points_impl(std::vector<PointType> &points) {
+  PointType mean;
+  get_mean_center_impl(points, mean);
+  untranslate_points_impl(points, mean);
+}
+
 } // namespace
 
 void AxisAlignerEigen::align_to_axes(mol::Mol &m) {
@@ -77,8 +94,8 @@ void AxisAlignerEigen::align_to_axes(mol::AtomVector &atoms) {
   //   Find the axis-aligning rotation matrix using SVD
   //   Transform the original coordinates: mean center and rotate
   if (atoms.size() > 0) {
-    PointList centers;
-    PointList cloud;
+    SphereList centers;
+    Point3DList cloud;
     Transform transform;
 
     get_atom_points(atoms, centers, false);
@@ -86,8 +103,8 @@ void AxisAlignerEigen::align_to_axes(mol::AtomVector &atoms) {
     get_mean_centered_cloud(centers, cloud);
     find_axis_align_transform(cloud, transform);
 
-    PointList all_centers;
-    Point mean;
+    SphereList all_centers;
+    Point3D mean;
     get_atom_points(atoms, centers, false);
     get_mean_center(centers, mean);
     get_atom_points(atoms, all_centers, true);
@@ -98,7 +115,7 @@ void AxisAlignerEigen::align_to_axes(mol::AtomVector &atoms) {
 }
 
 void AxisAlignerEigen::get_atom_points(const mol::AtomVector &atoms,
-                                       PointList &centers,
+                                       SphereList &centers,
                                        bool include_hydrogens) {
   centers.clear();
   for (const auto &atom : atoms) {
@@ -109,56 +126,36 @@ void AxisAlignerEigen::get_atom_points(const mol::AtomVector &atoms,
   }
 }
 
-void AxisAlignerEigen::mean_center_points(PointList &points) {
-  Point mean;
-  get_mean_center(points, mean);
-  untranslate_points(points, mean);
+void AxisAlignerEigen::mean_center_points(SphereList &points) {
+  mean_center_points_impl(points);
 }
 
-void AxisAlignerEigen::get_mean_center(const PointList &points, Point &mean) {
-  mean.clear();
-  if (points.size() == 0) {
-    mean.push_back(0);
-    mean.push_back(0);
-    mean.push_back(0);
-  } else {
-    float xsum = 0, ysum = 0, zsum = 0;
-    for (const auto &p : points) {
-      xsum += p[0];
-      ysum += p[1];
-      zsum += p[2];
-    }
-    mean.push_back(xsum / points.size());
-    mean.push_back(ysum / points.size());
-    mean.push_back(zsum / points.size());
-  }
+void AxisAlignerEigen::get_mean_center(const SphereList &points,
+                                       Point3D &mean) {
+  get_mean_center_impl(points, mean);
 }
 
-void AxisAlignerEigen::untranslate_points(PointList &points,
-                                          const Point &offset) {
-  for (auto &p : points) {
-    p[0] -= offset[0];
-    p[1] -= offset[1];
-    p[2] -= offset[2];
-  }
+void AxisAlignerEigen::untranslate_points(SphereList &points,
+                                          const Point3D &offset) {
+  untranslate_points_impl(points, offset);
 }
 
-void AxisAlignerEigen::get_mean_centered_cloud(const PointList &centers,
-                                               PointList &cloud) {
+void AxisAlignerEigen::get_mean_centered_cloud(const SphereList &centers,
+                                               Point3DList &cloud) {
   cloud.clear();
   if (m_atom_centers_only) {
     for (const auto &center : centers) {
-      cloud.push_back(Point{center[0], center[1], center[2]});
+      cloud.push_back({center[0], center[1], center[2]});
     }
     // Atom centers should already be mean-centered
   } else {
     m_volbox.get_points_within_spheres(centers, cloud, 0);
-    mean_center_points(cloud);
+    mean_center_points_impl(cloud);
   }
 }
 
 void AxisAlignerEigen::update_atom_coords(mol::AtomVector &atoms,
-                                          const PointList &atom_centers) {
+                                          const SphereList &atom_centers) {
   if (atoms.size() != atom_centers.size()) {
     ostringstream msg;
     msg << "Atom vector length " << atoms.size()
@@ -167,15 +164,15 @@ void AxisAlignerEigen::update_atom_coords(mol::AtomVector &atoms,
   }
 
   mol::AtomVector::iterator atom_iter(atoms.begin());
-  PointList::const_iterator center_iter(atom_centers.begin());
+  SphereList::const_iterator center_iter(atom_centers.begin());
   for (; atom_iter != atoms.end(); ++atom_iter, ++center_iter) {
     mol::Atom &atom(*atom_iter);
-    const Point &center(*center_iter);
+    const Sphere &center(*center_iter);
     atom.set_pos({center[0], center[1], center[2]});
   }
 }
 
-void AxisAlignerEigen::transform_points(PointList &points, Transform &vt) {
+void AxisAlignerEigen::transform_points(SphereList &points, Transform &vt) {
   typedef Eigen::Vector3f EPoint;
   for (auto &p : points) {
     EPoint untransformed;
@@ -187,7 +184,7 @@ void AxisAlignerEigen::transform_points(PointList &points, Transform &vt) {
   }
 }
 
-void AxisAlignerEigen::find_axis_align_transform(const PointList &cloud,
+void AxisAlignerEigen::find_axis_align_transform(const Point3DList &cloud,
                                                  Transform &transform) {
   if (cloud.size() <= 0) {
     // TODO: Instead of failing, just return the identity transform.
@@ -199,7 +196,7 @@ void AxisAlignerEigen::find_axis_align_transform(const PointList &cloud,
 
   // Fill arrays for PCA code
   for (unsigned int i = 0; i != num_points; i++) {
-    const Point &curr_point(cloud[i]);
+    const Point3D &curr_point(cloud[i]);
     for (unsigned int j = 0; j != 3; j++) {
       x(i, j) = curr_point[j];
     }

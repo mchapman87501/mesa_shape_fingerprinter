@@ -8,11 +8,6 @@
 namespace mesaac::shape {
 // Vector of indices, i.e. indices of points which lie within a volume.
 using IndexList = std::vector<unsigned int>;
-struct IndexedPoint {
-  unsigned int index;
-  float x, y, z;
-};
-using IndexedPointList = std::vector<IndexedPoint>;
 
 using ZBucket = std::vector<IndexList>;
 using YZBucket = std::vector<ZBucket>;
@@ -22,8 +17,7 @@ class VolBox {
 public:
   using VolBoxPtr = std::shared_ptr<VolBox>;
 
-  VolBox() {}
-  VolBox(const PointList &points, const float sphere_scale);
+  VolBox(const Point3DList &points, const float sphere_scale);
 
   // Get the number of points within this VolBox.
   unsigned int size();
@@ -32,19 +26,20 @@ public:
   //       x, y, z, radius
   // If from_scratch is true, then bits are cleared and resized to
   // match self's number of points.
-  void set_bits_for_spheres(const PointList &spheres,
+  void set_bits_for_spheres(const SphereList &spheres,
                             shape_defs::BitVector &bits, bool from_scratch,
                             unsigned int offset) const;
 
-  void set_bits_for_one_sphere(const Point &sphere, shape_defs::BitVector &bits,
+  void set_bits_for_one_sphere(const Sphere &sphere,
+                               shape_defs::BitVector &bits,
                                unsigned int offset) const;
 
-  void get_points_within_spheres(const PointList &spheres,
-                                 PointList &contained_points,
+  void get_points_within_spheres(const SphereList &spheres,
+                                 Point3DList &contained_points,
                                  unsigned int offset) const;
 
   // For folded fingerprints:
-  void set_folded_bits_for_spheres(const PointList &spheres,
+  void set_folded_bits_for_spheres(const SphereList &spheres,
                                    shape_defs::BitVector &bits,
                                    unsigned int num_folds,
                                    unsigned int offset) const;
@@ -57,13 +52,13 @@ protected:
   int m_ixmax, m_iymax, m_izmax;
 
   XYZBucket m_bucket;
-  PointList m_bucket_points;
+  Point3DList m_bucket_points;
 
-  void add_points(const PointList &points);
-  void set_bits_for_one_sphere_unchecked(const Point &sphere,
+  void add_points(const Point3DList &points);
+  void set_bits_for_one_sphere_unchecked(const Sphere &sphere,
                                          shape_defs::BitVector &bits,
                                          unsigned int offset) const;
-  void set_folded_bits_for_one_sphere_unchecked(const Point &sphere,
+  void set_folded_bits_for_one_sphere_unchecked(const Sphere &sphere,
                                                 shape_defs::BitVector &bits,
                                                 unsigned int offset,
                                                 unsigned int folded_size) const;

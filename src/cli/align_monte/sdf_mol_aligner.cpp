@@ -77,8 +77,7 @@ void SDFMolAligner::read_sphere_points() {
 
   float coord;
   while (inf >> coord) {
-    FloatVector point(3, 0.0);
-    point[0] = coord;
+    shape::Point3D point{coord, 0, 0};
     inf >> point[1] >> point[2];
     m_hamms_sphere_coords.push_back(point);
   }

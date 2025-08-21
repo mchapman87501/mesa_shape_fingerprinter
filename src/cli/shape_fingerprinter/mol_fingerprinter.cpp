@@ -20,8 +20,8 @@ const static unsigned int c_flip_matrix_size =
 
 } // namespace
 
-MolFingerprinter::MolFingerprinter(shape::PointList &hammsEllipsoidCoords,
-                                   shape::PointList &hammsSphereCoords,
+MolFingerprinter::MolFingerprinter(shape::Point3DList &hammsEllipsoidCoords,
+                                   shape::Point3DList &hammsSphereCoords,
                                    float epsilonSqr, unsigned int numFolds)
     : m_axis_aligner(hammsSphereCoords, epsilonSqr, true),
       m_volbox(hammsEllipsoidCoords, epsilonSqr), m_num_folds(numFolds),
@@ -47,15 +47,12 @@ bool MolFingerprinter::get_next_fp(shape_defs::BitVector &fp) {
 }
 
 namespace {
-inline void get_flipped_points(const shape::PointList &points,
+inline void get_flipped_points(const shape::SphereList &points,
                                const float *flip,
-                               shape::PointList &flippedPoints) {
-  flippedPoints = points;
+                               shape::SphereList &flipped_points) {
+  flipped_points = points;
 
-  shape::PointList::iterator iEnd(flippedPoints.end());
-  shape::PointList::iterator i;
-  for (i = flippedPoints.begin(); i != iEnd; ++i) {
-    shape::Point &p(*i);
+  for (auto &p : flipped_points) {
     p[0] *= flip[0];
     p[1] *= flip[1];
     p[2] *= flip[2];
@@ -65,13 +62,13 @@ inline void get_flipped_points(const shape::PointList &points,
 } // namespace
 
 void MolFingerprinter::compute_curr_flip_fingerprint(
-    const shape::PointList &points, shape_defs::BitVector &result) {
+    const shape::SphereList &points, shape_defs::BitVector &result) {
   const float *flip = c_flip_matrix[m_i_flip];
-  shape::PointList flippedPoints;
-  get_flipped_points(points, flip, flippedPoints);
+  shape::SphereList flipped_points;
+  get_flipped_points(points, flip, flipped_points);
 
   result.resize(m_volbox.size() / (1 << m_num_folds));
   result.reset();
-  m_volbox.set_folded_bits_for_spheres(flippedPoints, result, m_num_folds, 0);
+  m_volbox.set_folded_bits_for_spheres(flipped_points, result, m_num_folds, 0);
 }
 } // namespace mesaac::shape_fingerprinter

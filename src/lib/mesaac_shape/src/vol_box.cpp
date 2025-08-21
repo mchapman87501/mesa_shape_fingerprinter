@@ -28,7 +28,7 @@ inline int bounded(int index, int max_index) {
 
 } // namespace
 
-VolBox::VolBox(const PointList &points, const float sphere_scale) {
+VolBox::VolBox(const Point3DList &points, const float sphere_scale) {
   m_units_per_side = 8;
   m_sphere_scale = sphere_scale;
 
@@ -83,7 +83,7 @@ VolBox::VolBox(const PointList &points, const float sphere_scale) {
   add_points(points);
 }
 
-void VolBox::add_points(const PointList &points) {
+void VolBox::add_points(const Point3DList &points) {
   m_bucket_points.clear();
   XYZBucket &xyz_bucket(m_bucket);
   for (const auto &p : points) {
@@ -102,8 +102,8 @@ void VolBox::add_points(const PointList &points) {
 // Get the number of points within this VolBox.
 unsigned int VolBox::size() { return m_bucket_points.size(); }
 
-void VolBox::get_points_within_spheres(const PointList &spheres,
-                                       PointList &contained_points,
+void VolBox::get_points_within_spheres(const SphereList &spheres,
+                                       Point3DList &contained_points,
                                        unsigned int offset) const {
   contained_points.clear();
   shape_defs::BitVector which_points;
@@ -117,7 +117,7 @@ void VolBox::get_points_within_spheres(const PointList &spheres,
   }
 }
 
-void VolBox::set_bits_for_spheres(const PointList &spheres,
+void VolBox::set_bits_for_spheres(const SphereList &spheres,
                                   shape_defs::BitVector &bits,
                                   bool from_scratch,
                                   unsigned int offset) const {
@@ -133,7 +133,7 @@ void VolBox::set_bits_for_spheres(const PointList &spheres,
   }
 }
 
-void VolBox::set_folded_bits_for_spheres(const PointList &spheres,
+void VolBox::set_folded_bits_for_spheres(const SphereList &spheres,
                                          shape_defs::BitVector &bits,
                                          unsigned int num_folds,
                                          unsigned int offset) const {
@@ -146,24 +146,24 @@ void VolBox::set_folded_bits_for_spheres(const PointList &spheres,
   }
 }
 
-void VolBox::set_bits_for_one_sphere(const Point &sphere,
+void VolBox::set_bits_for_one_sphere(const Sphere &sphere,
                                      shape_defs::BitVector &bits,
                                      unsigned int offset) const {
   validate_bits(bits, m_bucket_points.size());
   set_bits_for_one_sphere_unchecked(sphere, bits, offset);
 }
 
-void VolBox::set_bits_for_one_sphere_unchecked(const Point &sphere,
+void VolBox::set_bits_for_one_sphere_unchecked(const Sphere &sphere,
                                                shape_defs::BitVector &bits,
                                                unsigned int offset) const {
   // Find all buckets overlapped by the sphere.
   const float x = sphere[0], y = sphere[1], z = sphere[2],
-              radius = sphere.at(3) * m_sphere_scale, rsqr = radius * radius;
+              radius = sphere[3] * m_sphere_scale, rsqr = radius * radius;
   IndexList pic; // (indices of) points in cube
   get_points_in_cube(x, y, z, radius, pic);
   for (const auto &point_index : pic) {
     if (!bits.test(point_index + offset)) {
-      const Point &p(m_bucket_points[point_index]);
+      const Point3D &p(m_bucket_points[point_index]);
       const float dx = p[0] - x, dy = p[1] - y, dz = p[2] - z,
                   ds = (dx * dx + dy * dy + dz * dz);
       if (ds <= rsqr) {
@@ -174,18 +174,18 @@ void VolBox::set_bits_for_one_sphere_unchecked(const Point &sphere,
 }
 
 void VolBox::set_folded_bits_for_one_sphere_unchecked(
-    const Point &sphere, shape_defs::BitVector &bits, unsigned int offset,
+    const Sphere &sphere, shape_defs::BitVector &bits, unsigned int offset,
     unsigned int folded_size) const {
   // Find all buckets overlapped by the sphere.
   const float x = sphere[0], y = sphere[1], z = sphere[2],
-              radius = sphere.at(3) * m_sphere_scale, rsqr = radius * radius;
+              radius = sphere[3] * m_sphere_scale, rsqr = radius * radius;
   IndexList pic; // (indices of) points in cube
   get_points_in_cube(x, y, z, radius, pic);
   for (const auto &point_index : pic) {
     unsigned int bit_index = (point_index % folded_size) + offset;
 
     if (!bits.test(bit_index)) {
-      const Point &p(m_bucket_points[point_index]);
+      const Point3D &p(m_bucket_points[point_index]);
       float dx = p[0] - x, dy = p[1] - y, dz = p[2] - z,
             ds = (dx * dx + dy * dy + dz * dz);
       if (ds <= rsqr) {
