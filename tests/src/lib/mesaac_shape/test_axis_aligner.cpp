@@ -324,34 +324,34 @@ TEST_CASE("mesaac::shape::AxisAligner", "[mesaac]") {
   TestFixture fixture;
   std::unique_ptr<TCAxisAligner> aligner(fixture.new_aligner());
   mol::AtomVector atoms;
-  SphereList points;
+  SphereList centers;
 
   SECTION("Get atom coords from an empty vector of atoms") {
-    aligner->tc_get_atom_points(atoms, points, false);
+    aligner->tc_get_atom_points(atoms, centers, false);
     REQUIRE((size_t)0 == atoms.size());
-    REQUIRE((size_t)0 == points.size());
-    aligner->tc_get_atom_points(atoms, points, true);
+    REQUIRE((size_t)0 == centers.size());
+    aligner->tc_get_atom_points(atoms, centers, true);
     REQUIRE((size_t)0 == atoms.size());
-    REQUIRE((size_t)0 == points.size());
+    REQUIRE((size_t)0 == centers.size());
   }
 
   SECTION("Get atom coords from a vector of heavy atoms") {
     unsigned int num_heavies;
 
     fixture.create_sample_atoms(atoms, num_heavies);
-    aligner->tc_get_atom_points(atoms, points, false);
+    aligner->tc_get_atom_points(atoms, centers, false);
     REQUIRE(atoms.size() > num_heavies);
     REQUIRE(num_heavies > 0);
-    REQUIRE(fixture.coords_match(atoms, points, num_heavies));
+    REQUIRE(fixture.coords_match(atoms, centers, num_heavies));
 
-    aligner->tc_get_atom_points(atoms, points, true);
-    REQUIRE(fixture.coords_match(atoms, points, atoms.size()));
+    aligner->tc_get_atom_points(atoms, centers, true);
+    REQUIRE(fixture.coords_match(atoms, centers, atoms.size()));
   }
 
   SECTION("Get the mean center of an empty list of points") {
     Point3D center;
 
-    aligner->tc_get_mean_center(points, center);
+    aligner->tc_get_mean_center(centers, center);
     REQUIRE(center.size() == 3);
     REQUIRE(center[0] == 0.0f);
     REQUIRE(center[1] == 0.0f);
@@ -363,8 +363,8 @@ TEST_CASE("mesaac::shape::AxisAligner", "[mesaac]") {
     Point3D center;
 
     fixture.create_sample_atoms(atoms, num_heavies);
-    aligner->tc_get_atom_points(atoms, points, false);
-    aligner->tc_get_mean_center(points, center);
+    aligner->tc_get_atom_points(atoms, centers, false);
+    aligner->tc_get_mean_center(centers, center);
     REQUIRE(center.size() == 3);
 
     // FRAGILE
@@ -375,10 +375,10 @@ TEST_CASE("mesaac::shape::AxisAligner", "[mesaac]") {
 
   SECTION("Translate an empty list of points so that its mean center lies at "
           "the origin") {
-    REQUIRE(points.empty());
-    aligner->tc_mean_center_points(points);
+    REQUIRE(centers.empty());
+    aligner->tc_mean_center_points(centers);
     // If execution reaches this point without crashing, the test passes.
-    REQUIRE(points.empty());
+    REQUIRE(centers.empty());
   }
 
   SECTION("Translate a vector of heavy atoms so its mean center lies at the "
@@ -389,14 +389,14 @@ TEST_CASE("mesaac::shape::AxisAligner", "[mesaac]") {
     // TODO:  create a set of atoms w. known positions and
     // easily verified extents.
     fixture.create_sample_atoms(atoms, num_heavies);
-    aligner->tc_get_atom_points(atoms, points, false);
-    REQUIRE((size_t)num_heavies == points.size());
-    aligner->tc_mean_center_points(points);
-    REQUIRE((size_t)num_heavies == points.size());
-    REQUIRE(fixture.is_mean_centered(points));
+    aligner->tc_get_atom_points(atoms, centers, false);
+    REQUIRE((size_t)num_heavies == centers.size());
+    aligner->tc_mean_center_points(centers);
+    REQUIRE((size_t)num_heavies == centers.size());
+    REQUIRE(fixture.is_mean_centered(centers));
 
     float xmid, ymid, zmid, width, height, depth;
-    fixture.get_pointlist_info(points, xmid, ymid, zmid, width, height, depth);
+    fixture.get_pointlist_info(centers, xmid, ymid, zmid, width, height, depth);
     REQUIRE_THAT(width, Catch::Matchers::WithinAbs(9.9782, 0.00001));
     REQUIRE_THAT(height, Catch::Matchers::WithinAbs(4.4967, 0.00001));
     REQUIRE_THAT(depth, Catch::Matchers::WithinAbs(6.8714, 0.00001));
@@ -404,8 +404,8 @@ TEST_CASE("mesaac::shape::AxisAligner", "[mesaac]") {
 
   SECTION("Get mean-centered cloud -- empty") {
     Point3DList cloud;
-    REQUIRE(points.empty());
-    aligner->tc_get_mean_centered_cloud(points, cloud);
+    REQUIRE(centers.empty());
+    aligner->tc_get_mean_centered_cloud(centers, cloud);
     // If we get here without crashing, we win.
     REQUIRE(cloud.empty());
   }
@@ -414,19 +414,19 @@ TEST_CASE("mesaac::shape::AxisAligner", "[mesaac]") {
     unsigned int num_heavies;
     Point3DList cloud;
     fixture.create_sample_atoms(atoms, num_heavies);
-    aligner->tc_get_atom_points(atoms, points, false);
-    REQUIRE(!points.empty());
-    REQUIRE(points.size() == num_heavies);
-    aligner->tc_mean_center_points(points);
-    REQUIRE(points.size() == num_heavies);
+    aligner->tc_get_atom_points(atoms, centers, false);
+    REQUIRE(!centers.empty());
+    REQUIRE(centers.size() == num_heavies);
+    aligner->tc_mean_center_points(centers);
+    REQUIRE(centers.size() == num_heavies);
 
-    aligner->tc_get_mean_centered_cloud(points, cloud);
+    aligner->tc_get_mean_centered_cloud(centers, cloud);
     REQUIRE(!cloud.empty());
 
     float xmid, ymid, zmid, pwidth, pheight, pdepth;
-    fixture.get_pointlist_info(points, xmid, ymid, zmid, pwidth, pheight,
+    fixture.get_pointlist_info(centers, xmid, ymid, zmid, pwidth, pheight,
                                pdepth);
-    REQUIRE(fixture.is_mean_centered(points));
+    REQUIRE(fixture.is_mean_centered(centers));
     REQUIRE_THAT(pwidth, Catch::Matchers::WithinAbs(9.9782, 0.00001));
     REQUIRE_THAT(pheight, Catch::Matchers::WithinAbs(4.4967, 0.00001));
     REQUIRE_THAT(pdepth, Catch::Matchers::WithinAbs(6.8714, 0.00001));
@@ -434,7 +434,7 @@ TEST_CASE("mesaac::shape::AxisAligner", "[mesaac]") {
     float cwidth, cheight, cdepth;
     fixture.get_pointlist_info(cloud, xmid, ymid, zmid, cwidth, cheight,
                                cdepth);
-    float dmax = 2.0 * fixture.find_max_radius(points);
+    float dmax = 2.0 * fixture.find_max_radius(centers);
 
     // Hardwired badness: max radius of all atoms in create_sample_atoms should
     // be that of sulfur.
@@ -457,9 +457,9 @@ TEST_CASE("mesaac::shape::AxisAligner", "[mesaac]") {
     unsigned int num_heavies;
 
     fixture.create_sample_atoms(atoms, num_heavies);
-    aligner->tc_get_atom_points(atoms, points, false);
-    aligner->tc_mean_center_points(points);
-    aligner->tc_get_mean_centered_cloud(points, cloud);
+    aligner->tc_get_atom_points(atoms, centers, false);
+    aligner->tc_mean_center_points(centers);
+    aligner->tc_get_mean_centered_cloud(centers, cloud);
 
     // Not sure how to test this.  Just confirm it's a 3x3 matrix
     // with non-empty cells?
@@ -469,32 +469,32 @@ TEST_CASE("mesaac::shape::AxisAligner", "[mesaac]") {
     REQUIRE(fixture.is_non_null_transform(transform));
   }
 
-  SECTION("Untranslate points") {
+  SECTION("Untranslate centers") {
     Point3D offset{1.0, 2.0, 3.0};
 
-    SphereList points;
+    SphereList centers;
 
     // Ensure proper handling of empty lists:
-    aligner->tc_untranslate_points(points, offset);
-    REQUIRE(points.empty());
+    aligner->tc_untranslate_points(centers, offset);
+    REQUIRE(centers.empty());
 
     unsigned int i;
     const unsigned int i_max = 10;
     for (i = 0; i != i_max; i++) {
-      points.push_back({i + 1.0f, i + 2.0f, i + 3.0f});
+      centers.push_back({i + 1.0f, i + 2.0f, i + 3.0f});
     }
 
-    aligner->tc_untranslate_points(points, offset);
+    aligner->tc_untranslate_points(centers, offset);
     for (i = 0; i != i_max; i++) {
       float f(i);
-      Sphere &p(points[i]);
+      Sphere &p(centers[i]);
       REQUIRE_THAT(p.at(0), Catch::Matchers::WithinAbs(f, 0.00001));
       REQUIRE_THAT(p.at(1), Catch::Matchers::WithinAbs(f, 0.00001));
       REQUIRE_THAT(p.at(2), Catch::Matchers::WithinAbs(f, 0.00001));
     }
   }
 
-  SECTION("Transform points") {
+  SECTION("Transform centers") {
     Point3DList cloud;
     unsigned int num_heavies;
     Transform transform;
@@ -504,27 +504,27 @@ TEST_CASE("mesaac::shape::AxisAligner", "[mesaac]") {
                       invalid_argument);
 
     fixture.create_sample_atoms(atoms, num_heavies);
-    aligner->tc_get_atom_points(atoms, points, false);
-    aligner->tc_mean_center_points(points);
-    aligner->tc_get_mean_centered_cloud(points, cloud);
+    aligner->tc_get_atom_points(atoms, centers, false);
+    aligner->tc_mean_center_points(centers);
+    aligner->tc_get_mean_centered_cloud(centers, cloud);
 
     REQUIRE(!fixture.is_non_null_transform(transform));
     aligner->tc_find_axis_align_transform(cloud, transform);
     REQUIRE(fixture.is_non_null_transform(transform));
 
     // Verify no crash on an empty point list.
-    points.clear();
-    aligner->tc_transform_points(points, transform);
-    REQUIRE(points.empty());
+    centers.clear();
+    aligner->tc_transform_points(centers, transform);
+    REQUIRE(centers.empty());
 
-    aligner->tc_get_atom_points(atoms, points, false);
-    REQUIRE(!fixture.has_nonincreasing_extents(points));
+    aligner->tc_get_atom_points(atoms, centers, false);
+    REQUIRE(!fixture.has_nonincreasing_extents(centers));
 
-    aligner->tc_transform_points(points, transform);
-    REQUIRE(points.size() == num_heavies);
+    aligner->tc_transform_points(centers, transform);
+    REQUIRE(centers.size() == num_heavies);
 
     // Transform should merely rotate the points -- no mean-centering.
-    REQUIRE(fixture.has_nonincreasing_extents(points));
+    REQUIRE(fixture.has_nonincreasing_extents(centers));
   }
 
   SECTION("Update atom coords") {
@@ -536,19 +536,19 @@ TEST_CASE("mesaac::shape::AxisAligner", "[mesaac]") {
     fixture.create_sample_atoms(atoms, num_heavies);
 
     // Point and atom lists of different size?  This should fail.
-    aligner->tc_get_atom_points(atoms, points, false);
-    REQUIRE_THROWS_AS(aligner->tc_update_atom_coords(atoms, points),
+    aligner->tc_get_atom_points(atoms, centers, false);
+    REQUIRE_THROWS_AS(aligner->tc_update_atom_coords(atoms, centers),
                       std::length_error);
 
     // Moronic, but maybe adequate, test: superpose all atoms.
-    aligner->tc_get_atom_points(atoms, points, true);
+    aligner->tc_get_atom_points(atoms, centers, true);
     Point3D offset{10.0, -50.0, 0.0};
-    for (auto &point : points) {
+    for (auto &point : centers) {
       point.at(0) = offset[0];
       point.at(1) = offset[1];
       point.at(2) = offset[2];
     }
-    aligner->tc_update_atom_coords(atoms, points);
+    aligner->tc_update_atom_coords(atoms, centers);
 
     for (const auto &atom : atoms) {
       const auto &pos(atom.pos());
@@ -563,20 +563,20 @@ TEST_CASE("mesaac::shape::AxisAligner", "[mesaac]") {
     aligner->align_to_axes(atoms);
     REQUIRE(atoms.empty());
 
-    SphereList points;
+    SphereList centers;
     Point3DList cloud;
     unsigned int num_heavies;
 
     fixture.create_sample_atoms(atoms, num_heavies);
-    aligner->tc_get_atom_points(atoms, points, false);
-    REQUIRE(!fixture.is_mean_centered(points));
-    REQUIRE(!fixture.has_nonincreasing_extents(points));
+    aligner->tc_get_atom_points(atoms, centers, false);
+    REQUIRE(!fixture.is_mean_centered(centers));
+    REQUIRE(!fixture.has_nonincreasing_extents(centers));
 
     // TODO:  Check that the hydrogens are also transformed.
     aligner->align_to_axes(atoms);
-    aligner->tc_get_atom_points(atoms, points, false);
-    REQUIRE(fixture.is_mean_centered(points));
-    REQUIRE(fixture.has_nonincreasing_extents(points));
+    aligner->tc_get_atom_points(atoms, centers, false);
+    REQUIRE(fixture.is_mean_centered(centers));
+    REQUIRE(fixture.has_nonincreasing_extents(centers));
   }
 
   SECTION("Align mol to axes") {
@@ -586,20 +586,20 @@ TEST_CASE("mesaac::shape::AxisAligner", "[mesaac]") {
     aligner->align_to_axes(mol);
     REQUIRE(mol.atoms().empty());
 
-    SphereList points;
+    SphereList centers;
     Point3DList cloud;
     unsigned int num_heavies;
 
     fixture.create_sample_mol(mol, num_heavies);
-    aligner->tc_get_atom_points(mol.atoms(), points, false);
-    REQUIRE(!fixture.is_mean_centered(points));
-    REQUIRE(!fixture.has_nonincreasing_extents(points));
+    aligner->tc_get_atom_points(mol.atoms(), centers, false);
+    REQUIRE(!fixture.is_mean_centered(centers));
+    REQUIRE(!fixture.has_nonincreasing_extents(centers));
 
     // TODO:  Check that the hydrogens are also transformed.
     aligner->align_to_axes(mol);
-    aligner->tc_get_atom_points(mol.atoms(), points, false);
-    REQUIRE(fixture.is_mean_centered(points));
-    REQUIRE(fixture.has_nonincreasing_extents(points));
+    aligner->tc_get_atom_points(mol.atoms(), centers, false);
+    REQUIRE(fixture.is_mean_centered(centers));
+    REQUIRE(fixture.has_nonincreasing_extents(centers));
   }
 
   SECTION("Align to axes - mol only") {
@@ -610,22 +610,22 @@ TEST_CASE("mesaac::shape::AxisAligner", "[mesaac]") {
     aligner->align_to_axes(mol);
     REQUIRE(mol.atoms().empty());
 
-    SphereList points;
+    SphereList centers;
     Point3DList cloud;
     unsigned int num_heavies;
 
     fixture.create_sample_mol(mol, num_heavies);
-    aligner->tc_get_atom_points(mol.atoms(), points, false);
-    REQUIRE(!fixture.is_mean_centered(points));
-    REQUIRE(!fixture.has_nonincreasing_extents(points));
+    aligner->tc_get_atom_points(mol.atoms(), centers, false);
+    REQUIRE(!fixture.is_mean_centered(centers));
+    REQUIRE(!fixture.has_nonincreasing_extents(centers));
 
     // TODO:  Check that the hydrogens are also transformed.
     // TODO:  Check that align_to_axes with atom-centers-only produces
     // different results than without atom-centers-only.
     aligner->align_to_axes(mol);
-    aligner->tc_get_atom_points(mol.atoms(), points, false);
-    REQUIRE(fixture.is_mean_centered(points));
-    REQUIRE(fixture.has_nonincreasing_extents(points));
+    aligner->tc_get_atom_points(mol.atoms(), centers, false);
+    REQUIRE(fixture.is_mean_centered(centers));
+    REQUIRE(fixture.has_nonincreasing_extents(centers));
   }
 
   SECTION("Align hydrogens") {
@@ -647,17 +647,17 @@ TEST_CASE("mesaac::shape::AxisAligner", "[mesaac]") {
              fixture.atom("H", 0.0, 0.0, 7.0),
          }});
 
-    aligner->tc_get_atom_points(mol.atoms(), points, true);
-    fixture.get_pointlist_info(points, x, y, z, w, h, d);
+    aligner->tc_get_atom_points(mol.atoms(), centers, true);
+    fixture.get_pointlist_info(centers, x, y, z, w, h, d);
 
     REQUIRE_THAT(w, Catch::Matchers::WithinAbs(0.0f, 0.00001));
     REQUIRE_THAT(h, Catch::Matchers::WithinAbs(0.0f, 0.00001));
     REQUIRE_THAT(d, Catch::Matchers::WithinAbs(7.0f, 0.00001));
 
     aligner->align_to_axes(mol);
-    aligner->tc_get_atom_points(mol.atoms(), points, true);
+    aligner->tc_get_atom_points(mol.atoms(), centers, true);
 
-    fixture.get_pointlist_info(points, x, y, z, w, h, d);
+    fixture.get_pointlist_info(centers, x, y, z, w, h, d);
 
     // The slope from point to point should be consistent.
     const float dx_dy = w / h;
@@ -693,9 +693,9 @@ TEST_CASE("mesaac::shape::AxisAligner", "[mesaac]") {
     // will not be double-counted.
 
     const Sphere atom({0, 0, 0, 170.0});
-    SphereList mol1{atom};
+    const SphereList mol1{atom};
     // Duplicates, superposed!
-    SphereList mol2{atom, atom};
+    const SphereList mol2{atom, atom};
 
     Point3DList contained1, contained2;
     aligner->tc_get_mean_centered_cloud(mol1, contained1);
@@ -710,16 +710,16 @@ namespace {
 int benchmark_align_to_axes(const TestFixture &fixture,
                             std::shared_ptr<TCAxisAligner> aligner) {
   mol::Mol mol;
-  SphereList points;
+  SphereList centers;
   Point3DList cloud;
   unsigned int num_heavies;
 
   fixture.create_sample_mol(mol, num_heavies);
-  aligner->tc_get_atom_points(mol.atoms(), points, false);
+  aligner->tc_get_atom_points(mol.atoms(), centers, false);
 
   // TODO:  Check that the hydrogens are also transformed.
   aligner->align_to_axes(mol);
-  aligner->tc_get_atom_points(mol.atoms(), points, false);
+  aligner->tc_get_atom_points(mol.atoms(), centers, false);
   return 0;
 }
 
