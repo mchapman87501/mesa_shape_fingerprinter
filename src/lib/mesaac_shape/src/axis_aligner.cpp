@@ -38,10 +38,7 @@ bool axis_is_mirrored(Transform &vt) {
   // Transform 3 unit "vectors" such that the 3rd is the cross product
   // of the first 2.  After transformation, confirm it is still the
   // cross product.
-  Point3D a{0, 0, 0}, b{0, 0, 0}, c{0, 0, 0};
-  a[0] = 1.0;
-  b[1] = 1.0;
-  c[2] = 1.0;
+  Point3D a{1, 0, 0}, b{0, 1, 0}, c{0, 0, 1};
   transform_point(vt, a);
   transform_point(vt, b);
   transform_point(vt, c);
@@ -81,8 +78,9 @@ void unmirror_axes(Transform &vt) {
 
 template <typename PointListType, typename PointType>
 void get_mean_center_impl(const PointListType &points, PointType &mean) {
-  mean = {0, 0, 0};
-  if (!points.empty()) {
+  if (points.empty()) {
+    mean = {0, 0, 0};
+  } else {
     float xsum = 0, ysum = 0, zsum = 0;
     for (const auto &point : points) {
       xsum += point[0];

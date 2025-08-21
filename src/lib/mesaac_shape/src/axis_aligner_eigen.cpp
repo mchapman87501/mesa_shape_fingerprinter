@@ -25,7 +25,6 @@ bool axis_is_mirrored(Transform &vt) {
   // of auto-vectorization packet sizes.
   typedef Eigen::Vector3f EPoint;
   EPoint a, b, c;
-  // Why is this epsilon faster than EPoint(1.0, 0.0, 0.0) etc.?
   a << 1.0, 0.0, 0.0;
   b << 0.0, 1.0, 0.0;
   c << 0.0, 0.0, 1.0;
@@ -52,8 +51,9 @@ void unmirror_axes(Transform &vt) {
 
 template <typename PointListType, typename PointType>
 void get_mean_center_impl(const PointListType &points, PointType &mean) {
-  mean = {0, 0, 0};
-  if (!points.empty()) {
+  if (points.empty()) {
+    mean = {0, 0, 0};
+  } else {
     float xsum = 0, ysum = 0, zsum = 0;
     for (const auto &point : points) {
       xsum += point[0];
