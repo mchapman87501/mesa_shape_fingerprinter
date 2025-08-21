@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-#include "shared_types.hpp"
+#include "mesaac_shape/shared_types.hpp"
 
 namespace mesaac::shape_fingerprinter {
 class SDFShapeFingerprinter {
@@ -37,8 +37,9 @@ protected:
   FormatEnum m_format;
   unsigned int m_num_folds;
 
-  void process_molecules(PointList &ellipsoid, PointList &sphere,
-                         int start_index, int end_index);
+  void process_molecules(shape::Point3DList &ellipsoid,
+                         shape::Point3DList &sphere, int start_index,
+                         int end_index);
 
 private:
   SDFShapeFingerprinter(const SDFShapeFingerprinter &src);

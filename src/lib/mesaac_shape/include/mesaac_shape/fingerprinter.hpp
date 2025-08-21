@@ -20,7 +20,7 @@ public:
 protected:
   const VolBox &m_volbox;
 
-  void compute_for_flip(const PointList &points, unsigned int i_flip,
+  void compute_for_flip(const SphereList &centers, unsigned int i_flip,
                         Fingerprint &result);
 
 private:

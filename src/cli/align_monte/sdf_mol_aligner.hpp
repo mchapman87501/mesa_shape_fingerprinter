@@ -36,7 +36,7 @@ protected:
   MeasuresList &m_measures;
   std::string m_sorted_pathname;
 
-  PointList m_hamms_sphere_coords;
+  shape::Point3DList m_hamms_sphere_coords;
   shape_defs::BitVector m_ref_fingerprint;
 
   void read_sphere_points();

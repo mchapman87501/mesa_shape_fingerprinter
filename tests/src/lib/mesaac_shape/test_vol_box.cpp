@@ -16,7 +16,7 @@ namespace mesaac::shape {
 
 namespace {
 struct TestFixture {
-  void read_test_points(string pathname, PointList &points) {
+  void read_test_points(string pathname, Point3DList &points) {
     // Use the test data directory spec'd by TEST_DATA_DIR preprocessor symbol.
     const string test_data_dir(TEST_DATA_DIR);
 
@@ -37,15 +37,15 @@ struct TestFixture {
     inf.close();
   }
 
-  void read_default_sphere(PointList &points) {
+  void read_default_point_cloud(Point3DList &points) {
     read_test_points("hamm_spheroid_10k_11rad.txt", points);
   }
 
-  void get_bits(PointList &cloud, float x, float y, float z, float r,
+  void get_bits(Point3DList &cloud, float x, float y, float z, float r,
                 shape_defs::BitVector &result) {
     const float rsqr = r * r;
     for (unsigned int i = 0; i != cloud.size(); ++i) {
-      Point &p(cloud[i]);
+      Point3D &p(cloud[i]);
       float dx = p[0] - x, dy = p[1] - y, dz = p[2] - z;
       if (rsqr >= (dx * dx + dy * dy + dz * dz)) {
         result.set(i);
@@ -53,13 +53,13 @@ struct TestFixture {
     }
   }
 
-  void get_contained_points(const PointList &cloud, const PointList &centers,
-                            PointList &contained) {
+  void get_contained_points(const Point3DList &cloud, const SphereList &centers,
+                            Point3DList &contained) {
     contained.clear();
     for (unsigned int i = 0; i != cloud.size(); i++) {
-      const Point &p_cloud(cloud[i]);
+      const Point3D &p_cloud(cloud[i]);
       for (unsigned int j = 0; j != centers.size(); j++) {
-        const Point &p_center(centers[j]);
+        const Sphere &p_center(centers[j]);
         const float dx = p_cloud[0] - p_center[0],
                     dy = p_cloud[1] - p_center[1],
                     dz = p_cloud[2] - p_center[2], r = p_center[3],
@@ -72,7 +72,7 @@ struct TestFixture {
     }
   }
 
-  float get_max_extent(PointList &points, bool verbose = false) {
+  float get_max_extent(Point3DList &points, bool verbose = false) {
     // Get the maximum distance of any point from the origin.
     float rsqr_max = 0.0;
     if (verbose) {
@@ -111,12 +111,12 @@ struct TestFixture {
 
 TEST_CASE("mesaac::shape::VolBox", "[mesaac]") {
   TestFixture fixture;
-  PointList sphere;
-  fixture.read_default_sphere(sphere);
+  Point3DList sphere;
+  fixture.read_default_point_cloud(sphere);
   VolBox vb(sphere, 1.0);
 
   SECTION("Test Copying") {
-    Point p{0, 0, 0, 22.0};
+    Sphere p{0, 0, 0, 22.0};
 
     {
       shape_defs::BitVector all_bits(10240);
@@ -134,12 +134,12 @@ TEST_CASE("mesaac::shape::VolBox", "[mesaac]") {
   }
 
   SECTION("Set bits for an empty sphere") {
-    PointList empty;
+    Point3DList empty;
     VolBox vb_empty(empty, 1.0);
 
     for (float x = -10.0; x != 10.0; x += 1.0) {
       shape_defs::BitVector matches(0);
-      Point p{x, x, x, 22.0};
+      Sphere p{x, x, x, 22.0};
       // What about proving that this does not clear any bits?
       // Ah, never mind.
       vb_empty.set_bits_for_one_sphere(p, matches, 0);
@@ -154,7 +154,7 @@ TEST_CASE("mesaac::shape::VolBox", "[mesaac]") {
     for (float x = -15.0; x != 15.0; x += 1.0) {
       shape_defs::BitVector vb_matches(sphere.size()),
           brute_force_matches(sphere.size());
-      Point p{x, x, x, r};
+      Sphere p{x, x, x, r};
       vb.set_bits_for_one_sphere(p, vb_matches, 0);
       fixture.get_bits(sphere, x, x, x, r, brute_force_matches);
       REQUIRE(brute_force_matches == vb_matches);
@@ -168,7 +168,7 @@ TEST_CASE("mesaac::shape::VolBox", "[mesaac]") {
   }
 
   SECTION("Set bits for multiple spheres.") {
-    PointList center_spheres;
+    SphereList center_spheres;
     const float r = 5.0;
 
     shape_defs::BitVector brute_force(sphere.size());
@@ -187,7 +187,7 @@ TEST_CASE("mesaac::shape::VolBox", "[mesaac]") {
   SECTION("TODO Write tests for custom sphere scaling") {}
 
   SECTION("Get points within spheres") {
-    PointList center_spheres;
+    SphereList center_spheres;
     const float r = 5.0;
 
     shape_defs::BitVector brute_force(sphere.size());
@@ -196,10 +196,10 @@ TEST_CASE("mesaac::shape::VolBox", "[mesaac]") {
       fixture.get_bits(sphere, x, x, x, r, brute_force);
     }
 
-    PointList bf_contained_points;
+    Point3DList bf_contained_points;
     fixture.get_contained_points(sphere, center_spheres, bf_contained_points);
 
-    PointList contained_points;
+    Point3DList contained_points;
     vb.get_points_within_spheres(center_spheres, contained_points, 0);
     REQUIRE(contained_points.size() > 0);
     REQUIRE(contained_points.size() == brute_force.count());
@@ -215,12 +215,12 @@ TEST_CASE("mesaac::shape::VolBox", "[mesaac]") {
     float d_r = (R - 1.5) / 10.0;
     float r = 1.5;
     while (r <= R) {
-      const PointList centers{{0, 0, 0, r}};
+      const SphereList centers{{0, 0, 0, r}};
 
-      PointList expected;
+      Point3DList expected;
       fixture.get_contained_points(sphere, centers, expected);
 
-      PointList contained;
+      Point3DList contained;
       vb.get_points_within_spheres(centers, contained, 0);
 
       REQUIRE(fixture.get_max_extent(contained) <= r);
@@ -247,12 +247,12 @@ TEST_CASE("mesaac::shape::VolBox", "[mesaac]") {
     const float d_center = max_offset / steps;
     float center = -max_offset;
     for (size_t i = 0; i < steps; ++i) {
-      const PointList centers{{center, 0, 0, r}};
+      const SphereList centers{{center, 0, 0, r}};
 
-      PointList expected;
+      Point3DList expected;
       fixture.get_contained_points(sphere, centers, expected);
 
-      PointList contained;
+      Point3DList contained;
       vb.get_points_within_spheres(centers, contained, 0);
 
       float exp_max_extent = r + ::fabs(center);
@@ -275,19 +275,19 @@ TEST_CASE("mesaac::shape::VolBox", "[mesaac]") {
       // if two spherules overlap, their corresponding cloud points
       // will not be double-counted.
 
-      const Point atom({0, 0, 0, 1.7});
+      const Sphere atom({0, 0, 0, 1.7});
 
-      PointList mol1, mol2;
+      SphereList mol1, mol2;
       mol1.push_back(atom);
       // Duplicates, superposed!
       mol2.push_back(atom);
       mol2.push_back(atom);
 
-      PointList sphere;
-      fixture.read_default_sphere(sphere);
+      Point3DList sphere;
+      fixture.read_default_point_cloud(sphere);
       VolBox vb(sphere, 1.0);
 
-      PointList contained1, contained2;
+      Point3DList contained1, contained2;
       vb.get_points_within_spheres(mol1, contained1, 0);
       vb.get_points_within_spheres(mol2, contained2, 0);
       REQUIRE(contained1 == contained2);
@@ -298,7 +298,7 @@ TEST_CASE("mesaac::shape::VolBox", "[mesaac]") {
   SECTION("Test setting VolBox bits with a fixed offset") {
     // TODO:  test get_points_within_spheres with a non-zero offset,
     // and with from_scratch = false.
-    const PointList mol1{{0, 0, 0, 1.7}};
+    const shape::SphereList mol1{{0, 0, 0, 1.7}};
 
     const unsigned int num_cloud_points(vb.size());
     const unsigned int offset(10);
@@ -319,7 +319,7 @@ TEST_CASE("mesaac::shape::VolBox", "[mesaac]") {
   }
 
   SECTION("Test basic folded fingerprints") {
-    PointList center_spheres;
+    shape::SphereList center_spheres;
     const float r = 5.0;
     for (int ix = -15; ix <= 15; ++ix) {
       float x(ix);

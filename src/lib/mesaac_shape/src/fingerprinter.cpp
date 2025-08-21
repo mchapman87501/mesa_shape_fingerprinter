@@ -21,7 +21,7 @@ const static float c_flip_matrix[4][3] = {{1.0, 1.0, 1.0}, // Unflipped
 const static unsigned int c_flip_matrix_size =
     sizeof(c_flip_matrix) / sizeof(c_flip_matrix[0]);
 
-inline void get_point_list(const AtomVector &atoms, PointList &result) {
+inline void get_point_list(const AtomVector &atoms, SphereList &result) {
   result.clear();
   result.reserve(atoms.size());
   for (const Atom &atom : atoms) {
@@ -30,9 +30,9 @@ inline void get_point_list(const AtomVector &atoms, PointList &result) {
   }
 }
 
-inline void get_flipped_points(const PointList &points, const float *flip,
-                               PointList &flipped) {
-  flipped = points;
+inline void get_flipped_points(const SphereList &centers, const float *flip,
+                               SphereList &flipped) {
+  flipped = centers;
 
   for (auto &point : flipped) {
     point[0] *= flip[0];
@@ -48,7 +48,7 @@ Fingerprinter::Fingerprinter(const VolBox &volbox) : m_volbox(volbox) {}
 void Fingerprinter::compute(const AtomVector &atoms, ShapeFingerprint &result) {
   result.clear();
   result.reserve(c_flip_matrix_size);
-  PointList centers;
+  SphereList centers;
   get_point_list(atoms, centers);
   for (unsigned int i = 0; i != c_flip_matrix_size; i++) {
     shape_defs::BitVector curr_fp;
@@ -57,11 +57,11 @@ void Fingerprinter::compute(const AtomVector &atoms, ShapeFingerprint &result) {
   }
 }
 
-void Fingerprinter::compute_for_flip(const PointList &points,
+void Fingerprinter::compute_for_flip(const SphereList &centers,
                                      unsigned int i_flip, Fingerprint &result) {
   result.reset();
-  PointList flipped;
-  get_flipped_points(points, c_flip_matrix[i_flip], flipped);
+  SphereList flipped;
+  get_flipped_points(centers, c_flip_matrix[i_flip], flipped);
   m_volbox.set_bits_for_spheres(flipped, result, true, 0);
 }
 

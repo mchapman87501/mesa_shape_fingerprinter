@@ -48,7 +48,7 @@ struct TestFixture {
     BoundingCube bc;
     get_av_bounds(atoms, bc);
     const unsigned int num_points(10240);
-    PointList hamms;
+    Point3DList hamms;
     Hammersley::get_cuboid({.num_points = num_points,
                             .xmin = bc.xmin,
                             .xmax = bc.xmax,

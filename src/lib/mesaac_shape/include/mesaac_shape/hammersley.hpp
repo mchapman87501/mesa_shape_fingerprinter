@@ -94,20 +94,20 @@ struct Hammersley {
    * @param params specifies the point set to be generated
    * @param result on return, the generated points
    */
-  static void get_ellipsoid(const EllipsoidParams &params, PointList &result);
+  static void get_ellipsoid(const EllipsoidParams &params, Point3DList &result);
 
   /**
    * @brief Get a Hammersley cuboid point set.
    * @param params specifies the point set to be generated
    * @param result on return, the generated points
    */
-  static void get_cuboid(const CuboidParams &params, PointList &result);
+  static void get_cuboid(const CuboidParams &params, Point3DList &result);
 
 private:
   const size_t m_num_points;
   unsigned int m_point_index;
 
-  Point next_point();
+  Point3D next_point();
 };
 
 } // namespace mesaac::shape
