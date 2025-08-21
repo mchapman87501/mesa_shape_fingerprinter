@@ -9,8 +9,8 @@
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 
 #include <filesystem>
+#include <format>
 #include <fstream>
-#include <iostream>
 
 #include "mesaac_mol/element_info.hpp"
 #include "mesaac_shape/axis_aligner.hpp"
@@ -23,8 +23,7 @@ namespace {
 
 // T[est]C[ase]AxisAligner exposes protected AxisAligner methods,
 // to ease test case definitions.
-class TCAxisAligner : public AxisAligner {
-public:
+struct TCAxisAligner : public AxisAligner {
   TCAxisAligner(Point3DList &points, float atom_scale, bool atom_centers_only)
       : AxisAligner(points, atom_scale, atom_centers_only) {}
 
@@ -73,9 +72,8 @@ void read_test_points(const filesystem::path &pathname, Point3DList &points) {
   points.clear();
   ifstream inf(full_path);
   if (!inf) {
-    ostringstream msg;
-    msg << "Could not open " << pathname << " for reading." << endl;
-    throw std::runtime_error(msg.str());
+    throw runtime_error(
+        format("Could not open {} for reading.", string(pathname)));
   }
   float x, y, z;
   while (inf >> x >> y >> z) {
@@ -228,8 +226,6 @@ template <typename PointType>
 bool is_mean_centered(const std::vector<PointType> &points) {
   float xmid, ymid, zmid, w, h, d;
   get_pointlist_info(points, xmid, ymid, zmid, w, h, d);
-  std::cerr << "DEBUG: is_mean_centered midpoint: " << xmid << ", " << ymid
-            << ", " << zmid << std::endl;
   auto matcher = Catch::Matchers::WithinAbs(0.0, 0.0001);
   return matcher.match(xmid) && matcher.match(ymid) && matcher.match(zmid);
 }
