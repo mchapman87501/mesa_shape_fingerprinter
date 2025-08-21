@@ -19,9 +19,6 @@ public:
 protected:
   const VolBox &m_volbox;
 
-  void compute_for_flip(const SphereList &centers, unsigned int i_flip,
-                        Fingerprint &result);
-
 private:
   Fingerprinter(const Fingerprinter &src);
   Fingerprinter &operator=(const Fingerprinter &src);
