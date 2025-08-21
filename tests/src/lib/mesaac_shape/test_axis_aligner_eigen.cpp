@@ -605,9 +605,9 @@ TEST_CASE("mesaac::shape::AxisAlignerEigen", "[mesaac]") {
 
     const Sphere atom({0, 0, 0, 170.0});
 
-    SphereList mol1{atom};
+    const SphereList mol1{atom};
     // Duplicates, superposed!
-    SphereList mol2{atom, atom};
+    const SphereList mol2{atom, atom};
 
     Point3DList contained1, contained2;
     aligner->tc_get_mean_centered_cloud(mol1, contained1);

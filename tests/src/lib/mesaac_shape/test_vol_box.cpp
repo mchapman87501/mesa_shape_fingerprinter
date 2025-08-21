@@ -277,11 +277,9 @@ TEST_CASE("mesaac::shape::VolBox", "[mesaac]") {
 
       const Sphere atom({0, 0, 0, 1.7});
 
-      SphereList mol1, mol2;
-      mol1.push_back(atom);
+      const SphereList mol1{atom};
       // Duplicates, superposed!
-      mol2.push_back(atom);
-      mol2.push_back(atom);
+      const SphereList mol2{atom, atom};
 
       Point3DList sphere;
       fixture.read_default_point_cloud(sphere);
