@@ -26,7 +26,7 @@ void require_tag_str_match(const string &expected, const string &actual) {
       } else if (i >= actual.size()) {
         outs << ">";
       } else {
-        outs << (expected[i] != actual[i]) ? "X" : ".";
+        outs << ((expected[i] != actual[i]) ? "X" : ".");
       }
     }
     FAIL(outs.str());
