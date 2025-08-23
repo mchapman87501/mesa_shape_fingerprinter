@@ -18,7 +18,8 @@ using namespace std;
 
 namespace mesaac::shape_fingerprinter {
 namespace {
-void read_points(string &pathname, string description, PointList &points) {
+void read_points(string &pathname, string description,
+                 shape::Point3DList &points) {
   ifstream inf(pathname);
   if (!inf) {
     cerr << "Cannot open " << description << " '" << pathname
@@ -26,12 +27,9 @@ void read_points(string &pathname, string description, PointList &points) {
     exit(1);
   }
 
-  float coord;
-  while (inf >> coord) {
-    FloatVector p(3, 0.0);
-    p[0] = coord;
-    inf >> p[1] >> p[2];
-    points.push_back(p);
+  float x, y, z;
+  while (inf >> x >> y >> z) {
+    points.emplace_back(shape::Point3D{x, y, z});
   }
   inf.close();
 }
@@ -70,15 +68,15 @@ SDFShapeFingerprinter::SDFShapeFingerprinter(
       m_format(format), m_num_folds(num_folds) {}
 
 void SDFShapeFingerprinter::run(int start_index, int end_index) {
-  PointList ellipsoid, sphere;
+  shape::Point3DList ellipsoid, sphere;
   read_points(m_hamms_ellipsoid_pathname, "hamms_ellipsoid_filename",
               ellipsoid);
   read_points(m_hamms_sphere_pathname, "hamms_sphere_filename", sphere);
   process_molecules(ellipsoid, sphere, start_index, end_index);
 }
 
-void SDFShapeFingerprinter::process_molecules(PointList &ellipsoid,
-                                              PointList &sphere,
+void SDFShapeFingerprinter::process_molecules(shape::Point3DList &ellipsoid,
+                                              shape::Point3DList &sphere,
                                               int start_index, int end_index) {
   if (start_index < 0) {
     cerr << "Invalid start index " << start_index << " -- must be >= 0" << endl;

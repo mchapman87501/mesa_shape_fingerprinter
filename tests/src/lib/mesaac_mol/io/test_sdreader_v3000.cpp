@@ -79,8 +79,7 @@ $$$$
   const auto read_result = reader.read();
 
   if (!read_result.is_ok()) {
-    std::cerr << read_result.error() << std::endl;
-    FAIL();
+    FAIL(read_result.error());
   }
 
   const auto mol = read_result.value();

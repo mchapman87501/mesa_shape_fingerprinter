@@ -13,7 +13,7 @@ namespace mesaac::shape {
 
 namespace {
 
-void check_max_extents(const PointList &points, float xmin, float xmax,
+void check_max_extents(const Point3DList &points, float xmin, float xmax,
                        float ymin, float ymax, float zmin, float zmax) {
   if (points.size()) {
     float axmin, axmax, aymin, aymax, azmin, azmax;
@@ -46,7 +46,7 @@ TEST_CASE("mesaac::shape::Hammersley - get_ellipsoid", "[mesaac]") {
   const float scale_sqr = scale * scale;
   const float a = 1.0, b = 0.75, c = 0.35; // Arbitrary spheroid squish
 
-  PointList points;
+  Point3DList points;
   Hammersley::get_ellipsoid(
       {.num_points = num_points, .scale = scale, .a = a, .b = b, .c = c},
       points);
@@ -67,7 +67,7 @@ TEST_CASE("mesaac::shape::Hammersley - get_ellipsoid", "[mesaac]") {
 TEST_CASE("mesaac::shape::Hammersley - get_cuboid", "[mesaac]") {
   // Lacking better ideas, how about a semi-random test for a
   // flattish volume?
-  PointList points;
+  Point3DList points;
   float xmin = -2.0, xmax = 3.1, ymin = 5.0, ymax = 10.1, zmin = 0.0,
         zmax = 1.8;
   unsigned int num_points = 10240;

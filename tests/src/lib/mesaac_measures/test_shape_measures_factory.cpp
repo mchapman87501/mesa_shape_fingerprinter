@@ -5,11 +5,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 
-#include <cmath>
-#include <fstream>
-#include <functional>
 #include <iostream>
-#include <stdexcept>
 #include <string>
 
 #include "mesaac_measures/bub.hpp"
@@ -235,8 +231,7 @@ void test_measurer(FPGroupGen &&fp_gen) {
             << bit_vectors[i] << ", " << hex << bit_vectors[j] << ": expected "
             << sim_cat_str(expected_category) << "; got "
             << sim_cat_str(actual_category) << ", value " << actual_value;
-        INFO(msg.str());
-        CHECK(false);
+        FAIL(msg.str());
       }
     }
   }
@@ -292,8 +287,7 @@ void test_shape_measurer(FPGroupGen &&fp_gen) {
         ostringstream msg;
         msg << "For " << fp_gen.name() << ", values " << hex << i << ", " << hex
             << j << "; expected best_sim " << best_sim << ", got " << actual;
-        INFO(msg.str());
-        CHECK(false);
+        FAIL(msg.str());
       }
 
       all_fps.pop_back();
