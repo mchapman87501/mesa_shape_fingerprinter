@@ -6,7 +6,7 @@ This repository holds open-source code for the Mesa Analytics shape fingerprinte
 
 ## Building
 
-This repository uses CMake 3.31 or later.
+This repository uses [CMake](https://cmake.org) 3.31 or later, and it defaults to the [ninja](https://ninja-build.org) build system generator.  Some unit tests depend on [Python](https://python.org) 3.12 or later.
 
 Several build configurations are supported. Here's how to build the default (Debug) configuration.
 
