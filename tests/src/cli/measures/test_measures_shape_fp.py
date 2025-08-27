@@ -7,6 +7,7 @@ import io
 import logging
 import subprocess
 import tempfile
+import typing as tp
 import unittest
 from dataclasses import dataclass
 from pathlib import Path
@@ -16,6 +17,8 @@ from measures_testing import (
     fp_file_generator,
     fp_measurer,
     shape_measure,
+)
+from measures_testing import (
     results_verifier as rv,
 )
 
@@ -24,12 +27,12 @@ EXE = config.MEASURES_SHAPE_FP_EXE
 
 @dataclass(frozen=True)
 class CmdLineArgs:
-    measure: str | None
-    tversky_alpha: float | None
-    compute_similarity: bool | None
-    search_index: int | None
-    output_format: str | None
-    sparse_threshold: float | None
+    measure: tp.Optional[str]
+    tversky_alpha: tp.Optional[float]
+    compute_similarity: tp.Optional[bool]
+    search_index: tp.Optional[int]
+    output_format: tp.Optional[str]
+    sparse_threshold: tp.Optional[float]
     fingerprint_path: Path
 
     def as_subprocess_args(self):
@@ -354,7 +357,7 @@ class TestCase(unittest.TestCase):
 
     def _test_matrix(
         self,
-        search_index: int | None,
+        search_index: tp.Optional[int],
         fp_gen: fp_file_generator.ShapeFPFileGenerator,
     ) -> subprocess.CompletedProcess:
         args = CmdLineArgs(

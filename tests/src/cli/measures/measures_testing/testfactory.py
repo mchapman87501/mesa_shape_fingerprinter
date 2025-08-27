@@ -4,15 +4,17 @@ Copyright (c) 2005-2010 Mesa Analytics & Computing, Inc.  All rights reserved
 """
 
 import logging
-from pathlib import Path
 import typing as tp
+from pathlib import Path
 
-from . import measure_factory
-from . import results_verifier_factory
-from . import fp_file_generator
-from . import fp_measurer
-from . import measures_runner
-from . import expected_results_generator
+from . import (
+    expected_results_generator,
+    fp_file_generator,
+    fp_measurer,
+    measure_factory,
+    measures_runner,
+    results_verifier_factory,
+)
 
 GetArglistFn = tp.Callable[
     [Path, fp_file_generator.FPFileGenerator, expected_results_generator.Base],
@@ -31,7 +33,7 @@ def get_valid_args_method(
     num_bits=5,
     *,
     default_exe: Path,
-    get_arglist: GetArglistFn | None = None,
+    get_arglist: tp.Optional[GetArglistFn] = None,
     compressed_shape_fps: bool = False,
 ):
     """

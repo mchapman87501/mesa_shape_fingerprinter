@@ -3,6 +3,8 @@ Get measures instances by name.
 Copyright (c) 2005-2010 Mesa Analytics & Computing, Inc.  All rights reserved
 """
 
+import typing as tp
+
 from . import measure
 from . import shape_measure
 
@@ -25,7 +27,9 @@ _shape_by_name = dict(
 )
 
 
-def shape_measure_by_name(name: str | None, tversky_alpha: float | None):
+def shape_measure_by_name(
+    name: tp.Optional[str], tversky_alpha: tp.Optional[float]
+):
     """Get a shape measure, by name or by C++ command-line code."""
     # Default to Tani.
     klass = _shape_by_name[name or "T"]

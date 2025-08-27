@@ -23,8 +23,8 @@ class Base:
 
     # Override in subclasses to provide compatible
     # results_reader and expected_results_generator
-    _reader_klass: type | None = None
-    _expecter_klass: type | None = None
+    _reader_klass: tp.Optional[type] = None
+    _expecter_klass: tp.Optional[type] = None
 
     @classmethod
     def _get_reader_klass(cls):

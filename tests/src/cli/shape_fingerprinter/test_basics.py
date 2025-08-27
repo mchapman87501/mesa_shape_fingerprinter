@@ -8,10 +8,11 @@ import gzip
 import io
 import itertools
 import logging
+from pathlib import Path
 import struct
 import subprocess
+import typing as tp
 import unittest
-from pathlib import Path
 
 import config
 
@@ -346,7 +347,9 @@ class TestCase(unittest.TestCase):
             if not self._differences_acceptable(expected, actual, 1):
                 self.fail("Actual fingerprints had too many discrepancies")
 
-    def _verify_cox2_fps(self, lines: list[str], sd_pathname: str | Path):
+    def _verify_cox2_fps(
+        self, lines: tp.List[str], sd_pathname: tp.Optional[Path]
+    ):
         self._verify_fp_basics(lines, sd_pathname)
 
         # # To generate new reference output:

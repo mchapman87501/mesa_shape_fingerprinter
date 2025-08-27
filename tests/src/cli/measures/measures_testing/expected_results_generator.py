@@ -18,8 +18,8 @@ class Base:
     def __init__(
         self,
         fp_measurer: fpm.IFPMeasurer,
-        search_number: int | None,
-        threshold: float | None,
+        search_number: tp.Optional[int],
+        threshold: tp.Optional[float],
     ):
         self._fp_measurer = fp_measurer
         # search_number and threshold are placeholder parameters,

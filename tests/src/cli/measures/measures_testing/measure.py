@@ -4,13 +4,14 @@ Copyright (c) 2010 Mesa Analytics & Computing, Inc.  All rights reserved
 """
 
 import math
+import typing as tp
 
 from .fp_utils import bitcount
 from .i_measure import IMeasure
 
 
 class Base(IMeasure):
-    def tversky_alpha(self) -> float | None:
+    def tversky_alpha(self) -> tp.Optional[float]:
         return None
 
     def is_shape(self):

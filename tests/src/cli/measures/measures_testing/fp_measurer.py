@@ -3,12 +3,14 @@ Provides similarity and dissimilarity measurers.
 Copyright (c) 2005-2010 Mesa Analytics & Computing, Inc.  All rights reserved
 """
 
+import typing as tp
+
 from .i_measure import IMeasure
 from .i_shape_measure import IShapeMeasure
 
 
 def get_measurer(
-    measure: IMeasure | IShapeMeasure,
+    measure: tp.Union[IMeasure, IShapeMeasure],
     num_bits: int,
     is_similarity: bool,
     fingerprints: list,
@@ -22,15 +24,15 @@ def get_measurer(
 class IFPMeasurer:
     """Measure similarity or distance values for a set of fingerprints."""
 
-    def fingerprints(self) -> list: ...
+    def fingerprints(self) -> tp.List: ...
     def num_bit(self) -> int: ...
     def is_similarity(self) -> bool: ...
     def measure_opt(self) -> str: ...
-    def tversky_alpha(self) -> float | None: ...
+    def tversky_alpha(self) -> tp.Optional[float]: ...
     def similarity_opt(self) -> str: ...
     def set_threshold(self, new_value: float) -> None: ...
-    def threshold(self) -> float | None: ...
-    def value(self, i, j) -> tuple[float, bool]:
+    def threshold(self) -> tp.Optional[float]: ...
+    def value(self, i, j) -> tp.Tuple[float, bool]:
         """
         Get the measure for fingerprints with indices i and j.
         Returns a tuple:
@@ -45,7 +47,7 @@ class FPSimMeasurer(IFPMeasurer):
 
     def __init__(
         self,
-        measure: IMeasure | IShapeMeasure,
+        measure: tp.Union[IMeasure, IShapeMeasure],
         num_bits: int,
         fingerprints: list,
     ):
@@ -104,7 +106,7 @@ class FPDistMeasurer(FPSimMeasurer):
 
     def __init__(
         self,
-        measure: IMeasure | IShapeMeasure,
+        measure: tp.Union[IMeasure, IShapeMeasure],
         num_bits: int,
         fingerprints: list,
     ):
@@ -129,14 +131,3 @@ class FPDistMeasurer(FPSimMeasurer):
             value = 1.0 - self._measure(fps[i], fps[j], self._num_bits)
         in_range = value <= self._threshold
         return (value, in_range)
-
-
-def main():
-    import doctest
-
-    status = doctest.testmod()
-    assert (status.failed == 0) and (status.attempted > 0)
-
-
-if __name__ == "__main__":
-    main()

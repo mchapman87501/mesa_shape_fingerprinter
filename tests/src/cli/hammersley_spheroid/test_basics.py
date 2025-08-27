@@ -74,7 +74,7 @@ class TestCase(unittest.TestCase):
         exp_lines = expected.splitlines()
         diff_count = 0
         for i, (act_line, exp_line) in enumerate(
-            zip(act_lines, exp_lines, strict=True), start=1
+            zip(act_lines, exp_lines), start=1
         ):
             if act_line != exp_line:
                 if diff_count == 0:
@@ -85,8 +85,15 @@ class TestCase(unittest.TestCase):
                     print("Differences truncated.")
                     break
                 print(f"Line {i} differs:")
-                print(f"E: {exp_line.rstrip("\r\n")}")
-                print(f"A: {act_line.rstrip("\r\n")}")
+                e_stripped = exp_line.rstrip("\r\n")
+                a_stripped = act_line.rstrip("\r\n")
+                print(f"E: {e_stripped}")
+                print(f"A: {a_stripped}")
+
+        if len(act_lines) != len(exp_lines):
+            print(
+                f"Expected number of lines: {len(exp_lines)}; actual {len(act_lines)}"
+            )
 
 
 if __name__ == "__main__":

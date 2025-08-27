@@ -3,31 +3,33 @@
 Copyright (c) 2005-2010 Mesa Analytics & Computing, Inc.  All rights reserved
 """
 
-from dataclasses import dataclass
 import io
 import logging
 import subprocess
-import unittest
-from pathlib import Path
 import tempfile
+import typing as tp
+import unittest
+from dataclasses import dataclass
+from pathlib import Path
 
 import config
-
 from measures_testing import (
     fp_file_generator,
     fp_measurer,
     measure,
+)
+from measures_testing import (
     results_verifier as rv,
 )
 
 
 @dataclass(frozen=True)
 class CmdLineArgs:
-    measure: str | None
-    tversky_alpha: float | None
-    compute_similarity: bool | None
-    output_format: str | None
-    sparse_threshold: float | None
+    measure: tp.Optional[str]
+    tversky_alpha: tp.Optional[float]
+    compute_similarity: tp.Optional[bool]
+    output_format: tp.Optional[str]
+    sparse_threshold: tp.Optional[float]
     fingerprint_path: Path
 
     def as_args(self):
