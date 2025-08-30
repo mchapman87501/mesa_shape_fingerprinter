@@ -70,7 +70,7 @@ float hamm_dim_n(const unsigned int dimension, const unsigned int index) {
 }
 } // namespace
 
-Point Hammersley::next_point() {
+Point3D Hammersley::next_point() {
   // Get the next hammersley point that lies within the spheroid.
   for (;;) {
     m_point_index += 1;
@@ -86,8 +86,8 @@ Point Hammersley::next_point() {
 }
 
 void Hammersley::get_ellipsoid(const Hammersley::EllipsoidParams &params,
-                               std::vector<Point> &result) {
-  const Point zero{0, 0, 0};
+                               Point3DList &result) {
+  const Point3D zero{0, 0, 0};
 
   const float scale_2 = params.scale * 2.0;
   const float scale_sqr = params.scale * params.scale;
@@ -123,7 +123,7 @@ void Hammersley::get_ellipsoid(const Hammersley::EllipsoidParams &params,
       return;
     }
 
-    const Point raw_point = gen.next_point();
+    const Point3D raw_point = gen.next_point();
     if (raw_point == zero) {
       // No more points available
       std::cerr << "DBG: get_ellipsoid ran out of points after filling "
@@ -143,13 +143,13 @@ void Hammersley::get_ellipsoid(const Hammersley::EllipsoidParams &params,
     const float ysqr = y * y / params.b;
     const float zsqr = z * z / params.c;
     if ((xsqr + ysqr + zsqr) < scale_sqr) {
-      result.emplace_back(Point{x, y, z});
+      result.emplace_back(Point3D{x, y, z});
     }
   }
 }
 
-void Hammersley::get_cuboid(const CuboidParams &params, PointList &result) {
-  const Point zero{0, 0, 0};
+void Hammersley::get_cuboid(const CuboidParams &params, Point3DList &result) {
+  const Point3D zero{0, 0, 0};
   result.clear();
   result.reserve(params.num_points);
 
@@ -179,7 +179,7 @@ void Hammersley::get_cuboid(const CuboidParams &params, PointList &result) {
           return;
         }
 
-        const Point raw_point = gen.next_point();
+        const Point3D raw_point = gen.next_point();
         if (raw_point == zero) {
           // No more points available
           return;
@@ -188,9 +188,9 @@ void Hammersley::get_cuboid(const CuboidParams &params, PointList &result) {
         const float x(raw_point[0]), y(raw_point[1]), z(raw_point[2]);
         if ((x <= dx) && (y <= dy) && (z <= dz)) {
           // Shift points to center.
-          result.emplace_back(Point{(x * dw_max) + params.xmin,
-                                    (y * dw_max) + params.ymin,
-                                    (z * dw_max) + params.zmin});
+          result.emplace_back(Point3D{(x * dw_max) + params.xmin,
+                                      (y * dw_max) + params.ymin,
+                                      (z * dw_max) + params.zmin});
         }
       }
     }

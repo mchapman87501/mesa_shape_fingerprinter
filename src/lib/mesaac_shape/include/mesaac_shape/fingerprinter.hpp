@@ -5,7 +5,6 @@
 
 #pragma once
 
-#include "mesaac_common/shape_defs.hpp"
 #include "mesaac_mol/atom.hpp"
 #include "mesaac_shape/vol_box.hpp"
 
@@ -19,9 +18,6 @@ public:
 
 protected:
   const VolBox &m_volbox;
-
-  void compute_for_flip(const PointList &points, unsigned int i_flip,
-                        Fingerprint &result);
 
 private:
   Fingerprinter(const Fingerprinter &src);

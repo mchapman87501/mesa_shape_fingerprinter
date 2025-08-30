@@ -4,20 +4,22 @@
 #pragma once
 
 #include "mesaac_common/shape_defs.hpp"
+#include <array>
 #include <vector>
-
 namespace mesaac::shape {
 
 /**
- * @brief A Point is a sequence of coordinates.  It typically holds x, y, z
- * coordinates.  In some uses it also holds a radius, e.g., for an Atom.
+ * @brief A Point3D is a location in 3-space: {x, y, z}
  */
-using Point = std::vector<float>;
+using Point3D = std::array<float, 3>;
 
 /**
- * @brief A vector of Points.
+ * @brief A Sphere is represented as a location and a radius: {x, y, z, radius}
  */
-using PointList = std::vector<Point>;
+using Sphere = std::array<float, 4>;
+
+using Point3DList = std::vector<Point3D>;
+using SphereList = std::vector<Sphere>;
 
 /**
  * @brief Represents a single shape (conformer) for a single orientation.

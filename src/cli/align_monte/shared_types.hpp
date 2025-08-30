@@ -9,9 +9,6 @@
 #include "mesaac_shape/shared_types.hpp"
 
 namespace mesaac::align_monte {
-typedef shape::Point FloatVector;
-typedef shape::PointList PointList;
-typedef std::vector<PointList> ConformerPointsList;
-
-typedef std::vector<measures::MeasuresBase::Ptr> MeasuresList;
+using ConformerPointsList = std::vector<shape::Point3DList>;
+using MeasuresList = std::vector<measures::MeasuresBase::Ptr>;
 } // namespace mesaac::align_monte
