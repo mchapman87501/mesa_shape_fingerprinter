@@ -20,15 +20,10 @@ namespace mesaac::mol {
 SDWriter::SDWriter(ostream &outf) : m_outf(outf) {}
 
 namespace {
-string f_str(float f, const unsigned int field_width = 10,
-             unsigned int decimals = 4) {
-  std::string fmt(std::format("{{:{:d}.{:d}f}}", field_width, decimals));
-  return std::vformat(fmt, std::make_format_args(f));
-}
+string f_str(float f) { return std::format("{:10.4f}", f); }
 
 string uint_str(unsigned int u, const unsigned int field_width = 3) {
-  std::string fmt(std::format("{{:{}d}}", field_width));
-  return std::vformat(fmt, std::make_format_args(u));
+  return std::format("{:3d}", u);
 }
 
 string bond_type_str(BondType value) {
