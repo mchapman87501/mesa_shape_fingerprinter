@@ -20,21 +20,12 @@ namespace mesaac::mol {
 SDWriter::SDWriter(ostream &outf) : m_outf(outf) {}
 
 namespace {
-string f_str(float f) { return std::format("{:10.4f}", f); }
-
-string uint_str(unsigned int u, const unsigned int field_width = 3) {
-  return std::format("{:3d}", u);
+unsigned int bond_type_raw(BondType value) {
+  return static_cast<underlying_type_t<BondType>>(value);
 }
 
-string bond_type_str(BondType value) {
-  // This is another argument for C++23, which provides std::to_underlying.
-  auto ivalue = static_cast<std::underlying_type_t<BondType>>(value);
-  return uint_str(ivalue);
-}
-
-string stereo_type_str(BondStereo value) {
-  auto ivalue = static_cast<std::underlying_type_t<BondStereo>>(value);
-  return uint_str(ivalue);
+unsigned int stereo_type_raw(BondStereo value) {
+  return static_cast<underlying_type_t<BondStereo>>(value);
 }
 
 inline string molfile_timestamp() {
@@ -62,26 +53,30 @@ bool SDWriter::write(const Mol &mol) {
   // program which wrote the file, and the date/time at which it was
   // written.  It should also list dimensionality info, but OpenBabel
   // appears not to do that.
-  const string program_name("_Mesaac_"); // Must be 8 chars
-  int d = mol.dimensionality();
 
-  m_outf << mol.name()
-         << endl
-         // I have no idea about the dimensional codes.
-         // I assume scaling factors should be whatever they were for
-         // the input; OpenBabel omits them altogether.
-         << "  " << program_name << molfile_timestamp() << setw(1) << d << "D"
-         << endl
-         << mol.comments() << endl
-         << mol.counts_line() << endl;
+  // Program name (_Mesaac_) must be 8 chars.
+  // I have no idea about the dimensional codes.
+  // I assume scaling factors should be whatever they were for
+  // the input; OpenBabel omits them altogether.
+  const string metadata =
+      format("  _Mesaac_{}{:1d}D", molfile_timestamp(), mol.dimensionality());
+
+  // endl is analogous to writing "\n" and flushing.
+  // cppreference recommends (weakly) using "\n" where possible.
+  m_outf << mol.name() << "\n"
+         << metadata << "\n"
+         << mol.comments() << "\n"
+         << mol.counts_line() << "\n";
   for (const auto &atom : mol.atoms()) {
     write_atom(atom);
   }
 
   for (const auto &bond : mol.bonds()) {
-    m_outf << uint_str(bond.a0()) << uint_str(bond.a1())
-           << bond_type_str(bond.type()) << stereo_type_str(bond.stereo())
-           << bond.optional_cols() << endl;
+    const auto bond_line =
+        format("{:3d}{:3d}{:3d}{:3d}{}", bond.a0(), bond.a1(),
+               bond_type_raw(bond.type()), stereo_type_raw(bond.stereo()),
+               bond.optional_cols());
+    m_outf << bond_line << "\n";
   }
 
   write_properties_block(mol);
@@ -96,32 +91,33 @@ bool SDWriter::write(const Mol &mol) {
            (value.find_last_of("\n\t ") == value.size() - 1)) {
       value.erase(value.size() - 1);
     }
-    m_outf << tag.first << endl << value << endl << endl;
+    m_outf << tag.first << "\n" << value << "\n" << "\n";
   }
-  m_outf << "$$$$" << endl;
-
+  m_outf << "$$$$" << "\n";
+  m_outf.flush();
   return result;
 }
 
 namespace {
 template <typename Value>
 void write_indices_prop(
-    std::ostream &outs, const std::string &prop_name,
-    const std::vector<std::pair<unsigned int, Value>> &indexed_values) {
+    ostream &outs, const string &prop_name,
+    const vector<pair<unsigned int, Value>> &indexed_values) {
   // TBD
-  outs << std::format("M  {:3s}{:3d}", prop_name, indexed_values.size());
+  outs << format("M  {:3s}{:3d}", prop_name, indexed_values.size());
   for (const auto &[index, value] : indexed_values) {
-    outs << std::format("{:4d}{:4}", index, value);
+    outs << format("{:4d}{:4}", index, value);
   }
-  outs << std::endl;
+  outs << "\n";
 }
 } // namespace
 
 bool SDWriter::write_atom(const Atom &atom) const {
 
   const auto &pos(atom.pos());
-  m_outf << f_str(pos.x()) << f_str(pos.y()) << f_str(pos.z()) << " " << setw(3)
-         << left << atom.symbol();
+  const auto pos_and_symbol = format("{:10.4f}{:10.4f}{:10.4f} {:<3s}", pos.x(),
+                                     pos.y(), pos.z(), atom.symbol());
+
   const auto &props(atom.props());
   // Best effort...  Perhaps props should store both mass and mass_diff?
   const int mass_diff =
@@ -130,25 +126,27 @@ bool SDWriter::write_atom(const Atom &atom) const {
           : static_cast<int>(props.mass - get_atomic_mass(atom.atomic_num()));
   // Always write a charge of 0, then write non-zero charges via a
   // "M  CHG" line.
-  m_outf << std::format("{:2d}  0{:3d}{:3d}{:3d}{:3d}  0  0  0{:3d}{:3d}{:3d}",
-                        mass_diff, props.cfg, props.hcount, props.stbox,
-                        props.val, props.aamap, props.invret, props.exachg)
-         << std::endl;
+  const auto props_str =
+      format("{:2d}  0{:3d}{:3d}{:3d}{:3d}  0  0  0{:3d}{:3d}{:3d}", mass_diff,
+             props.cfg, props.hcount, props.stbox, props.val, props.aamap,
+             props.invret, props.exachg);
+
+  m_outf << pos_and_symbol << props_str << "\n";
   return true;
 }
 
 bool SDWriter::write_properties_block(const Mol &mol) const {
-  std::vector<std::pair<unsigned int, int>> radical_indices;
-  std::vector<std::pair<unsigned int, int>> charge_indices;
+  vector<pair<unsigned int, int>> radical_indices;
+  vector<pair<unsigned int, int>> charge_indices;
   for (unsigned int i = 0; i != mol.num_atoms(); ++i) {
     const unsigned int out_index = i + 1;
     const auto &atom(mol.atoms().at(i));
     const auto &props(atom.props());
     if (props.chg != 0) {
-      charge_indices.push_back(std::make_pair(out_index, props.chg));
+      charge_indices.push_back(make_pair(out_index, props.chg));
     }
     if (props.rad != 0) {
-      radical_indices.push_back(std::make_pair(out_index, props.rad));
+      radical_indices.push_back(make_pair(out_index, props.rad));
     }
   }
 
@@ -163,7 +161,7 @@ bool SDWriter::write_properties_block(const Mol &mol) const {
   }
 
   // TODO write other properties.
-  m_outf << "M  END" << endl;
+  m_outf << "M  END" << "\n";
   return true;
 }
 
