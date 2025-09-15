@@ -1,26 +1,26 @@
 set(TARGET MolViewer)
 
-set(LIB_SRC
-    RealityKitTypeAliases.swift
-    CGPoint+Extension.swift
-    RKPosition+Extension.swift
-    ContentView.swift
-    ErrorsView.swift
-    MolSceneBuilder.swift
-    Lights.swift
-    Camera.swift
-    ArcBall.swift
-    ViewTransform.swift
-    SingleMolView.swift
-    SingleMolSnapshotView.swift
-    MolOverlayView.swift
-    MolListView.swift
-    MolSelectionMgr.swift
-    SDFUTType.swift
-    MolViewerAppDocument.swift)
-set(SRC MolViewerApp.swift ${LIB_SRC})
-
-add_executable(${TARGET} MACOSX_BUNDLE ${SRC})
+add_executable(${TARGET} MACOSX_BUNDLE)
+target_sources(
+  ${TARGET}
+  PRIVATE RealityKitTypeAliases.swift
+          CGPoint+Extension.swift
+          RKPosition+Extension.swift
+          ContentView.swift
+          ErrorsView.swift
+          MolSceneBuilder.swift
+          Lights.swift
+          Camera.swift
+          ArcBall.swift
+          ViewTransform.swift
+          SingleMolView.swift
+          SingleMolSnapshotView.swift
+          MolOverlayView.swift
+          MolListView.swift
+          MolSelectionMgr.swift
+          SDFUTType.swift
+          MolViewerAppDocument.swift
+          MolViewerApp.swift)
 
 if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
   target_compile_options(

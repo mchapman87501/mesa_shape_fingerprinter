@@ -1,10 +1,8 @@
 # Make some of the mesaac libraries accessible to Swift.
 set(TARGET MesaacSwift)
 
-set(SRC TypeAliases.swift Position.swift Atom.swift Bond.swift Mol.swift
-        SDReader.swift)
-
-add_library(${TARGET} STATIC ${SRC})
+add_library(${TARGET} STATIC TypeAliases.swift Position.swift Atom.swift
+                             Bond.swift Mol.swift SDReader.swift)
 set_target_properties(${TARGET} PROPERTIES Swift_MODULE_NAME "MesaacSwift")
 target_compile_options(
   ${TARGET}
