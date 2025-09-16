@@ -20,7 +20,12 @@ using Point = std::vector<float>;
 using PointList = std::vector<Point>;
 
 /**
- * @brief Represents a single shape (conformer) for a single orientation.
+ * @brief Indicates which points in a point intersect with a single orientation
+ * of a conformer.
+ * @details A Fingerprint is a sequence of bits, each corresponding to a single
+ * point in a quasi-random point set.  A Fingerprint is meant to represent a
+ * conformer in a single spatial orientation.  In such a Fingerprint, a bit is
+ * non-zero if the corresponding point intersects the volume of the conformer.
  */
 using Fingerprint = shape_defs::BitVector;
 
@@ -36,7 +41,7 @@ using FingerprintVector = shape_defs::ArrayBitVectors;
 using ShapeFingerprint = shape_defs::ArrayBitVectors;
 
 /**
- * @brief A ShapeFingerprintVector holds a collection of shape fingerprints.
+ * @brief A ShapeFingerprintVector holds a collection of ShapeFingerprints.
  */
 using ShapeFingerprintVector = shape_defs::ShapeFPBlocks;
 } // namespace mesaac::shape
