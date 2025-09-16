@@ -1,6 +1,6 @@
 #pragma once
 
-#include "mesaac_common/shape_defs.hpp" // For BitVector
+#include "mesaac_measures/shape_defs.hpp" // For BitVector
 #include "mesaac_shape/shared_types.hpp"
 #include <memory>
 #include <vector>

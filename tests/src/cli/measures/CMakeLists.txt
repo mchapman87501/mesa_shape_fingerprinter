@@ -7,7 +7,6 @@ add_mesaac_test(
   test_measure_type_converter.cpp
   LIBS
   cli_measures_lib
-  mesaac_common
   mesaac_measures)
 
 # Python test drivers:

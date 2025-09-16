@@ -2,13 +2,11 @@ set(TARGET mesaac_common)
 
 find_package(ZLIB)
 
-set(SRC src/gzip.cpp src/b32.cpp src/b64.cpp src/shape_defs.cpp)
-# TODO move the header files into this directory, to ease their installation...
+set(SRC src/gzip.cpp src/b32.cpp src/b64.cpp)
 set(HEADER_DIR include)
 set(HEADERS
     ${HEADER_DIR}/mesaac_common/b32.hpp ${HEADER_DIR}/mesaac_common/b64.hpp
-    ${HEADER_DIR}/mesaac_common/gzip.hpp
-    ${HEADER_DIR}/mesaac_common/shape_defs.hpp)
+    ${HEADER_DIR}/mesaac_common/gzip.hpp)
 
 add_library(${TARGET} STATIC ${SRC})
 target_compile_features(${TARGET} PUBLIC cxx_std_20)
