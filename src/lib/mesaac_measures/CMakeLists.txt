@@ -9,6 +9,7 @@ target_sources(
           src/hamann.cpp
           src/measures_base.cpp
           src/measures_factory.cpp
+          src/shape_defs.cpp
           src/shape_measures_factory.cpp
           src/tversky.cpp
   PUBLIC FILE_SET
@@ -23,6 +24,7 @@ target_sources(
          include/mesaac_measures/hamann.hpp
          include/mesaac_measures/measures_base.hpp
          include/mesaac_measures/measures_factory.hpp
+         include/mesaac_measures/shape_defs.hpp
          include/mesaac_measures/shape_measures_factory.hpp
          include/mesaac_measures/tversky.hpp)
 

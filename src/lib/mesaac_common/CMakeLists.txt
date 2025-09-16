@@ -5,7 +5,7 @@ find_package(ZLIB)
 add_library(${TARGET} STATIC)
 target_sources(
   ${TARGET}
-  PRIVATE src/gzip.cpp src/b32.cpp src/b64.cpp src/shape_defs.cpp
+  PRIVATE src/gzip.cpp src/b32.cpp src/b64.cpp
   PUBLIC FILE_SET
          HEADERS
          BASE_DIRS
@@ -13,8 +13,7 @@ target_sources(
          FILES
          include/mesaac_common/b32.hpp
          include/mesaac_common/b64.hpp
-         include/mesaac_common/gzip.hpp
-         include/mesaac_common/shape_defs.hpp)
+         include/mesaac_common/gzip.hpp)
 
 target_compile_features(${TARGET} PUBLIC cxx_std_20)
 
