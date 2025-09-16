@@ -13,8 +13,6 @@ option(SHAPE_FINGERPRINTS_BUILD_TESTS "Build test targets"
 
 option(SHAPE_FINGERPRINTS_BUILD_DOCS "Build documentation" OFF)
 
-option(PROVIDE_EIGEN "Provide mesaac::shape::AxisAlignerEigen" OFF)
-
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules")
 
 # Get Boost from Github
@@ -37,15 +35,13 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(Boost)
 
 # mesaac_shape's AxisAlignerEigen depends on Eigen.
-if(PROVIDE_EIGEN)
-  FetchContent_Declare(
-    eigen
-    GIT_REPOSITORY https://gitlab.com/libeigen/eigen.git
-    GIT_TAG 3.4.0
-    GIT_SHALLOW TRUE)
+FetchContent_Declare(
+  eigen
+  GIT_REPOSITORY https://gitlab.com/libeigen/eigen.git
+  GIT_TAG 3.4.0
+  GIT_SHALLOW TRUE)
 
-  FetchContent_MakeAvailable(eigen)
-endif()
+FetchContent_MakeAvailable(eigen)
 
 # shape_feature_fingerprinter depends on OpenBabel. Alas, OpenBabel depends on
 # CMake 3.5, which is not compatible with CMake 4.0.  It may be necessary to use
