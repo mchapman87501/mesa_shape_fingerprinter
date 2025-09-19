@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "mesaac_common/shape_defs.hpp"
+#include "mesaac_measures/shape_defs.hpp"
 namespace mesaac::cli::measures {
 // Read fingerprints from the named file, returning them in fingerprints.
 // If pathname is '-', read from stdin.

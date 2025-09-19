@@ -4,7 +4,7 @@
 #pragma once
 #include <vector>
 
-#include "mesaac_common/shape_defs.hpp"
+#include "mesaac_measures/shape_defs.hpp"
 
 namespace mesaac::shape_fingerprinter {
 using FloatVector = std::vector<float>;

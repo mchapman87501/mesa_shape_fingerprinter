@@ -1,11 +1,5 @@
-add_mesaac_test(
-  TEST_NAME
-  test_shape_measures_factory
-  SOURCES
-  test_shape_measures_factory.cpp
-  LIBS
-  mesaac_common
-  mesaac_measures)
+add_mesaac_test(TEST_NAME test_shape_measures_factory SOURCES
+                test_shape_measures_factory.cpp LIBS mesaac_measures)
 
 set(MEASURES bub cosine euclidean hamann tanimoto tversky)
 

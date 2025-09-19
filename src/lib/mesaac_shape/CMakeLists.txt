@@ -19,9 +19,7 @@ endif()
 add_library(${TARGET} STATIC ${SRC})
 target_compile_features(${TARGET} PUBLIC cxx_std_20)
 target_include_directories(${TARGET} PUBLIC ${HEADER_DIR})
-# mesaac_common is needed only for shape_defs.hpp.  Should that header live
-# elsewhere?
-target_link_libraries(${TARGET} PUBLIC mesaac_common mesaac_mol svd ap
+target_link_libraries(${TARGET} PUBLIC mesaac_measures mesaac_mol svd ap
                                        Boost::dynamic_bitset)
 
 if(PROVIDE_EIGEN)

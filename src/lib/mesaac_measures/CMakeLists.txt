@@ -7,6 +7,7 @@ set(SRC
     src/hamann.cpp
     src/measures_base.cpp
     src/measures_factory.cpp
+    src/shape_defs.cpp
     src/shape_measures_factory.cpp
     src/tversky.cpp)
 
@@ -19,6 +20,7 @@ set(HEADERS
     ${HEADER_DIR}/mesaac_measures/hamann.hpp
     ${HEADER_DIR}/mesaac_measures/measures_base.hpp
     ${HEADER_DIR}/mesaac_measures/measures_factory.hpp
+    ${HEADER_DIR}/mesaac_measures/shape_defs.hpp
     ${HEADER_DIR}/mesaac_measures/shape_measures_factory.hpp
     ${HEADER_DIR}/mesaac_measures/tversky.hpp)
 
