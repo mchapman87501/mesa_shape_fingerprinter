@@ -8,4 +8,7 @@ add_mesaac_test(TEST_NAME test_sdwriter SOURCES test_sdwriter.cpp LIBS
 add_mesaac_test(TEST_NAME benchmark_read_mols SOURCES benchmark_read_mols.cpp
                 LIBS mesaac_mol)
 
+add_mesaac_test(TEST_NAME benchmark_write_mols SOURCES benchmark_write_mols.cpp
+                LIBS mesaac_mol)
+
 add_subdirectory(internal)
