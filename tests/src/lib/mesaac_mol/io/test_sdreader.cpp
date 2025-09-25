@@ -63,7 +63,7 @@ TEST_CASE("mesaac::mol::SDReader - One structure", "[mesaac]") {
       "H", "H", "H", "H", "H", "H", "H", "H", "H", "H", "H", "H", "H",
   };
 
-  for (;;) {
+  while (!reader.eof()) {
     const auto result = reader.read();
     if (!result.is_ok()) {
       break;
@@ -125,7 +125,7 @@ TEST_CASE("mesaac::mol::SDReader - Multiple structures", "[mesaac]") {
   unsigned int i_check = 0;
   unsigned int *check_index = mol_check_indices;
 
-  for (;;) {
+  while (!reader.eof()) {
     const auto result = reader.read();
     if (!result.is_ok()) {
       break;
@@ -170,7 +170,7 @@ TEST_CASE("mesaac::mol::SDReader - Properties block", "[mesaac]") {
   REQUIRE(m.atoms().at(18).props().chg == -1);
 
   auto last_mol = m;
-  for (;;) {
+  while (!reader.eof()) {
     const auto curr_result = reader.read();
     if (!curr_result.is_ok()) {
       break;
@@ -202,7 +202,7 @@ TEST_CASE("mesaac::mol::SDReader - Tags", "[mesaac]") {
   REQUIRE(actual_first == exp_first);
 
   string prev(actual_first);
-  for (;;) {
+  while (!reader.eof()) {
     const auto curr_result = reader.read();
     if (!curr_result.is_ok()) {
       break;
@@ -236,7 +236,7 @@ TEST_CASE("mesaac::mol::SDReader - Truncated counts line", "[mesaac]") {
   SDReader reader(inf, pathname);
   unsigned int num_mols_found = 0;
 
-  for (;;) {
+  while (!reader.eof()) {
     const auto result = reader.read();
     if (!result.is_ok()) {
       break;
@@ -259,7 +259,7 @@ TEST_CASE("mesaac::mol::SDReader - Malformed atom counts", "[mesaac]") {
   ifstream inf(pathname);
   SDReader reader(inf, pathname);
   unsigned int num_mols_found = 0;
-  for (;;) {
+  while (!reader.eof()) {
     const auto result = reader.read();
     if (!result.is_ok()) {
       break;
@@ -279,7 +279,7 @@ TEST_CASE("mesaac::mol::SDReader - Malformed bond counts", "[mesaac]") {
   ifstream inf(pathname);
   SDReader reader(inf, pathname);
   int num_mols_found = 0;
-  for (;;) {
+  while (!reader.eof()) {
     const auto result = reader.read();
     if (!result.is_ok()) {
       break;
@@ -301,7 +301,7 @@ TEST_CASE("mesaac::mol::SDReader - Garbage input", "[mesaac]") {
   SDReader reader(inf, pathname);
   unsigned int num_found = 0;
 
-  for (;;) {
+  while (!reader.eof()) {
     const auto result = reader.read();
     if (!result.is_ok()) {
       break;

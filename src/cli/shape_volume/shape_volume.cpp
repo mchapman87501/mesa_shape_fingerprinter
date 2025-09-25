@@ -154,7 +154,7 @@ int main(int argc, const char **const argv) {
   }
   mol::SDReader reader(sdf_inf);
 
-  for (;;) {
+  while (!reader.eof()) {
     const auto read_result = reader.read();
     if (!read_result.is_ok()) {
       break;
