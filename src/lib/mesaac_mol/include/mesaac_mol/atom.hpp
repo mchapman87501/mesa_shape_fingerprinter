@@ -34,8 +34,9 @@ public:
   /// @param params properties of the atom - atomic number, 3-space coordinates,
   /// etc.
   Atom(const AtomParams &&params)
-      : m_atomic_num(params.atomic_num), m_pos(params.pos),
-        m_props(params.props), m_optional_cols(params.optional_cols) {}
+      : m_atomic_num(params.atomic_num), m_pos(std::move(params.pos)),
+        m_props(std::move(params.props)),
+        m_optional_cols(std::move(params.optional_cols)) {}
 
   /// @brief Change the position of an Atom.
   /// @param new_value the new position

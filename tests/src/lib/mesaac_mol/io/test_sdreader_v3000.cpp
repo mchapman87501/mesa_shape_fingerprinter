@@ -103,7 +103,7 @@ TEST_CASE("mesaac::mol::SDReader - read all DrugCentral V3000 structures",
 
   const size_t expected_count = 4278;
   size_t actual_count = 0;
-  for (;;) {
+  while (!reader.eof()) {
     const auto read_result = reader.read();
     if (!read_result.is_ok()) {
       // Is it just end of file, or is something wrong?

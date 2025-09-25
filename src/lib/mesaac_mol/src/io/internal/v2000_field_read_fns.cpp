@@ -43,6 +43,9 @@ bool int_field(const std::string &line, unsigned int i_start,
 
 int optional_int_field(const std::string &line, unsigned int i_start,
                        unsigned int i_len) {
+  if (i_start + i_len > line.size()) {
+    return 0;
+  }
   int result = 0;
   if (!int_field(line, i_start, i_len, result)) {
     return 0;
@@ -52,6 +55,10 @@ int optional_int_field(const std::string &line, unsigned int i_start,
 
 unsigned int optional_uint_field(const std::string &line, unsigned int i_start,
                                  unsigned int i_len) {
+  if (i_start + i_len > line.size()) {
+    return 0;
+  }
+
   int result = 0;
   if (!int_field(line, i_start, i_len, result)) {
     return 0;
