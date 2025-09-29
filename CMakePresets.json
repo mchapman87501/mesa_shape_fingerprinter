@@ -97,7 +97,7 @@
     },
     {
       "name": "benchmark",
-      "configurePreset": "default",
+      "configurePreset": "release",
       "output": {
         "outputOnFailure": true
       },
