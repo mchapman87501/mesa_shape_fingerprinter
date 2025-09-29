@@ -15,3 +15,12 @@ foreach(SCRIPT_NAME ${TEST_SCRIPTS})
     PROPERTIES ENVIRONMENT "PYTHONPATH=${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>"
                LABELS "mesaac;align_monte")
 endforeach()
+
+# Check performance.
+add_test(NAME benchmark_align_monte
+         COMMAND Python3::Interpreter
+                 ${CMAKE_CURRENT_SOURCE_DIR}/benchmark_align_monte.py)
+set_tests_properties(
+  benchmark_align_monte
+  PROPERTIES ENVIRONMENT "PYTHONPATH=${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>"
+             LABELS "mesaac;mesaac_benchmark;align_monte")
