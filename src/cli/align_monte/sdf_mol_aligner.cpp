@@ -43,8 +43,14 @@ struct SortRecord {
   size_t record_num;
   float value;
 
-  static bool compare(const SortRecord &r1, const SortRecord &r2) {
-    return r1.value > r2.value || r1.record_num > r2.record_num;
+  static bool greater(const SortRecord &r1, const SortRecord &r2) {
+    if (r1.value > r2.value) {
+      return true;
+    }
+    if (r1.value < r2.value) {
+      return false;
+    }
+    return r1.record_num > r2.record_num;
   }
 };
 
@@ -63,11 +69,10 @@ float get_tag_value(const mol::Mol &mol, string tag_name) {
   return result;
 }
 
-[[maybe_unused]] void process_mols_conc(mol::SDReader &reader,
-                                        mol::SDWriter &writer, MolAligner &ma,
-                                        bool write_sorted,
-                                        const string &measure_tag,
-                                        SortRecordList &sort_records) {
+void process_mols_conc(mol::SDReader &reader, mol::SDWriter &writer,
+                       MolAligner &ma, bool write_sorted,
+                       const string &measure_tag,
+                       SortRecordList &sort_records) {
 
   using MolPtr = shared_ptr<mol::Mol>;
   using AlignFuture = future<MolPtr>;
@@ -94,28 +99,29 @@ float get_tag_value(const mol::Mol &mol, string tag_name) {
   // i is the sort record index - indicating the order in which
   // each mol was read.  The ref molecule has index 0.
   const size_t i_max = tasks.size();
+  sort_records.reserve(i_max + 1);
+
   for (size_t i = 1; i <= i_max; ++i) {
     auto mol = tasks.front().get();
     tasks.pop_front();
 
     writer.write(*mol);
     if (write_sorted) {
-      sort_records.push_back(SortRecord{i, get_tag_value(*mol, measure_tag)});
+      SortRecord record{i, get_tag_value(*mol, measure_tag)};
+      sort_records.push_back(record);
     }
   }
 }
 
-void write_sorted_records(const filesystem::path& out_pathname, SortRecordList& records, const string& measure_name) {
-      sort(records.begin(), records.end(), SortRecord::compare);
-      ofstream outf(out_pathname);
-
-      outf << "Index\t" << measure_name << endl;
-      SortRecordList::iterator i;
-      for (i = records.begin(); i != records.end(); ++i) {
-        SortRecord &r(*i);
-        outf << r.record_num << "\t" << r.value << endl;
-      }
-      outf.close();
+void write_records(const filesystem::path &out_pathname,
+                   SortRecordList &records, const string &measure_name) {
+  ofstream outf(out_pathname);
+  outf << "Index\t" << measure_name << endl;
+  for (const auto &record : records) {
+    outf << record.record_num << "\t" << record.value << "\n";
+  }
+  outf.flush();
+  outf.close();
 }
 
 } // namespace
@@ -166,7 +172,8 @@ void SDFMolAligner::process_molecules() {
                       sort_records);
 
     if (write_sorted) {
-      write_sorted_records(m_sorted_pathname, sort_records, last_measure);
+      sort(sort_records.begin(), sort_records.end(), SortRecord::greater);
+      write_records(m_sorted_pathname, sort_records, last_measure);
     }
   }
 }
