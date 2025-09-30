@@ -5,10 +5,6 @@
 #pragma once
 
 #include <string>
-#include <vector>
-
-// Singular value decomposition, for PCA -- this defines ap::real_2d_array
-#include "svd.h"
 
 #include "shared_types.hpp"
 
@@ -36,7 +32,7 @@ protected:
   MeasuresList &m_measures;
   std::string m_sorted_pathname;
 
-  PointList m_hamms_sphere_coords;
+  shape::PointList m_hamms_sphere_coords;
   shape_defs::BitVector m_ref_fingerprint;
 
   void read_sphere_points();
