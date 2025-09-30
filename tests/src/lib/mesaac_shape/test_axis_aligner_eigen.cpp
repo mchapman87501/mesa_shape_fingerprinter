@@ -284,6 +284,29 @@ struct TestFixture {
   bool is_non_null_transform(Transform &atom) { return !atom.isZero(); }
 };
 
+TEST_CASE("mesaac::shape::AxisAlignerEigen - Find axis-align transform", "[mesaac]") {
+  TestFixture fixture;
+  std::unique_ptr<TCAxisAlignerEigen> aligner(fixture.new_aligner());
+  mol::AtomVector atoms;
+  PointList points;
+  PointList cloud;
+  unsigned int num_heavies;
+
+  fixture.create_sample_atoms(atoms, num_heavies);
+  aligner->tc_get_atom_points(atoms, points, false);
+  aligner->tc_mean_center_points(points);
+  aligner->tc_get_mean_centered_cloud(points, cloud);
+
+  // Not sure how to test this.  Just confirm it's a 3x3 matrix
+  // with non-empty cells?
+  Transform transform = Transform::Zero();
+  REQUIRE(!fixture.is_non_null_transform(transform));
+
+  aligner->tc_find_axis_align_transform(cloud, transform);
+  REQUIRE(fixture.is_non_null_transform(transform));
+}
+
+
 TEST_CASE("mesaac::shape::AxisAlignerEigen", "[mesaac]") {
   TestFixture fixture;
   std::unique_ptr<TCAxisAlignerEigen> aligner(fixture.new_aligner());
@@ -411,23 +434,23 @@ TEST_CASE("mesaac::shape::AxisAlignerEigen", "[mesaac]") {
     REQUIRE(ddepth <= dmax);
   }
 
-  SECTION("Find axis-align transform") {
-    PointList cloud;
-    unsigned int num_heavies;
+  // SECTION("Find axis-align transform") {
+  //   PointList cloud;
+  //   unsigned int num_heavies;
 
-    fixture.create_sample_atoms(atoms, num_heavies);
-    aligner->tc_get_atom_points(atoms, points, false);
-    aligner->tc_mean_center_points(points);
-    aligner->tc_get_mean_centered_cloud(points, cloud);
+  //   fixture.create_sample_atoms(atoms, num_heavies);
+  //   aligner->tc_get_atom_points(atoms, points, false);
+  //   aligner->tc_mean_center_points(points);
+  //   aligner->tc_get_mean_centered_cloud(points, cloud);
 
-    // Not sure how to test this.  Just confirm it's a 3x3 matrix
-    // with non-empty cells?
-    Transform transform = Transform::Zero();
-    REQUIRE(!fixture.is_non_null_transform(transform));
+  //   // Not sure how to test this.  Just confirm it's a 3x3 matrix
+  //   // with non-empty cells?
+  //   Transform transform = Transform::Zero();
+  //   REQUIRE(!fixture.is_non_null_transform(transform));
 
-    aligner->tc_find_axis_align_transform(cloud, transform);
-    REQUIRE(fixture.is_non_null_transform(transform));
-  }
+  //   aligner->tc_find_axis_align_transform(cloud, transform);
+  //   REQUIRE(fixture.is_non_null_transform(transform));
+  // }
 
   SECTION("Untranslate points") {
     Point offset{1.0, 2.0, 3.0};
@@ -441,7 +464,7 @@ TEST_CASE("mesaac::shape::AxisAlignerEigen", "[mesaac]") {
     unsigned int i;
     const unsigned int i_max = 10;
     for (i = 0; i != i_max; i++) {
-      points.push_back({i + 1.0f, i + 2.0f, i + 3.0f});
+      points.push_back({i + offset[0], i + offset[1], i + offset[2]});
     }
 
     aligner->tc_untranslate_points(points, offset);
@@ -465,7 +488,9 @@ TEST_CASE("mesaac::shape::AxisAlignerEigen", "[mesaac]") {
 
     fixture.create_sample_atoms(atoms, num_heavies);
     aligner->tc_get_atom_points(atoms, points, false);
+    REQUIRE(!fixture.is_mean_centered(points));
     aligner->tc_mean_center_points(points);
+    REQUIRE(fixture.is_mean_centered(points));
     aligner->tc_get_mean_centered_cloud(points, cloud);
 
     REQUIRE(!fixture.is_non_null_transform(transform));

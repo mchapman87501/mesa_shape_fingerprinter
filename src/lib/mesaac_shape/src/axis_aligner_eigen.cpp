@@ -7,8 +7,10 @@
 
 #include <Eigen/Geometry>
 #include <Eigen/SVD>
-#include <sstream>
+
 #include <stdexcept>
+#include <format>
+
 
 using namespace std;
 
@@ -29,38 +31,24 @@ inline bool in_atom(const Point &point, const Point &atom, float eps_sqr) {
   return false;
 }
 
-bool axis_is_mirrored(Transform &vt) {
-  // Transform 3 unit "vectors" such that the 3rd is the cross product
-  // of the first 2.  After transformation, confirm it is still the
-  // cross product.
-
-  // TODO:  Figure out how to use Vector4f and a 4x4 transform
-  // matrix.  Eigen may be able to perform better this way because
-  // of auto-vectorization packet sizes.
-  typedef Eigen::Vector3f EPoint;
-  EPoint a, b, c;
-  // Why is this epsilon faster than EPoint(1.0, 0.0, 0.0) etc.?
-  a << 1.0, 0.0, 0.0;
-  b << 0.0, 1.0, 0.0;
-  c << 0.0, 0.0, 1.0;
-  a = vt * a;
-  b = vt * b;
-  c = vt * c;
-  EPoint xp(a.cross(b));
-  return !(c - xp).isZero();
-}
-
 void unmirror_axes(Transform &vt) {
+  
+  const Transform vt_orig = vt;
+
   for (unsigned int i = 0; i != 3; i++) {
-    if (!axis_is_mirrored(vt)) {
+    // Is any axis of vt flipped/mirrored?  If not (and if vt doesn't
+    // scale any axis to zero) we're good.
+    if (vt.determinant() > 0) {
       break;
     }
-    vt(i) *= -1;
-    if (axis_is_mirrored(vt)) {
-      // Still mirrored?  Back off and try again w. the next
-      // axis.
-      vt(i) *= -1;
-    }
+
+    Transform axis_flip = Transform::Identity();
+    axis_flip(i, i) = -1;
+    vt = axis_flip * vt_orig;
+  }
+
+  if (vt.determinant() < 0) {
+    throw std::runtime_error("AxisAlignerEigen could not unmirror axes.");
   }
 }
 
@@ -116,30 +104,25 @@ void AxisAlignerEigen::mean_center_points(PointList &points) {
 }
 
 void AxisAlignerEigen::get_mean_center(const PointList &points, Point &mean) {
-  mean.clear();
-  if (points.size() == 0) {
-    mean.push_back(0);
-    mean.push_back(0);
-    mean.push_back(0);
-  } else {
+  mean = {0, 0, 0};
+  if (!points.empty()) {
     float xsum = 0, ysum = 0, zsum = 0;
-    for (const auto &p : points) {
-      xsum += p[0];
-      ysum += p[1];
-      zsum += p[2];
+    for (const auto &point : points) {
+      xsum += point[0];
+      ysum += point[1];
+      zsum += point[2];
     }
-    mean.push_back(xsum / points.size());
-    mean.push_back(ysum / points.size());
-    mean.push_back(zsum / points.size());
+    const auto npts = points.size();
+    mean = {xsum / npts, ysum / npts, zsum / npts};
   }
 }
 
 void AxisAlignerEigen::untranslate_points(PointList &points,
                                           const Point &offset) {
-  for (auto &p : points) {
-    p[0] -= offset[0];
-    p[1] -= offset[1];
-    p[2] -= offset[2];
+  for (auto &point : points) {
+    point[0] -= offset[0];
+    point[1] -= offset[1];
+    point[2] -= offset[2];
   }
 }
 
@@ -160,10 +143,9 @@ void AxisAlignerEigen::get_mean_centered_cloud(const PointList &centers,
 void AxisAlignerEigen::update_atom_coords(mol::AtomVector &atoms,
                                           const PointList &atom_centers) {
   if (atoms.size() != atom_centers.size()) {
-    ostringstream msg;
-    msg << "Atom vector length " << atoms.size()
-        << " must equal atom centers length " << atom_centers.size();
-    throw length_error(msg.str());
+    throw std::length_error(
+        std::format("Atom vector length {} must equal atom centers length {}",
+                    atoms.size(), atom_centers.size()));
   }
 
   mol::AtomVector::iterator atom_iter(atoms.begin());
@@ -189,7 +171,7 @@ void AxisAlignerEigen::transform_points(PointList &points, Transform &vt) {
 
 void AxisAlignerEigen::find_axis_align_transform(const PointList &cloud,
                                                  Transform &transform) {
-  if (cloud.size() <= 0) {
+  if (cloud.empty()) {
     // TODO: Instead of failing, just return the identity transform.
     throw invalid_argument("Can't find alignment for empty cloud");
   }
