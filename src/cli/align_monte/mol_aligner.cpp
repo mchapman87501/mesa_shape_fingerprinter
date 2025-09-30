@@ -89,8 +89,6 @@ void MolAligner::process_one_molecule(mol::Mol &mol) {
 void MolAligner::compute_best_sphere_fingerprint(
     const shape::PointList &points, measures::MeasuresBase::Ptr measure,
     unsigned int &i_best, float &best_measure) {
-      ostringstream outs;
-      outs << "DEBUG: compute_best_sphere_fingerprint" << endl;
   i_best = 0;
   best_measure = 0;
   for (unsigned int iFlip = 0; iFlip != c_flip_matrix_size; iFlip++) {
@@ -100,11 +98,7 @@ void MolAligner::compute_best_sphere_fingerprint(
       i_best = iFlip;
       best_measure = currMeasure;
     }
-      outs << "    Flip " << iFlip << " has value " << currMeasure << endl;
   }
-  outs << "  RESULT: flip " << i_best << " with value " << best_measure << endl;
-  cerr << outs.str();
-
 }
 
 static inline void get_flipped_points(const shape::PointList &points,
@@ -132,7 +126,6 @@ float MolAligner::compute_measure_for_flip(
   shape_defs::BitVector curr_fingerprint;
   m_volBox.set_bits_for_spheres(flipped_points, curr_fingerprint, true, 0);
   const float result = measure->similarity(curr_fingerprint, m_ref_fingerprint);
-  cerr << "DEBUG: compute_measure_for_flip returns " << result << endl;
   return result;
 }
 
