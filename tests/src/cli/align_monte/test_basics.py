@@ -177,7 +177,7 @@ class TestCase(btc.TestCaseBase):
             / "hammersley"
             / "hamm_spheroid_20k_11rad.txt"
         )
-        options = options or []
+        options = [str(v) for v in (options or [])]
         args = options + [str(sd_pathname), str(hamm_sphere), "1.0"]
         return self._run(*args)
 
