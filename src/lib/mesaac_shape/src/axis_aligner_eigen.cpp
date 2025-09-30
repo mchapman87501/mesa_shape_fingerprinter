@@ -8,51 +8,12 @@
 #include <Eigen/Geometry>
 #include <Eigen/SVD>
 
-#include <stdexcept>
 #include <format>
-
+#include <stdexcept>
 
 using namespace std;
 
 namespace mesaac::shape {
-namespace {
-inline bool in_atom(const Point &point, const Point &atom, float eps_sqr) {
-  const float radius(atom.at(3));
-  const float max_bsqr(radius * radius * eps_sqr);
-  double dx(point[0] - atom[0]);
-  const double dx_sqr = dx * dx;
-  // Only bother to calc distance if inside boundary
-  if (dx_sqr <= max_bsqr) {
-    double dy(point[1] - atom[1]);
-    double dz(point[2] - atom[2]);
-    float dsqr = dx_sqr + (dy * dy) + (dz * dz);
-    return (dsqr <= max_bsqr);
-  }
-  return false;
-}
-
-void unmirror_axes(Transform &vt) {
-  
-  const Transform vt_orig = vt;
-
-  for (unsigned int i = 0; i != 3; i++) {
-    // Is any axis of vt flipped/mirrored?  If not (and if vt doesn't
-    // scale any axis to zero) we're good.
-    if (vt.determinant() > 0) {
-      break;
-    }
-
-    Transform axis_flip = Transform::Identity();
-    axis_flip(i, i) = -1;
-    vt = axis_flip * vt_orig;
-  }
-
-  if (vt.determinant() < 0) {
-    throw std::runtime_error("AxisAlignerEigen could not unmirror axes.");
-  }
-}
-
-} // namespace
 
 void AxisAlignerEigen::align_to_axes(mol::Mol &m) {
   align_to_axes(m.mutable_atoms());
@@ -166,6 +127,29 @@ void AxisAlignerEigen::transform_points(PointList &points, Transform &vt) {
     p[0] = transformed[0];
     p[1] = transformed[1];
     p[2] = transformed[2];
+  }
+}
+
+// Note: this *should* be a function in an anonymous namespace.
+// It's a member function so as to be amenable to unit testing.
+void AxisAlignerEigen::unmirror_axes(Transform &transform) {
+  const Transform t_orig = transform;
+
+  // Try flipping one axis at a time, until the result has no mirrored axes.
+  for (unsigned int i = 0; i != 3; i++) {
+    // Is any axis of transform flipped/mirrored?  If not (and if transform
+    // doesn't scale any axis to zero) all is good.
+    if (transform.determinant() > 0) {
+      break;
+    }
+
+    Transform axis_flip = Transform::Identity();
+    axis_flip(i, i) = -1;
+    transform = axis_flip * t_orig;
+  }
+
+  if (transform.determinant() < 0) {
+    throw std::runtime_error("Could not unmirror axes.");
   }
 }
 

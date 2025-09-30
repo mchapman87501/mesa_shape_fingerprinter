@@ -9,6 +9,10 @@
 #include <filesystem>
 #include <fstream>
 
+// Needed in order to call .determinant() when compiling with Release build
+// type.
+#include <Eigen/Dense>
+
 #include "mesaac_mol/element_info.hpp"
 #include "mesaac_shape/axis_aligner_eigen.hpp"
 
@@ -39,6 +43,8 @@ public:
   void tc_get_mean_centered_cloud(const PointList &centers, PointList &cloud) {
     get_mean_centered_cloud(centers, cloud);
   }
+
+  void tc_unmirror_axes(Transform &t) { unmirror_axes(t); }
 
   void tc_find_axis_align_transform(const PointList &cloud, Transform &t) {
     find_axis_align_transform(cloud, t);
@@ -284,7 +290,8 @@ struct TestFixture {
   bool is_non_null_transform(Transform &atom) { return !atom.isZero(); }
 };
 
-TEST_CASE("mesaac::shape::AxisAlignerEigen - Find axis-align transform", "[mesaac]") {
+TEST_CASE("mesaac::shape::AxisAlignerEigen - Find axis-align transform",
+          "[mesaac]") {
   TestFixture fixture;
   std::unique_ptr<TCAxisAlignerEigen> aligner(fixture.new_aligner());
   mol::AtomVector atoms;
@@ -306,6 +313,28 @@ TEST_CASE("mesaac::shape::AxisAlignerEigen - Find axis-align transform", "[mesaa
   REQUIRE(fixture.is_non_null_transform(transform));
 }
 
+TEST_CASE(
+    "mesaac::shape::AxisAlignerEigen - Detect and fix mirrored-axis transforms",
+    "[mesaac]") {
+  TestFixture fixture;
+  std::unique_ptr<TCAxisAlignerEigen> aligner(fixture.new_aligner());
+  Transform no_flip = Transform::Identity();
+
+  // Ensure transform has no flipped axis.
+  REQUIRE(no_flip.determinant() > 0);
+  // Ensure unmirroring does not modify the transform.
+  aligner->tc_unmirror_axes(no_flip);
+  REQUIRE(no_flip == Transform::Identity());
+
+  Transform y_flip = Transform::Identity();
+  y_flip(1, 1) = -1.0;
+
+  // Ensure transform has a flipped axis.
+  REQUIRE(y_flip.determinant() < 0);
+  // WEAK: Ensure unmirroring results in no flipped axes.
+  aligner->tc_unmirror_axes(y_flip);
+  REQUIRE(y_flip.determinant() > 0);
+}
 
 TEST_CASE("mesaac::shape::AxisAlignerEigen", "[mesaac]") {
   TestFixture fixture;
