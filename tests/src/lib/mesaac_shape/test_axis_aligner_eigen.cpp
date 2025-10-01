@@ -456,24 +456,6 @@ TEST_CASE("mesaac::shape::AxisAlignerEigen", "[mesaac]") {
     REQUIRE(ddepth <= dmax);
   }
 
-  // SECTION("Find axis-align transform") {
-  //   PointList cloud;
-  //   unsigned int num_heavies;
-
-  //   create_sample_atoms(atoms, num_heavies);
-  //   aligner->tc_get_atom_points(atoms, points, false);
-  //   aligner->tc_mean_center_points(points);
-  //   aligner->tc_get_mean_centered_cloud(points, cloud);
-
-  //   // Not sure how to test this.  Just confirm it's a 3x3 matrix
-  //   // with non-empty cells?
-  //   Transform transform = Transform::Zero();
-  //   REQUIRE(!is_non_null_transform(transform));
-
-  //   aligner->tc_find_axis_align_transform(cloud, transform);
-  //   REQUIRE(is_non_null_transform(transform));
-  // }
-
   SECTION("Untranslate points") {
     Point offset{1.0, 2.0, 3.0};
 
