@@ -131,7 +131,7 @@ void AxisAlignerEigen::transform_points(PointList &points, Transform &vt) {
 }
 
 // Note: this *should* be a function in an anonymous namespace.
-// It's a member function so as to be amenable to unit testing.
+// It's a member function so as to ease unit testing.
 void AxisAlignerEigen::unmirror_axes(Transform &transform) {
   const Transform t_orig = transform;
 
@@ -140,7 +140,7 @@ void AxisAlignerEigen::unmirror_axes(Transform &transform) {
     // Is any axis of transform flipped/mirrored?  If not (and if transform
     // doesn't scale any axis to zero) all is good.
     if (transform.determinant() > 0) {
-      break;
+      return;
     }
 
     Transform axis_flip = Transform::Identity();
