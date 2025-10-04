@@ -63,261 +63,256 @@ public:
   }
 };
 
-class TestFixture {
-public:
-  void get_point_means(const PointList &points, float &x, float &y, float &z) {
-    x = y = z = 0.0;
-    if (points.size()) {
-      float xsum = 0, ysum = 0, zsum = 0;
-      for (const auto p : points) {
-        xsum += p[0];
-        ysum += p[1];
-        zsum += p[2];
+void get_point_means(const PointList &points, float &x, float &y, float &z) {
+  x = y = z = 0.0;
+  if (points.size()) {
+    float xsum = 0, ysum = 0, zsum = 0;
+    for (const auto p : points) {
+      xsum += p[0];
+      ysum += p[1];
+      zsum += p[2];
+    }
+    x = xsum / points.size();
+    y = ysum / points.size();
+    z = zsum / points.size();
+  }
+}
+
+// Find the extent of set of points, along each axis.
+void get_point_extents(const PointList &points, float &dx, float &dy,
+                       float &dz) {
+  dx = dy = dz = 0.0;
+  if (points.size()) {
+    bool first = true;
+    float xmin = 0, ymin = 0, zmin = 0, xmax = 0, ymax = 0, zmax = 0;
+    for (const Point &p : points) {
+      if (first) {
+        xmin = xmax = p[0];
+        ymin = ymax = p[1];
+        zmin = zmax = p[2];
+        first = false;
+      } else {
+        xmin = min(xmin, p[0]);
+        xmax = max(xmax, p[0]);
+        ymin = min(ymin, p[1]);
+        ymax = max(ymax, p[1]);
+        zmin = min(zmin, p[2]);
+        zmax = max(zmax, p[2]);
       }
-      x = xsum / points.size();
-      y = ysum / points.size();
-      z = zsum / points.size();
     }
+    dx = xmax - xmin;
+    dy = ymax - ymin;
+    dz = zmax - zmin;
   }
+}
 
-  // Find the extent of set of points, along each axis.
-  void get_point_extents(const PointList &points, float &dx, float &dy,
-                         float &dz) {
-    dx = dy = dz = 0.0;
-    if (points.size()) {
-      bool first = true;
-      float xmin = 0, ymin = 0, zmin = 0, xmax = 0, ymax = 0, zmax = 0;
-      for (const Point &p : points) {
-        if (first) {
-          xmin = xmax = p[0];
-          ymin = ymax = p[1];
-          zmin = zmax = p[2];
-          first = false;
-        } else {
-          xmin = min(xmin, p[0]);
-          xmax = max(xmax, p[0]);
-          ymin = min(ymin, p[1]);
-          ymax = max(ymax, p[1]);
-          zmin = min(zmin, p[2]);
-          zmax = max(zmax, p[2]);
-        }
+void read_test_points(const filesystem::path &pathname, PointList &points) {
+  // Use the test data directory specified by TEST_DATA_DIR preprocessor
+  // symbol.
+  const filesystem::path test_data_dir(TEST_DATA_DIR);
+  const auto data_dir(test_data_dir / "hammersley/");
+  const auto full_path(data_dir / pathname);
+  points.clear();
+  ifstream inf(full_path);
+  if (!inf) {
+    ostringstream msg;
+    msg << "Could not open " << pathname << " for reading." << endl;
+    throw std::runtime_error(msg.str());
+  }
+  float x, y, z;
+  while (inf >> x >> y >> z) {
+    points.push_back({x, y, z});
+  }
+  inf.close();
+}
+
+std::unique_ptr<TCAxisAligner> new_aligner() {
+  PointList sphere;
+  float atom_scale = 1.0;
+
+  // Assume we will be run in a location fixed relative to
+  // the data files.
+  read_test_points("hamm_spheroid_10k_11rad.txt", sphere);
+  return std::make_unique<TCAxisAligner>(sphere, atom_scale, false);
+}
+
+std::unique_ptr<TCAxisAligner> new_aligner_ac_only() {
+  PointList sphere;
+  float atom_scale = 1.0;
+  read_test_points("hamm_spheroid_10k_11rad.txt", sphere);
+  return std::make_unique<TCAxisAligner>(sphere, atom_scale, true);
+}
+
+mol::Atom atom(string symbol, float x, float y, float z) {
+  const unsigned char atomic_num(mol::get_atomic_num(symbol));
+  return mol::Atom({atomic_num, {x, y, z}});
+}
+
+void create_sample_mol(mol::Mol &mol, unsigned int &num_heavies) {
+  // Coordinates taken from first cox2_3d conformer.
+  mol::AtomVector atoms{
+      atom("C", 27.7051, 22.0403, 17.0243),
+      atom("N", 26.4399, 22.0976, 16.4318),
+      atom("C", 25.5381, 21.4424, 17.2831),
+      atom("C", 26.2525, 20.9753, 18.3748),
+      atom("C", 27.5943, 21.3608, 18.2218),
+      atom("C", 24.0821, 21.3670, 17.1082),
+      atom("C", 26.1324, 22.6824, 15.1634),
+      atom("C", 23.4105, 22.2668, 16.2675),
+      atom("C", 22.0220, 22.2007, 16.1197),
+      atom("C", 21.2976, 21.2409, 16.8307),
+      atom("C", 21.9509, 20.3402, 17.6750),
+      atom("C", 23.3399, 20.4115, 17.8175),
+      atom("C", 26.3695, 24.0457, 14.9358),
+      atom("C", 26.0627, 24.6119, 13.6959),
+      atom("C", 25.5236, 23.8179, 12.6910),
+      atom("C", 25.2821, 22.4660, 12.9010),
+      atom("C", 25.5848, 21.8942, 14.1391),
+      atom("F", 25.2311, 24.3643, 11.5034),
+      atom("C", 28.9655, 22.5443, 16.4025),
+      atom("S", 19.5328, 21.1457, 16.6315),
+      atom("O", 19.0413, 22.4851, 16.3229),
+      atom("O", 18.9873, 20.4577, 17.7975),
+      atom("C", 19.3258, 20.1152, 15.2035),
+      atom("H", 25.8309, 20.4354, 19.2156),
+      atom("H", 28.4100, 21.1477, 18.9041),
+      atom("H", 23.9630, 23.0298, 15.7210),
+      atom("H", 21.5209, 22.9035, 15.4575),
+      atom("H", 21.3956, 19.5863, 18.2287),
+      atom("H", 23.8404, 19.7079, 18.4815),
+      atom("H", 26.7480, 24.6961, 15.7203),
+      atom("H", 26.2341, 25.6696, 13.5167),
+      atom("H", 24.8658, 21.8592, 12.1019),
+      atom("H", 25.4187, 20.8273, 14.2701),
+      atom("H", 29.8338, 22.0387, 16.8401),
+      atom("H", 29.0870, 23.6157, 16.5858),
+      atom("H", 28.9947, 22.3510, 15.3261),
+      atom("H", 18.2555, 20.0118, 15.0126),
+      atom("H", 19.7633, 19.1356, 15.4046),
+      atom("H", 19.8115, 20.5898, 14.3489),
+  };
+  mol = mol::Mol({.atoms = atoms});
+  num_heavies = 23;
+}
+
+void create_sample_atoms(mol::AtomVector &atoms, unsigned int &num_heavies) {
+  mol::Mol m;
+
+  create_sample_mol(m, num_heavies);
+  // Take care to deep-copy all of the atom pointers.
+  atoms.clear();
+  const mol::AtomVector &src(m.atoms());
+  for (const auto src_atom : src) {
+    atoms.push_back(src_atom);
+  }
+}
+
+bool coords_match(const mol::AtomVector &atoms, const PointList &points,
+                  unsigned int count) {
+  // cout << "coords_match? " << endl
+  //      << "  # atoms:    " << atoms.size() << endl
+  //      << "  # points:   " << points.size() << endl
+  //      << "  # to check: " << count << endl;
+  if ((atoms.size() >= count) && (points.size() >= count)) {
+    for (int i = count - 1; i >= 0; --i) {
+      const mol::Atom &a(atoms[i]);
+      const Point &p(points[i]);
+      const mol::Position &pos(a.pos());
+      if ((pos.x() != p[0]) || (pos.y() != p[1]) || (pos.z() != p[2])) {
+        return false;
       }
-      dx = xmax - xmin;
-      dy = ymax - ymin;
-      dz = zmax - zmin;
     }
+    return true;
   }
+  return false;
+}
 
-  void read_test_points(const filesystem::path &pathname, PointList &points) {
-    // Use the test data directory specified by TEST_DATA_DIR preprocessor
-    // symbol.
-    const filesystem::path test_data_dir(TEST_DATA_DIR);
-    const auto data_dir(test_data_dir / "hammersley/");
-    const auto full_path(data_dir / pathname);
-    points.clear();
-    ifstream inf(full_path);
-    if (!inf) {
-      ostringstream msg;
-      msg << "Could not open " << pathname << " for reading." << endl;
-      throw std::runtime_error(msg.str());
-    }
-    float x, y, z;
-    while (inf >> x >> y >> z) {
-      points.push_back({x, y, z});
-    }
-    inf.close();
-  }
-
-  std::unique_ptr<TCAxisAligner> new_aligner() {
-    PointList sphere;
-    float atom_scale = 1.0;
-
-    // Assume we will be run in a location fixed relative to
-    // the data files.
-    read_test_points("hamm_spheroid_10k_11rad.txt", sphere);
-    return std::make_unique<TCAxisAligner>(sphere, atom_scale, false);
-  }
-
-  std::unique_ptr<TCAxisAligner> new_aligner_ac_only() {
-    PointList sphere;
-    float atom_scale = 1.0;
-    read_test_points("hamm_spheroid_10k_11rad.txt", sphere);
-    return std::make_unique<TCAxisAligner>(sphere, atom_scale, true);
-  }
-
-  mol::Atom atom(string symbol, float x, float y, float z) const {
-    const unsigned char atomic_num(mol::get_atomic_num(symbol));
-    return mol::Atom({atomic_num, {x, y, z}});
-  }
-
-  void create_sample_mol(mol::Mol &mol, unsigned int &num_heavies) const {
-    // Coordinates taken from first cox2_3d conformer.
-    mol::AtomVector atoms{
-        atom("C", 27.7051, 22.0403, 17.0243),
-        atom("N", 26.4399, 22.0976, 16.4318),
-        atom("C", 25.5381, 21.4424, 17.2831),
-        atom("C", 26.2525, 20.9753, 18.3748),
-        atom("C", 27.5943, 21.3608, 18.2218),
-        atom("C", 24.0821, 21.3670, 17.1082),
-        atom("C", 26.1324, 22.6824, 15.1634),
-        atom("C", 23.4105, 22.2668, 16.2675),
-        atom("C", 22.0220, 22.2007, 16.1197),
-        atom("C", 21.2976, 21.2409, 16.8307),
-        atom("C", 21.9509, 20.3402, 17.6750),
-        atom("C", 23.3399, 20.4115, 17.8175),
-        atom("C", 26.3695, 24.0457, 14.9358),
-        atom("C", 26.0627, 24.6119, 13.6959),
-        atom("C", 25.5236, 23.8179, 12.6910),
-        atom("C", 25.2821, 22.4660, 12.9010),
-        atom("C", 25.5848, 21.8942, 14.1391),
-        atom("F", 25.2311, 24.3643, 11.5034),
-        atom("C", 28.9655, 22.5443, 16.4025),
-        atom("S", 19.5328, 21.1457, 16.6315),
-        atom("O", 19.0413, 22.4851, 16.3229),
-        atom("O", 18.9873, 20.4577, 17.7975),
-        atom("C", 19.3258, 20.1152, 15.2035),
-        atom("H", 25.8309, 20.4354, 19.2156),
-        atom("H", 28.4100, 21.1477, 18.9041),
-        atom("H", 23.9630, 23.0298, 15.7210),
-        atom("H", 21.5209, 22.9035, 15.4575),
-        atom("H", 21.3956, 19.5863, 18.2287),
-        atom("H", 23.8404, 19.7079, 18.4815),
-        atom("H", 26.7480, 24.6961, 15.7203),
-        atom("H", 26.2341, 25.6696, 13.5167),
-        atom("H", 24.8658, 21.8592, 12.1019),
-        atom("H", 25.4187, 20.8273, 14.2701),
-        atom("H", 29.8338, 22.0387, 16.8401),
-        atom("H", 29.0870, 23.6157, 16.5858),
-        atom("H", 28.9947, 22.3510, 15.3261),
-        atom("H", 18.2555, 20.0118, 15.0126),
-        atom("H", 19.7633, 19.1356, 15.4046),
-        atom("H", 19.8115, 20.5898, 14.3489),
-    };
-    mol = mol::Mol({.atoms = atoms});
-    num_heavies = 23;
-  }
-
-  void create_sample_atoms(mol::AtomVector &atoms, unsigned int &num_heavies) {
-    mol::Mol m;
-
-    create_sample_mol(m, num_heavies);
-    // Take care to deep-copy all of the atom pointers.
-    atoms.clear();
-    const mol::AtomVector &src(m.atoms());
-    for (const auto src_atom : src) {
-      atoms.push_back(src_atom);
-    }
-  }
-
-  bool coords_match(const mol::AtomVector &atoms, const PointList &points,
-                    unsigned int count) {
-    // cout << "coords_match? " << endl
-    //      << "  # atoms:    " << atoms.size() << endl
-    //      << "  # points:   " << points.size() << endl
-    //      << "  # to check: " << count << endl;
-    if ((atoms.size() >= count) && (points.size() >= count)) {
-      for (int i = count - 1; i >= 0; --i) {
-        const mol::Atom &a(atoms[i]);
-        const Point &p(points[i]);
-        const mol::Position &pos(a.pos());
-        if ((pos.x() != p[0]) || (pos.y() != p[1]) || (pos.z() != p[2])) {
-          return false;
-        }
-      }
-      return true;
-    }
-    return false;
-  }
-
-  void get_pointlist_info(const PointList &points, float &xmid, float &ymid,
-                          float &zmid, float &width, float &height,
-                          float &depth) {
-    xmid = ymid = zmid = width = height = depth = 0.0;
-    if (points.size()) {
-      float xmin, ymin, zmin, xmax, ymax, zmax;
-      float xsum = 0, ysum = 0, zsum = 0;
-      bool first = true;
-      for (const auto &point : points) {
-        const float x(point[0]), y(point[1]), z(point[2]);
-        xsum += x;
-        ysum += y;
-        zsum += z;
-
-        if (first) {
-          xmin = xmax = x;
-          ymin = ymax = y;
-          zmin = zmax = z;
-          first = false;
-        } else {
-          xmin = min(xmin, x);
-          xmax = max(xmax, x);
-          ymin = min(ymin, y);
-          ymax = max(ymax, y);
-          zmin = min(zmin, z);
-          zmax = max(zmax, z);
-        }
-      }
-
-      xmid = xsum / points.size();
-      ymid = ysum / points.size();
-      zmid = zsum / points.size();
-      width = xmax - xmin;
-      height = ymax - ymin;
-      depth = zmax - zmin;
-    }
-  }
-
-  bool is_mean_centered(const PointList &points) {
-    float xmid, ymid, zmid, w, h, d;
-    get_pointlist_info(points, xmid, ymid, zmid, w, h, d);
-    std::cerr << "DEBUG: is_mean_centered midpoint: " << xmid << ", " << ymid
-              << ", " << zmid << std::endl;
-    auto matcher = Catch::Matchers::WithinAbs(0.0, 0.0001);
-    return matcher.match(xmid) && matcher.match(ymid) && matcher.match(zmid);
-  }
-
-  bool has_nonincreasing_extents(const PointList &points) {
-    float xmid, ymid, zmid, w, h, d;
-    get_pointlist_info(points, xmid, ymid, zmid, w, h, d);
-    bool result = ((w >= h) && (h >= d) && (d > 0));
-    return result;
-  }
-
-  float find_max_radius(const PointList &points) {
-    float result = 0.0;
+void get_pointlist_info(const PointList &points, float &xmid, float &ymid,
+                        float &zmid, float &width, float &height,
+                        float &depth) {
+  xmid = ymid = zmid = width = height = depth = 0.0;
+  if (points.size()) {
+    float xmin, ymin, zmin, xmax, ymax, zmax;
+    float xsum = 0, ysum = 0, zsum = 0;
+    bool first = true;
     for (const auto &point : points) {
-      result = max(result, point.at(3));
-    }
-    return result;
-  }
+      const float x(point[0]), y(point[1]), z(point[2]);
+      xsum += x;
+      ysum += y;
+      zsum += z;
 
-  bool is_non_null_transform(Transform &a) {
-    // WEAK!
-    int low_row = a.getlowbound(1);
-    int high_row = a.gethighbound(1);
-    int low_col = a.getlowbound(2);
-    int high_col = a.gethighbound(2);
-    bool result = (((high_row - low_row) == 2) && ((high_col - low_col) == 2));
-    if (result) {
-      result = false;
-      for (int r = low_row; !result && (r <= high_row); r++) {
-        ap::raw_vector<double> row_v = a.getrow(r, low_col, high_col);
-        double *curr_col = row_v.GetData();
-        for (int icol = low_col; !result && (icol <= high_col); ++icol) {
-          result = (*curr_col != 0.0);
-          curr_col++;
-        }
+      if (first) {
+        xmin = xmax = x;
+        ymin = ymax = y;
+        zmin = zmax = z;
+        first = false;
+      } else {
+        xmin = min(xmin, x);
+        xmax = max(xmax, x);
+        ymin = min(ymin, y);
+        ymax = max(ymax, y);
+        zmin = min(zmin, z);
+        zmax = max(zmax, z);
       }
     }
-    return result;
+
+    xmid = xsum / points.size();
+    ymid = ysum / points.size();
+    zmid = zsum / points.size();
+    width = xmax - xmin;
+    height = ymax - ymin;
+    depth = zmax - zmin;
   }
-};
-} // namespace
+}
+
+bool is_mean_centered(const PointList &points) {
+  float xmid, ymid, zmid, w, h, d;
+  get_pointlist_info(points, xmid, ymid, zmid, w, h, d);
+  std::cerr << "DEBUG: is_mean_centered midpoint: " << xmid << ", " << ymid
+            << ", " << zmid << std::endl;
+  auto matcher = Catch::Matchers::WithinAbs(0.0, 0.0001);
+  return matcher.match(xmid) && matcher.match(ymid) && matcher.match(zmid);
+}
+
+bool has_nonincreasing_extents(const PointList &points) {
+  float xmid, ymid, zmid, w, h, d;
+  get_pointlist_info(points, xmid, ymid, zmid, w, h, d);
+  bool result = ((w >= h) && (h >= d) && (d > 0));
+  return result;
+}
+
+float find_max_radius(const PointList &points) {
+  float result = 0.0;
+  for (const auto &point : points) {
+    result = max(result, point.at(3));
+  }
+  return result;
+}
+
+bool is_non_null_transform(Transform &a) {
+  // WEAK!
+  int low_row = a.getlowbound(1);
+  int high_row = a.gethighbound(1);
+  int low_col = a.getlowbound(2);
+  int high_col = a.gethighbound(2);
+  bool result = (((high_row - low_row) == 2) && ((high_col - low_col) == 2));
+  if (result) {
+    result = false;
+    for (int r = low_row; !result && (r <= high_row); r++) {
+      ap::raw_vector<double> row_v = a.getrow(r, low_col, high_col);
+      double *curr_col = row_v.GetData();
+      for (int icol = low_col; !result && (icol <= high_col); ++icol) {
+        result = (*curr_col != 0.0);
+        curr_col++;
+      }
+    }
+  }
+  return result;
+}
 
 TEST_CASE("mesaac::shape::AxisAligner", "[mesaac]") {
   // This setup is performed separately for each section.
-  TestFixture fixture;
-  std::unique_ptr<TCAxisAligner> aligner(fixture.new_aligner());
+  std::unique_ptr<TCAxisAligner> aligner(new_aligner());
   mol::AtomVector atoms;
   PointList points;
 
@@ -333,14 +328,14 @@ TEST_CASE("mesaac::shape::AxisAligner", "[mesaac]") {
   SECTION("Get atom coords from a vector of heavy atoms") {
     unsigned int num_heavies;
 
-    fixture.create_sample_atoms(atoms, num_heavies);
+    create_sample_atoms(atoms, num_heavies);
     aligner->tc_get_atom_points(atoms, points, false);
     REQUIRE(atoms.size() > num_heavies);
     REQUIRE(num_heavies > 0);
-    REQUIRE(fixture.coords_match(atoms, points, num_heavies));
+    REQUIRE(coords_match(atoms, points, num_heavies));
 
     aligner->tc_get_atom_points(atoms, points, true);
-    REQUIRE(fixture.coords_match(atoms, points, atoms.size()));
+    REQUIRE(coords_match(atoms, points, atoms.size()));
   }
 
   SECTION("Get the mean center of an empty list of points") {
@@ -357,7 +352,7 @@ TEST_CASE("mesaac::shape::AxisAligner", "[mesaac]") {
     unsigned int num_heavies;
     Point center;
 
-    fixture.create_sample_atoms(atoms, num_heavies);
+    create_sample_atoms(atoms, num_heavies);
     aligner->tc_get_atom_points(atoms, points, false);
     aligner->tc_get_mean_center(points, center);
     REQUIRE(center.size() == 3);
@@ -383,15 +378,15 @@ TEST_CASE("mesaac::shape::AxisAligner", "[mesaac]") {
 
     // TODO:  create a set of atoms w. known positions and
     // easily verified extents.
-    fixture.create_sample_atoms(atoms, num_heavies);
+    create_sample_atoms(atoms, num_heavies);
     aligner->tc_get_atom_points(atoms, points, false);
     REQUIRE((size_t)num_heavies == points.size());
     aligner->tc_mean_center_points(points);
     REQUIRE((size_t)num_heavies == points.size());
-    REQUIRE(fixture.is_mean_centered(points));
+    REQUIRE(is_mean_centered(points));
 
     float xmid, ymid, zmid, width, height, depth;
-    fixture.get_pointlist_info(points, xmid, ymid, zmid, width, height, depth);
+    get_pointlist_info(points, xmid, ymid, zmid, width, height, depth);
     REQUIRE_THAT(width, Catch::Matchers::WithinAbs(9.9782, 0.00001));
     REQUIRE_THAT(height, Catch::Matchers::WithinAbs(4.4967, 0.00001));
     REQUIRE_THAT(depth, Catch::Matchers::WithinAbs(6.8714, 0.00001));
@@ -408,7 +403,7 @@ TEST_CASE("mesaac::shape::AxisAligner", "[mesaac]") {
   SECTION("Get mean-centered cloud -- non-empty") {
     unsigned int num_heavies;
     PointList cloud;
-    fixture.create_sample_atoms(atoms, num_heavies);
+    create_sample_atoms(atoms, num_heavies);
     aligner->tc_get_atom_points(atoms, points, false);
     REQUIRE(!points.empty());
     REQUIRE(points.size() == num_heavies);
@@ -419,17 +414,15 @@ TEST_CASE("mesaac::shape::AxisAligner", "[mesaac]") {
     REQUIRE(!cloud.empty());
 
     float xmid, ymid, zmid, pwidth, pheight, pdepth;
-    fixture.get_pointlist_info(points, xmid, ymid, zmid, pwidth, pheight,
-                               pdepth);
-    REQUIRE(fixture.is_mean_centered(points));
+    get_pointlist_info(points, xmid, ymid, zmid, pwidth, pheight, pdepth);
+    REQUIRE(is_mean_centered(points));
     REQUIRE_THAT(pwidth, Catch::Matchers::WithinAbs(9.9782, 0.00001));
     REQUIRE_THAT(pheight, Catch::Matchers::WithinAbs(4.4967, 0.00001));
     REQUIRE_THAT(pdepth, Catch::Matchers::WithinAbs(6.8714, 0.00001));
 
     float cwidth, cheight, cdepth;
-    fixture.get_pointlist_info(cloud, xmid, ymid, zmid, cwidth, cheight,
-                               cdepth);
-    float dmax = 2.0 * fixture.find_max_radius(points);
+    get_pointlist_info(cloud, xmid, ymid, zmid, cwidth, cheight, cdepth);
+    float dmax = 2.0 * find_max_radius(points);
 
     // Hardwired badness: max radius of all atoms in create_sample_atoms should
     // be that of sulfur.
@@ -451,7 +444,7 @@ TEST_CASE("mesaac::shape::AxisAligner", "[mesaac]") {
     PointList cloud;
     unsigned int num_heavies;
 
-    fixture.create_sample_atoms(atoms, num_heavies);
+    create_sample_atoms(atoms, num_heavies);
     aligner->tc_get_atom_points(atoms, points, false);
     aligner->tc_mean_center_points(points);
     aligner->tc_get_mean_centered_cloud(points, cloud);
@@ -459,9 +452,9 @@ TEST_CASE("mesaac::shape::AxisAligner", "[mesaac]") {
     // Not sure how to test this.  Just confirm it's a 3x3 matrix
     // with non-empty cells?
     Transform transform;
-    REQUIRE(!fixture.is_non_null_transform(transform));
+    REQUIRE(!is_non_null_transform(transform));
     aligner->tc_find_axis_align_transform(cloud, transform);
-    REQUIRE(fixture.is_non_null_transform(transform));
+    REQUIRE(is_non_null_transform(transform));
   }
 
   SECTION("Untranslate points") {
@@ -498,14 +491,14 @@ TEST_CASE("mesaac::shape::AxisAligner", "[mesaac]") {
     REQUIRE_THROWS_AS(aligner->tc_find_axis_align_transform(cloud, transform),
                       invalid_argument);
 
-    fixture.create_sample_atoms(atoms, num_heavies);
+    create_sample_atoms(atoms, num_heavies);
     aligner->tc_get_atom_points(atoms, points, false);
     aligner->tc_mean_center_points(points);
     aligner->tc_get_mean_centered_cloud(points, cloud);
 
-    REQUIRE(!fixture.is_non_null_transform(transform));
+    REQUIRE(!is_non_null_transform(transform));
     aligner->tc_find_axis_align_transform(cloud, transform);
-    REQUIRE(fixture.is_non_null_transform(transform));
+    REQUIRE(is_non_null_transform(transform));
 
     // Verify no crash on an empty point list.
     points.clear();
@@ -513,13 +506,13 @@ TEST_CASE("mesaac::shape::AxisAligner", "[mesaac]") {
     REQUIRE(points.empty());
 
     aligner->tc_get_atom_points(atoms, points, false);
-    REQUIRE(!fixture.has_nonincreasing_extents(points));
+    REQUIRE(!has_nonincreasing_extents(points));
 
     aligner->tc_transform_points(points, transform);
     REQUIRE(points.size() == num_heavies);
 
     // Transform should merely rotate the points -- no mean-centering.
-    REQUIRE(fixture.has_nonincreasing_extents(points));
+    REQUIRE(has_nonincreasing_extents(points));
   }
 
   SECTION("Update atom coords") {
@@ -528,7 +521,7 @@ TEST_CASE("mesaac::shape::AxisAligner", "[mesaac]") {
 
     // Ensure correct copying of transformed point coords to
     // corresponding atom coords.
-    fixture.create_sample_atoms(atoms, num_heavies);
+    create_sample_atoms(atoms, num_heavies);
 
     // Point and atom lists of different size?  This should fail.
     aligner->tc_get_atom_points(atoms, points, false);
@@ -561,16 +554,16 @@ TEST_CASE("mesaac::shape::AxisAligner", "[mesaac]") {
     PointList points, cloud;
     unsigned int num_heavies;
 
-    fixture.create_sample_atoms(atoms, num_heavies);
+    create_sample_atoms(atoms, num_heavies);
     aligner->tc_get_atom_points(atoms, points, false);
-    REQUIRE(!fixture.is_mean_centered(points));
-    REQUIRE(!fixture.has_nonincreasing_extents(points));
+    REQUIRE(!is_mean_centered(points));
+    REQUIRE(!has_nonincreasing_extents(points));
 
     // TODO:  Check that the hydrogens are also transformed.
     aligner->align_to_axes(atoms);
     aligner->tc_get_atom_points(atoms, points, false);
-    REQUIRE(fixture.is_mean_centered(points));
-    REQUIRE(fixture.has_nonincreasing_extents(points));
+    REQUIRE(is_mean_centered(points));
+    REQUIRE(has_nonincreasing_extents(points));
   }
 
   SECTION("Align mol to axes") {
@@ -583,20 +576,20 @@ TEST_CASE("mesaac::shape::AxisAligner", "[mesaac]") {
     PointList points, cloud;
     unsigned int num_heavies;
 
-    fixture.create_sample_mol(mol, num_heavies);
+    create_sample_mol(mol, num_heavies);
     aligner->tc_get_atom_points(mol.atoms(), points, false);
-    REQUIRE(!fixture.is_mean_centered(points));
-    REQUIRE(!fixture.has_nonincreasing_extents(points));
+    REQUIRE(!is_mean_centered(points));
+    REQUIRE(!has_nonincreasing_extents(points));
 
     // TODO:  Check that the hydrogens are also transformed.
     aligner->align_to_axes(mol);
     aligner->tc_get_atom_points(mol.atoms(), points, false);
-    REQUIRE(fixture.is_mean_centered(points));
-    REQUIRE(fixture.has_nonincreasing_extents(points));
+    REQUIRE(is_mean_centered(points));
+    REQUIRE(has_nonincreasing_extents(points));
   }
 
   SECTION("Align to axes - mol only") {
-    std::unique_ptr<TCAxisAligner> aligner(fixture.new_aligner_ac_only());
+    std::unique_ptr<TCAxisAligner> aligner(new_aligner_ac_only());
     mol::Mol mol;
 
     // No crash on empty:
@@ -606,18 +599,18 @@ TEST_CASE("mesaac::shape::AxisAligner", "[mesaac]") {
     PointList points, cloud;
     unsigned int num_heavies;
 
-    fixture.create_sample_mol(mol, num_heavies);
+    create_sample_mol(mol, num_heavies);
     aligner->tc_get_atom_points(mol.atoms(), points, false);
-    REQUIRE(!fixture.is_mean_centered(points));
-    REQUIRE(!fixture.has_nonincreasing_extents(points));
+    REQUIRE(!is_mean_centered(points));
+    REQUIRE(!has_nonincreasing_extents(points));
 
     // TODO:  Check that the hydrogens are also transformed.
     // TODO:  Check that align_to_axes with atom-centers-only produces
     // different results than without atom-centers-only.
     aligner->align_to_axes(mol);
     aligner->tc_get_atom_points(mol.atoms(), points, false);
-    REQUIRE(fixture.is_mean_centered(points));
-    REQUIRE(fixture.has_nonincreasing_extents(points));
+    REQUIRE(is_mean_centered(points));
+    REQUIRE(has_nonincreasing_extents(points));
   }
 
   SECTION("Align hydrogens") {
@@ -627,20 +620,19 @@ TEST_CASE("mesaac::shape::AxisAligner", "[mesaac]") {
 
     float x, y, z, w, h, d;
 
-    mol::Mol mol(
-        {.atoms = {
-             fixture.atom("C", 0.0, 0.0, 0.0), // Stay inside the point cloud
-             fixture.atom("H", 0.0, 0.0, 1.0),
-             fixture.atom("C", 0.0, 0.0, 2.0),
-             fixture.atom("H", 0.0, 0.0, 3.0),
-             fixture.atom("C", 0.0, 0.0, 4.0),
-             fixture.atom("H", 0.0, 0.0, 5.0),
-             fixture.atom("C", 0.0, 0.0, 6.0),
-             fixture.atom("H", 0.0, 0.0, 7.0),
-         }});
+    mol::Mol mol({.atoms = {
+                      atom("C", 0.0, 0.0, 0.0), // Stay inside the point cloud
+                      atom("H", 0.0, 0.0, 1.0),
+                      atom("C", 0.0, 0.0, 2.0),
+                      atom("H", 0.0, 0.0, 3.0),
+                      atom("C", 0.0, 0.0, 4.0),
+                      atom("H", 0.0, 0.0, 5.0),
+                      atom("C", 0.0, 0.0, 6.0),
+                      atom("H", 0.0, 0.0, 7.0),
+                  }});
 
     aligner->tc_get_atom_points(mol.atoms(), points, true);
-    fixture.get_pointlist_info(points, x, y, z, w, h, d);
+    get_pointlist_info(points, x, y, z, w, h, d);
 
     REQUIRE_THAT(w, Catch::Matchers::WithinAbs(0.0f, 0.00001));
     REQUIRE_THAT(h, Catch::Matchers::WithinAbs(0.0f, 0.00001));
@@ -649,7 +641,7 @@ TEST_CASE("mesaac::shape::AxisAligner", "[mesaac]") {
     aligner->align_to_axes(mol);
     aligner->tc_get_atom_points(mol.atoms(), points, true);
 
-    fixture.get_pointlist_info(points, x, y, z, w, h, d);
+    get_pointlist_info(points, x, y, z, w, h, d);
 
     // The slope from point to point should be consistent.
     const float dx_dy = w / h;
@@ -701,14 +693,12 @@ TEST_CASE("mesaac::shape::AxisAligner", "[mesaac]") {
   }
 }
 
-namespace {
-int benchmark_align_to_axes(const TestFixture &fixture,
-                            std::shared_ptr<TCAxisAligner> aligner) {
+int benchmark_align_to_axes(std::shared_ptr<TCAxisAligner> aligner) {
   mol::Mol mol;
   PointList points, cloud;
   unsigned int num_heavies;
 
-  fixture.create_sample_mol(mol, num_heavies);
+  create_sample_mol(mol, num_heavies);
   aligner->tc_get_atom_points(mol.atoms(), points, false);
 
   // TODO:  Check that the hydrogens are also transformed.
@@ -719,22 +709,16 @@ int benchmark_align_to_axes(const TestFixture &fixture,
 
 TEST_CASE("mesaac::shape::AxisAligner Benchmarks",
           "[mesaac][mesaac_benchmark]") {
-  TestFixture fixture;
-
   BENCHMARK_ADVANCED("Point cloud alignment")(
       Catch::Benchmark::Chronometer meter) {
-    std::shared_ptr<TCAxisAligner> aligner(fixture.new_aligner());
-    meter.measure([fixture, aligner] {
-      return benchmark_align_to_axes(fixture, aligner);
-    });
+    std::shared_ptr<TCAxisAligner> aligner(new_aligner());
+    meter.measure([aligner] { return benchmark_align_to_axes(aligner); });
   };
 
   BENCHMARK_ADVANCED("Atom center alignment")(
       Catch::Benchmark::Chronometer meter) {
-    std::shared_ptr<TCAxisAligner> ac_aligner(fixture.new_aligner_ac_only());
-    meter.measure([fixture, ac_aligner] {
-      return benchmark_align_to_axes(fixture, ac_aligner);
-    });
+    std::shared_ptr<TCAxisAligner> ac_aligner(new_aligner_ac_only());
+    meter.measure([ac_aligner] { return benchmark_align_to_axes(ac_aligner); });
   };
 }
 

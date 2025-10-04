@@ -136,7 +136,7 @@ void AxisAligner::mean_center_points(PointList &points) {
 
 void AxisAligner::get_mean_center(const PointList &points, Point &mean) {
   mean = {0, 0, 0};
-  if (points.size() > 0) {
+  if (!points.empty()) {
     float xsum = 0, ysum = 0, zsum = 0;
     for (const auto &point : points) {
       xsum += point[0];
@@ -161,7 +161,7 @@ void AxisAligner::get_mean_centered_cloud(const PointList &centers,
   cloud.clear();
   if (m_atom_centers_only) {
     for (const auto &center : centers) {
-      cloud.push_back({center[0], center[1], center[2]});
+      cloud.push_back(Point{center[0], center[1], center[2]});
     }
     // Atom centers should already be mean-centered
   } else {

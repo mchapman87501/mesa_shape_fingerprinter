@@ -14,7 +14,7 @@
  * @brief Namespace for shape computations using Eigen.
  */
 namespace mesaac::shape {
-typedef Eigen::Matrix3f Transform;
+using Transform = Eigen::Matrix3f;
 
 class AxisAlignerEigen {
 public:
@@ -44,5 +44,6 @@ protected:
   void transform_points(PointList &all_centers, Transform &transform);
   void update_atom_coords(mesaac::mol::AtomVector &atoms,
                           const PointList &all_centers);
+  void unmirror_axes(Transform &transform);
 };
 } // namespace mesaac::shape

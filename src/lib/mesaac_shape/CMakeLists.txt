@@ -16,9 +16,7 @@ add_library(${TARGET} STATIC ${SRC})
 target_compile_features(${TARGET} PUBLIC cxx_std_20)
 target_include_directories(${TARGET} PUBLIC ${HEADER_DIR})
 target_link_libraries(${TARGET} PUBLIC mesaac_measures mesaac_mol svd ap
-                                       Boost::dynamic_bitset)
-
-target_link_libraries(${TARGET} PUBLIC Eigen3::Eigen)
+                                       Boost::dynamic_bitset Eigen3::Eigen)
 
 target_sources(${TARGET} PUBLIC FILE_SET HEADERS BASE_DIRS ${HEADER_DIR} FILES
                                 ${HEADERS})

@@ -5,13 +5,12 @@
 #include "sdf_mol_aligner.hpp"
 
 #include <algorithm>
+#include <deque>
 #include <filesystem>
 #include <fstream>
+#include <future>
 #include <iostream>
-
-#if HAVE_OPENMP
-#include <omp.h>
-#endif
+#include <vector>
 
 #include "mesaac_mol/io/sdreader.hpp"
 #include "mesaac_mol/io/sdwriter.hpp"
@@ -41,11 +40,17 @@ void open_input(ifstream &inf, string &pathname, const string &description) {
 }
 
 struct SortRecord {
-  int record_num;
+  size_t record_num;
   float value;
 
-  static bool compare(const SortRecord &r1, const SortRecord &r2) {
-    return r1.value > r2.value;
+  static bool greater(const SortRecord &r1, const SortRecord &r2) {
+    if (r1.value > r2.value) {
+      return true;
+    }
+    if (r1.value < r2.value) {
+      return false;
+    }
+    return r1.record_num > r2.record_num;
   }
 };
 
@@ -64,6 +69,61 @@ float get_tag_value(const mol::Mol &mol, string tag_name) {
   return result;
 }
 
+void process_mols_conc(mol::SDReader &reader, mol::SDWriter &writer,
+                       MolAligner &ma, bool write_sorted,
+                       const string &measure_tag,
+                       SortRecordList &sort_records) {
+
+  using MolPtr = shared_ptr<mol::Mol>;
+  using AlignFuture = future<MolPtr>;
+  deque<AlignFuture> tasks;
+
+  // Launch an aligner for every mol read.
+  while (!reader.eof()) {
+    const auto read_result = reader.read();
+    if (!read_result.is_ok()) {
+      break;
+    }
+
+    const auto mol = make_shared<mol::Mol>(read_result.value());
+    auto align_task = async(launch::async, [&ma, mol]() {
+      ma.process_one_molecule(*mol);
+      return mol;
+    });
+    tasks.push_back(std::move(align_task));
+  }
+
+  // Immediately start writing mols as they are processed,
+  // in the same order as they are read.
+
+  // i is the sort record index - indicating the order in which
+  // each mol was read.  The ref molecule has index 0.
+  const size_t i_max = tasks.size();
+  sort_records.reserve(i_max + 1);
+
+  for (size_t i = 1; i <= i_max; ++i) {
+    auto mol = tasks.front().get();
+    tasks.pop_front();
+
+    writer.write(*mol);
+    if (write_sorted) {
+      SortRecord record{i, get_tag_value(*mol, measure_tag)};
+      sort_records.push_back(record);
+    }
+  }
+}
+
+void write_records(const filesystem::path &out_pathname,
+                   SortRecordList &records, const string &measure_name) {
+  ofstream outf(out_pathname);
+  outf << "Index\t" << measure_name << endl;
+  for (const auto &record : records) {
+    outf << record.record_num << "\t" << record.value << "\n";
+  }
+  outf.flush();
+  outf.close();
+}
+
 } // namespace
 
 void SDFMolAligner::run() {
@@ -75,12 +135,9 @@ void SDFMolAligner::read_sphere_points() {
   ifstream inf;
   open_input(inf, m_hamms_sphere_pathname, "Hamms Sphere Points file");
 
-  float coord;
-  while (inf >> coord) {
-    FloatVector point(3, 0.0);
-    point[0] = coord;
-    inf >> point[1] >> point[2];
-    m_hamms_sphere_coords.push_back(point);
+  float x, y, z;
+  while (inf >> x >> y >> z) {
+    m_hamms_sphere_coords.emplace_back(shape::Point{x, y, z});
   }
   inf.close();
 }
@@ -101,103 +158,23 @@ void SDFMolAligner::process_molecules() {
   string measure_tag = ">  <MaxAlign" + last_measure + ">";
 
   mol::Mol refmol;
-  int i = 0;
   const auto read_result = reader.read();
   if (read_result.is_ok()) {
     refmol = read_result.value();
     ma.process_ref_molecule(refmol, m_ref_fingerprint);
     writer.write(refmol);
     if (write_sorted) {
-      SortRecord r = {i, get_tag_value(refmol, measure_tag)};
+      SortRecord r{0, get_tag_value(refmol, measure_tag)};
       sort_records.push_back(r);
     }
 
-    i++;
+    process_mols_conc(reader, writer, ma, write_sorted, measure_tag,
+                      sort_records);
 
-#if HAVE_OPENMP
-    const int num_procs = omp_get_num_procs();
-    const int queue_size = 4 * num_procs;
-
-    mol::Mol mol_batch[queue_size];
-    SortRecord sort_record_batch[queue_size];
-    shared_ptr<ostringstream> outstr[queue_size];
-    mol::SDWriter::Ptr buff_writer[queue_size];
-
-    {
-      int j;
-      for (j = 0; j < queue_size; j++) {
-        outstr[j] = make_shared<ostringstream>();
-        outstr[j]->imbue(locale("C"));
-        buff_writer[j] = make_shared<mol::SDWriter>(*outstr[j]);
-      }
+    if (write_sorted) {
+      sort(sort_records.begin(), sort_records.end(), SortRecord::greater);
+      write_records(m_sorted_pathname, sort_records, last_measure);
     }
-#endif
-
-    while (true) {
-#if HAVE_OPENMP
-      int j;
-      for (j = 0; j < queue_size; j++) {
-        const auto read_result = reader.read();
-        if (!read_result.is_ok()) {
-          break;
-        }
-        mol_batch[j] = read_result.value();
-      }
-      int num_mols = j;
-#pragma omp parallel for
-      for (j = 0; j < num_mols; j++) {
-        // Is it safe to share access to the ref mol?
-        ma.process_one_molecule(mol_batch[j]);
-        outstr[j]->str("");
-        buff_writer[j]->write(mol_batch[j]);
-        if (write_sorted) {
-          sort_record_batch[j].record_num = i + j;
-          sort_record_batch[j].value = get_tag_value(mol_batch[j], measure_tag);
-        }
-      }
-
-      // Serialize output and accumulation of sort records.
-      for (j = 0; j < num_mols; j++) {
-        cout << outstr[j]->str();
-      }
-      if (write_sorted) {
-        for (j = 0; j < num_mols; j++) {
-          sort_records.push_back(sort_record_batch[j]);
-        }
-      }
-      i += num_mols;
-      if (num_mols < queue_size) {
-        break;
-      }
-#else
-      const auto read_result = reader.read();
-      if (!read_result.is_ok()) {
-        std::cerr << read_result.error() << std::endl;
-        break;
-      }
-      auto mol = read_result.value();
-      ma.process_one_molecule(mol);
-      writer.write(mol);
-      if (write_sorted) {
-        SortRecord r = {i, get_tag_value(mol, measure_tag)};
-        sort_records.push_back(r);
-      }
-      i++;
-#endif
-    }
-  }
-
-  if (write_sorted) {
-    sort(sort_records.begin(), sort_records.end(), SortRecord::compare);
-    ofstream outf(m_sorted_pathname);
-
-    outf << "Index\t" << last_measure << endl;
-    SortRecordList::iterator i;
-    for (i = sort_records.begin(); i != sort_records.end(); ++i) {
-      SortRecord &r(*i);
-      outf << r.record_num << "\t" << r.value << endl;
-    }
-    outf.close();
   }
 }
 } // namespace mesaac::align_monte
