@@ -2,26 +2,32 @@
 # following.
 execute_process(
   COMMAND lcov --version
-  OUTPUT_VARIABLE LCOV_VERSION_OUT
+  OUTPUT_VARIABLE LCOV_VERSION_RAW_OUT
   OUTPUT_STRIP_TRAILING_WHITESPACE)
-message(STATUS "Using lcov version '${LCOV_VERSION_OUT}'")
-# Update 20250704 attempt to address lcov 2.3.1-1 warning "WARNING:
-# (unsupported) Function begin/end line exclusions not supported..." and
-# subsequent genhtml errors:
+
+# Attempt to match just the lcov version number, sans trailing "-<release>".
+string(REGEX REPLACE "^.* version ([0-9.]+).*" "\\1" LCOV_VERSION_OUT
+                     ${LCOV_VERSION_RAW_OUT})
+message(
+  STATUS "Using lcov version '${LCOV_VERSION_OUT}' ('${LCOV_VERSION_RAW_OUT}')")
 
 # Presume LCOV version 1.x
 set(LCOV_IGNORE_ARG "--ignore-errors=source,unused")
-if(LCOV_VERSION_OUT MATCHES "LCOV version 2\.3")
+if(LCOV_VERSION_OUT VERSION_GREATER_EQUAL "2.3")
   set(LCOV_IGNORE_ARG
       "--ignore-errors=format,source,unsupported,inconsistent,inconsistent,unused,negative"
   )
-elseif(LCOV_VERSION_OUT MATCHES "LCOV version 2\.")
+  message(STATUS "Using lcov >= 2.3")
+elseif(LCOV_VERSION_OUT VERSION_GREATER_EQUAL "2")
   set(LCOV_IGNORE_ARG
       "--ignore-errors=source,inconsistent,inconsistent,unused,negative")
+  message(STATUS "Using lcov > 2, < 2.3")
+else()
+  message(STATUS "Using lcov < 2")
 endif()
 
 set(GENHTML_IGNORE_ARG "")
-if(LCOV_VERSION_OUT MATCHES "LCOV version 2\.3")
+if(LCOV_VERSION_OUT VERSION_GREATER_EQUAL "2.3")
   set(GENHTML_IGNORE_ARG
       "--ignore-errors=source,source,category,category,inconsistent,inconsistent,corrupt,unused"
   )
