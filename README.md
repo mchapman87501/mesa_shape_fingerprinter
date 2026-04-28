@@ -21,10 +21,6 @@ cmake --build --preset default
 ctest --preset default
 ```
 
-### AxisAlignment using Eigen3
-
-To build `mesaac::shape::AxisAlignerEigen`, which does alignment using the Eigen3 library, configure using `cmake --preset default -DPROVIDE_EIGEN=YES`.
-
 ## Installing
 
 A release build can be created as follows:

@@ -11,7 +11,6 @@ static inline void str_to_fp(std::string &s,
                              mesaac::shape_defs::BitVector &fp) {
   const unsigned int imax = s.size();
   unsigned int i;
-  fp.clear();
   fp.resize(imax);
   for (i = 0; i != imax; ++i) {
     if ('1' == s[i]) {

@@ -27,11 +27,6 @@ using namespace std;
 using Point3D = array<float, 3>;
 using PointVec = vector<Point3D>;
 
-// In practice only the first of these primes is used.
-static constexpr array<unsigned int, 29> primes{
-    3,  5,  7,  11, 13, 17, 19, 23, 29, 31, 37,  41,  43,  47,
-    53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103, 107, 109};
-
 // Get the digits of a number n, base radix, in order from least significant to
 // most significant.
 vector<unsigned int> radix_digits(const unsigned int n,
@@ -49,7 +44,6 @@ vector<unsigned int> radix_digits(const unsigned int n,
 void generate_points(const unsigned int sample_size, const float scale,
                      PointVec &result) {
   result.resize(sample_size);
-  result.clear();
 
   // represent the integers i = 1,...,K as binary
   // multiply least significant bit by 1 plus its binary place reciprocal
@@ -82,7 +76,7 @@ void generate_points(const unsigned int sample_size, const float scale,
   }
 
   i_dim += 1;
-  const unsigned int prime = primes[0];
+  constexpr unsigned int prime = 3;
   for (size_t i = 1; i <= sample_size; i++) {
     size_t j = 0;
     float sum = 0.0;
